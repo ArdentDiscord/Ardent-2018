@@ -9,6 +9,7 @@ import net.dv8tion.jda.core.entities.*
 import net.dv8tion.jda.core.events.Event
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.core.events.message.guild.react.GuildMessageReactionAddEvent
+import net.dv8tion.jda.core.exceptions.InsufficientPermissionException
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -38,7 +39,11 @@ class Sender(val register: ArdentRegister) {
                         }
             })
         } catch (e: Exception) {
-            e.printStackTrace()
+            if (e is InsufficientPermissionException) {
+                user.openPrivateChannel().complete().sendMessage("I couldn't send an [] in []!"
+                        .apply(if (message is EmbedBuilder) "embed" else "message", channel.name)).queue()
+            }
+            else e.printStackTrace()
         }
     }
 

@@ -8,6 +8,7 @@ import com.ardentbot.commands.music.ServerQueue
 import com.ardentbot.core.ArdentRegister
 import com.google.gson.GsonBuilder
 import com.rethinkdb.RethinkDB.r
+import com.rethinkdb.net.Connection
 import com.rethinkdb.net.Cursor
 import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.User
@@ -15,12 +16,21 @@ import org.apache.commons.lang3.RandomStringUtils
 import org.json.simple.JSONObject
 import org.jsoup.Jsoup
 
-private val conn = r.connection().hostname("rethinkdb").port(28015).db("ardent").connect()
+private lateinit var conn: Connection
 
 class Database(val register: ArdentRegister) {
     val gson = GsonBuilder().serializeNulls().disableHtmlEscaping().create()
 
     init {
+        while (true) {
+            try {
+                conn =  r.connection().hostname("rethinkdb").port(28015).db("ardent").connect()
+                r.dbList().run<List<String>>(conn).contains("ardent")
+                break
+            } catch (e: Throwable) {
+            }
+        }
+
         if (!r.dbList().run<List<String>>(conn).contains("ardent")) {
             println("Creating database 'ardent'")
             r.dbCreate("ardent").run<Any>(conn)
