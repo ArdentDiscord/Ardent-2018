@@ -10,5 +10,7 @@ services:
     image: ardent-test
     ports:
       - "443:443"
+    depends_on:
+      - rethinkdb
 volumes:
   rethinkdb:

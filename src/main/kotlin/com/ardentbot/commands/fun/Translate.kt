@@ -2,7 +2,6 @@ package com.ardentbot.commands.`fun`
 
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Flag
-import com.ardentbot.core.commands.ArgumentInformation
 import com.ardentbot.core.commands.Command
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.kotlin.*

@@ -4,6 +4,8 @@ services:
     image: rethinkdb
     volumes:
       - ../../rethinkdb:/data
+    ports:
+      - "8080:8080"
   ardent:
     image: ardent
     depends_on:

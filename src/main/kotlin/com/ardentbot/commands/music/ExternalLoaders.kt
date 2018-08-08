@@ -216,7 +216,7 @@ fun String.searchYoutubeOfficialApi(register: ArdentRegister): List<Pair<String,
         val items = response.items ?: return null
         items.filter { it != null }.map { Pair(it?.snippet?.title ?: "unavailable", it?.id?.videoId ?: "none") }
     } catch (e: Exception) {
-        register.getTextChannel("419283618976759809")!!.send("**Exception searching YouTube**:\n${ExceptionUtils.getStackTrace(e)}", register)
+        register.getTextChannel(register.config["error_channel"])!!.send("**Exception searching YouTube**:\n${ExceptionUtils.getStackTrace(e)}", register)
         null
     }
 }

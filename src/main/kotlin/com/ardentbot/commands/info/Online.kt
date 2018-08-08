@@ -2,9 +2,9 @@ package com.ardentbot.commands.info
 
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Flag
-import com.ardentbot.core.commands.ArgumentInformation
+import com.ardentbot.core.commands.Argument
 import com.ardentbot.core.commands.Command
-import com.ardentbot.core.commands.FlagInformation
+import com.ardentbot.core.commands.FlagModel
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.core.database.GuildData
 import com.ardentbot.core.get
@@ -131,14 +131,12 @@ class Online : Command("online", null, null) {
         }
     }
 
-    val stats = ArgumentInformation("stats @User",
-            "see online/offline statistics about a member. if no user is mentioned, your own stats will be displayed")
-    val server = ArgumentInformation("server (admins)", "see status statistics about members in this server. if admins is specified, only their statistics will be shown. " +
-            "otherwise, the entire server's will")
-    val types = ArgumentInformation("types", "see the possible Discord statuses")
+    val stats = Argument("stats")
+    val server = Argument("server")
+    val types = Argument("types")
 
-    val type = FlagInformation("status", "status type", "specify a status to filter by - only available for /online server!")
-    val role = FlagInformation("r", "role name", "filter by role - only available with /online server!")
+    val type = FlagModel("t", "type")
+    val role = FlagModel("r", "role")
 
     val example = "server -status online -r Moderators"
     val example2 = "server -status \"dnd\" \"idle\""

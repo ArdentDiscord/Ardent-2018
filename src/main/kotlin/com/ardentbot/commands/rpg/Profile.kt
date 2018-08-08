@@ -2,7 +2,7 @@ package com.ardentbot.commands.rpg
 
 import com.adamratzman.spotify.main.SpotifyClientAPI
 import com.ardentbot.core.*
-import com.ardentbot.core.commands.ArgumentInformation
+import com.ardentbot.core.commands.Argument
 import com.ardentbot.core.commands.Command
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.core.database.getUserData
@@ -173,5 +173,5 @@ class Profile : Command("profile", null, null) {
         }
     }
 
-    val help = ArgumentInformation("help", "see how to edit your profile")
+    val help = Argument("help")
 }

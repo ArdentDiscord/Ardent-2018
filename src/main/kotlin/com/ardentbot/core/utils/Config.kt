@@ -4,7 +4,7 @@ import java.io.File
 
 data class Config(var url: String, val args: List<String>, var test: Boolean = false) {
     private val file = File(url)
-    private val values: HashMap<String, String> = hashMapOf()
+    val values: HashMap<String, String> = hashMapOf()
 
     private fun load() {
         file.readLines().forEach {

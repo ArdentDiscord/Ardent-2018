@@ -26,12 +26,12 @@ class CommandHolder(val register: ArdentRegister) {
                 it.isAccessible = true; it.get(command) is Precondition
             }.forEach { precondition -> command.preconditions.add(precondition.get(command) as Precondition) }
 
-            clazz.declaredFields.filter { it.isAccessible = true; it.get(command) is ArgumentInformation || it.get(command) is FlagInformation }
+            clazz.declaredFields.filter { it.isAccessible = true; it.get(command) is Argument || it.get(command) is FlagModel }
                     .forEach { information ->
                         val field = information.get(command)
                         when (field) {
-                            is ArgumentInformation -> command.arguments.add(field)
-                            is FlagInformation -> command.flags.add(field)
+                            is Argument -> command.arguments.add(field)
+                            is FlagModel -> command.flags.add(field)
                         }
                     }
             modules[modules.keys.first { it.id == moduleName }]!!.add(command)

@@ -21,8 +21,11 @@ class TranslationManager(val register: ArdentRegister, val languages: MutableLis
     }
 
     fun translate(id: String, language: Language): String = translateNull(id, language) ?: {
-        register.getTextChannel("419283618976759809")!!.send("Attempted to access nonexistant id $id in language $language", register)
-        id
+        if (language != Language.ENGLISH) translate(id, Language.ENGLISH)
+        else {
+            register.getTextChannel(register.config["error_channel"])!!.send("Attempted to access nonexistant id $id in language $language", register)
+            id
+        }
     }.invoke()
 
     init {
@@ -30,7 +33,7 @@ class TranslationManager(val register: ArdentRegister, val languages: MutableLis
             val translationPath = "/translations/all"
 
             val file = File("/translations/all.zip")
-            if (file.exists()) {
+            if (file.exists() && register.config.values["project_crowdin_key"] == null) {
                 extractFolder("/translations/all.zip")
             } else {
                 file.createNewFile()

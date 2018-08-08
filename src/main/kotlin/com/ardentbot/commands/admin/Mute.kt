@@ -1,5 +1,6 @@
 package com.ardentbot.commands.admin
 
+import com.ardentbot.commands.games.send
 import com.ardentbot.core.*
 import com.ardentbot.core.commands.*
 import com.ardentbot.core.database.GuildData
@@ -8,6 +9,7 @@ import com.ardentbot.kotlin.*
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Role
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.core.exceptions.HierarchyException
 import java.awt.Color
 
 @ModuleMapping("admin")
@@ -113,26 +115,31 @@ class Mute : Command("mute", null, null) {
                 else -> throw Exception("how in the world did you do this??")
             }
 
-            event.guild.controller.addSingleRoleToMember(user, role).queue {
-                register.database.insert(UserMute(user.user.id, event.guild.id, System.currentTimeMillis(), muteTime,
-                        flags.get("r")?.value, event.author.id))
-                register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd +
-                        "Successfully added the mute role to **[]**".apply(user.user.display()),
-                        this, event)
-                user.user.openPrivateChannel().queue {
-                    it.sendMessage("You've been muted in **[]** until *[]*"
-                            .apply(event.guild.name, muteTime.localeDate())).queue()
-                }
-            }
-
-            event.guild.textChannels.forEach { textChannel ->
-                if (role!!.hasPermission(textChannel, Permission.MESSAGE_WRITE)) {
-                    try {
-                        textChannel.createPermissionOverride(role).setDeny(Permission.MESSAGE_WRITE)
-                                .reason("Mute role setup").queue()
-                    } catch (e: Exception) {
+            try {
+                event.guild.controller.addSingleRoleToMember(user, role).queue { _ ->
+                    register.database.insert(UserMute(user.user.id, event.guild.id, System.currentTimeMillis(), muteTime,
+                            flags.get("r")?.value, event.author.id))
+                    register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd +
+                            "Successfully added the mute role to **[]**".apply(user.user.display()),
+                            this, event)
+                    user.user.openPrivateChannel().queue {
+                        it.sendMessage("You've been muted in **[]** until *[]*"
+                                .apply(event.guild.name, muteTime.localeDate())).queue()
                     }
                 }
+
+                event.guild.textChannels.forEach { textChannel ->
+                    if (role!!.hasPermission(textChannel, Permission.MESSAGE_WRITE)) {
+                        try {
+                            textChannel.createPermissionOverride(role).setDeny(Permission.MESSAGE_WRITE)
+                                    .reason("Mute role setup").queue()
+                        } catch (e: Exception) {
+                        }
+                    }
+                }
+            }
+            catch (he: HierarchyException) {
+                event.channel.send(Emojis.HEAVY_MULTIPLICATION_X.cmd + "I don't have permission to change the role of this user!",register)
             }
         }
     }
@@ -141,12 +148,11 @@ class Mute : Command("mute", null, null) {
         return data.muteRoleId?.let { event.guild.getRoleById(it) }
     }
 
-    val list = ArgumentInformation("list", "list all current mutes")
-    val removeRole = ArgumentInformation("removerole", "remove the set mute role")
-    val user = ArgumentInformation("@User time", "mention the user you want to mute and the time to mute for: " +
-            "Time modifiers: d (days), h (hours), m (minutes)")
+    val list = Argument("list")
+    val removeRole = Argument("removerole")
+    val user = Argument("user")
 
-    val reason = FlagInformation("r", "reason", "optionally specify a reason for the mute")
+    val reason = FlagModel("r", "reason")
 
     val example = "@User 15h -r for bad sportsmanship"
 

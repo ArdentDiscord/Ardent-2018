@@ -176,7 +176,7 @@ class TrackScheduler(val manager: GuildMusicManager, val guild: Guild) : AudioEv
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            manager.register.getTextChannel("419283618976759809")!!.sendMessage(ExceptionUtils.getStackTrace(e)).queue()
+            manager.register.getTextChannel(manager.register.config["error_channel"])!!.sendMessage(ExceptionUtils.getStackTrace(e)).queue()
         }
     }
 

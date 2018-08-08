@@ -2,7 +2,7 @@ package com.ardentbot.commands.admin
 
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Flag
-import com.ardentbot.core.commands.ArgumentInformation
+import com.ardentbot.core.commands.Argument
 import com.ardentbot.core.commands.Command
 import com.ardentbot.core.commands.ELEVATED_PERMISSIONS
 import com.ardentbot.core.commands.ModuleMapping
@@ -18,12 +18,13 @@ class DisableModule : Command("disablemodule", arrayOf("dmod", "disablemod"), nu
         if (arguments.size > 1) {
             val module = register.holder.getModule(arguments[1])
             val exists = module?.id in data.disabledModules.map { it.name }
-            when (arguments.getOrNull(0)) {
-                "add" -> {
+            val arg = arguments.getOrNull(0)
+            when {
+                arg?.isTranslatedArgument("add", event.guild, register) == true -> {
                     if (module == null) register.sender.cmdSend(Emojis.CROSS_MARK.cmd + "You need to specify a valid module. Use /help for a complete list",
                             this, event)
                     else if (module.id == "admin" || module.id == "info") {
-                        register.sender.cmdSend(Emojis.CROSS_MARK.cmd + "You cannot disable this module.", this ,event)
+                        register.sender.cmdSend(Emojis.CROSS_MARK.cmd + "You cannot disable this module.", this, event)
                     } else {
                         if (exists) register.sender.cmdSend(Emojis.CROSS_MARK.cmd + "This module has already been disabled!", this, event)
                         else {
@@ -34,7 +35,7 @@ class DisableModule : Command("disablemodule", arrayOf("dmod", "disablemod"), nu
                         }
                     }
                 }
-                "remove" -> {
+                arg?.isTranslatedArgument("remove", event.guild, register) == true -> {
                     if (module == null) register.sender.cmdSend(Emojis.CROSS_MARK.cmd + "You need to specify a valid module. Use /help for a complete list",
                             this, event)
                     else {
@@ -48,7 +49,7 @@ class DisableModule : Command("disablemodule", arrayOf("dmod", "disablemod"), nu
                 }
                 else -> displayHelp(event, arguments, flags, register)
             }
-        } else if (arguments.getOrNull(0) == "list") {
+        } else if (arguments.getOrNull(0)?.isTranslatedArgument("list", event.guild, register) == true) {
             val embed = getEmbed("Disabled modules | []".apply(event.guild.name), event.author, event.guild)
             if (data.disabledModules.isEmpty()) embed.appendDescription("There are no disabled modules!")
             else data.disabledModules.forEach { disabled ->
@@ -57,12 +58,12 @@ class DisableModule : Command("disablemodule", arrayOf("dmod", "disablemod"), nu
                         disabled.adder.toMember(event.guild)?.user?.display() ?: "unknown") + "\n")
             }
             register.sender.cmdSend(embed, this, event)
-        }else displayHelp(event, arguments, flags, register)
+        } else displayHelp(event, arguments, flags, register)
     }
 
-    val add = ArgumentInformation("add [module]", "add a module to the disabled modules list")
-    val remove = ArgumentInformation("remove [module]", "remove a module from the disabled commands list")
-    val list = ArgumentInformation("list", "list all the currently disabled modules in this server")
+    val add = Argument("add")
+    val remove = Argument("remove")
+    val list = Argument("list")
 
     val elevated = ELEVATED_PERMISSIONS(listOf(Permission.MANAGE_SERVER))
 

@@ -6,7 +6,7 @@ import com.ardentbot.commands.music.getPlaylistById
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Flag
 import com.ardentbot.core.Sender
-import com.ardentbot.core.commands.ArgumentInformation
+import com.ardentbot.core.commands.Argument
 import com.ardentbot.core.commands.Command
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.core.database.asPojo
@@ -158,9 +158,9 @@ class Playlists : Command("playlist", arrayOf("playlists"), null) {
         }
     }
 
-    val play = ArgumentInformation("play [playlist id]", "start playback of a playlist")
-    val list = ArgumentInformation("list @User", "list a user's playlists")
-    val view = ArgumentInformation("view [playlist id]", "get an overview of the specified playlist")
-    val delete = ArgumentInformation("delete [playlist id]", "delete a playlist")
-    val create = ArgumentInformation("create", "create a new playlist")
+    val play = Argument("play")
+    val list = Argument("list")
+    val view = Argument("view")
+    val delete = Argument("delete")
+    val create = Argument("create")
 }

@@ -5,7 +5,7 @@ import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Flag
 import com.ardentbot.core.commands.Command
 import com.ardentbot.core.commands.ELEVATED_PERMISSIONS
-import com.ardentbot.core.commands.FlagInformation
+import com.ardentbot.core.commands.FlagModel
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.core.get
 import com.ardentbot.kotlin.*
@@ -59,9 +59,8 @@ class Clear : Command("clear", arrayOf("cl"), 4) {
 
     val elevated = ELEVATED_PERMISSIONS(listOf(Permission.MESSAGE_MANAGE))
 
-    val user = FlagInformation("u", "@User", "clear messages from a specific user")
-    val quantity = FlagInformation("n", "# of messages to delete (2-100)", "specify an amount of " +
-            "messages to clear (default 10)")
-    val channel = FlagInformation("c", "#channel", "clear messages in a specific channel")
-    val default = FlagInformation("d", null, "clear the last 10 messages in the current channel")
+    val user = FlagModel("u", "user")
+    val number = FlagModel("n", "number")
+    val channel = FlagModel("c", "channel")
+    val default = FlagModel("d", "default")
 }

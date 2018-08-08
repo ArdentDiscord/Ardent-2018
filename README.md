@@ -21,8 +21,9 @@ google :: GOOGLE_TOKEN_HERE
 client_secret :: DISCORD_BOT_CLIENT_SECRET_HERE  
 spotify_client_id :: SPOTIFY_CLIENT_ID
 spotify_client_secret :: SPOTIFY_CLIENT_SECRET
+error_channel :: TEXT_CHANNEL_ID
 ```
-There are five straightforward steps to being able to run Ardent, which we'll go over now.
+There are six straightforward steps to being able to run Ardent, which we'll go over now.
  1. Create a Discord bot [here](https://discordapp.com/developers/applications/). You'll find the client secret (client_secret in the config) under `General Information` on the right side. 
  2. Go to the `Bot` tab. Create a bot if one isn't already created, then replace `token` inside the config with your bot token.
  3. Go to the [Giphy API](https://developers.giphy.com/dashboard/?create=true) site and create an application. Put the API key provided under the `giphy` key in the config.
@@ -32,7 +33,8 @@ There are five straightforward steps to being able to run Ardent, which we'll go
  Next, click on the 3 menu bars on the top left and go to `APIs & Services`. Click on `Enable APIs and Services` and search for the `Google Sheets API`.
  Click `Enable`, then click on `Credentials` on the **left** side of the screen.
  On the dropdown menu, select to create an `API Key`. Copy the created key and put it as the value of the `google` key.
-
+ 6. replace the `error_channel` value with the Discord text channel id you want to send error messages to
+ 
 Cool, you're done with the setup! Ardent takes care of setting up the database on first run, which is stored in a docker volume named `rethinkdb` by default (you can change this!).
 
 ### Running the bot

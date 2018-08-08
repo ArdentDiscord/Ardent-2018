@@ -2,10 +2,7 @@ package com.ardentbot.commands.admin
 
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Flag
-import com.ardentbot.core.commands.ArgumentInformation
-import com.ardentbot.core.commands.Command
-import com.ardentbot.core.commands.ELEVATED_PERMISSIONS
-import com.ardentbot.core.commands.ModuleMapping
+import com.ardentbot.core.commands.*
 import com.ardentbot.core.database.DisabledCommand
 import com.ardentbot.kotlin.*
 import net.dv8tion.jda.core.Permission
@@ -59,9 +56,9 @@ class DisableCommand : Command("disablecommand", arrayOf("dcommand"), null) {
         } else displayHelp(event, arguments, flags, register)
     }
 
-    val add = ArgumentInformation("add [command]", "add a command to the disabled commands list")
-    val remove = ArgumentInformation("remove [command]", "remove a command from the disabled commands list")
-    val list = ArgumentInformation("list", "list all the currently disabled commands in this server")
+    val add = Argument("add")
+    val remove = Argument("remove")
+    val list = Argument("list")
 
     val elevated = ELEVATED_PERMISSIONS(listOf(Permission.MANAGE_SERVER))
 

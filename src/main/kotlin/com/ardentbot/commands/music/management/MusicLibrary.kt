@@ -9,7 +9,7 @@ import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.ExternalAction
 import com.ardentbot.core.Flag
 import com.ardentbot.core.Sender
-import com.ardentbot.core.commands.ArgumentInformation
+import com.ardentbot.core.commands.Argument
 import com.ardentbot.core.commands.Command
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.kotlin.Emojis
@@ -61,24 +61,24 @@ class MusicLibrary : Command("musiclibrary", arrayOf("library", "mymusic"), null
             "import" -> {
                 val url = register.spotifyApi.getAuthUrl(SpotifyClientAPI.Scope.USER_LIBRARY_READ, SpotifyClientAPI.Scope.PLAYLIST_READ_COLLABORATIVE,
                         SpotifyClientAPI.Scope.PLAYLIST_READ_PRIVATE, redirectUri = "$base/api/oauth/spotify") + "&state=${event.author.id}"
-                event.author.openPrivateChannel().queue {
-                    it.sendMessage("To import your Spotify music library and add the tracks to your Ardent library, please login with your Spotify account using the following link: []"
+                event.author.openPrivateChannel().queue { channel ->
+                    channel.sendMessage("To import your Spotify music library and add the tracks to your Ardent library, please login with your Spotify account using the following link: []"
                             .apply(url)).queue { message ->
-                        ExternalAction.waitSpotify(event.member, event.channel, register) {
+                        ExternalAction.waitSpotify(event.member, event.channel, register) { any ->
                             message.delete().queue()
-                            val client = it as SpotifyClientAPI
+                            val client = any as SpotifyClientAPI
                             val library = register.database.getMusicLibrary(event.author.id)
-                            client.clientLibrary.getSavedTracks(50).queue {
-                                val tracks = it.items.toMutableList()
-                                var curr = it
+                            client.clientLibrary.getSavedTracks(50).queue { savedTracks ->
+                                val tracks = savedTracks.items.toMutableList()
+                                var curr = savedTracks
                                 while (curr.next != null) {
                                     curr = curr.getNext<SavedTrack>().complete()
                                     tracks.addAll(curr.items)
                                 }
 
-                                tracks.forEach {
+                                tracks.forEach { track ->
                                     library.tracks.add(DatabaseTrackObj(event.author.id, System.currentTimeMillis(), null,
-                                            it.track.name, it.track.artists.joinToString { it.name }, it.track.external_urls["spotify"]!!))
+                                            track.track.name, track.track.artists.joinToString { it.name }, track.track.external_urls["spotify"]!!))
                                 }
 
                                 register.database.update(library)
@@ -94,10 +94,10 @@ class MusicLibrary : Command("musiclibrary", arrayOf("library", "mymusic"), null
         }
     }
 
-    val view = ArgumentInformation("view", "view your music library")
-    val play = ArgumentInformation("play", "play tracks from your library")
-    val add = ArgumentInformation("add [song name or url]", "add a song to your music library")
-    val remove = ArgumentInformation("remove", "remove songs from your library")
-    val reset = ArgumentInformation("reset", "remove all existing tracks in your music library (start from scratch)")
-    val import = ArgumentInformation("import", "import your Spotify song library")
+    val view = Argument("view")
+    val play = Argument("play")
+    val add = Argument("add")
+    val remove = Argument("remove")
+    val reset = Argument("reset")
+    val import = Argument("import")
 }

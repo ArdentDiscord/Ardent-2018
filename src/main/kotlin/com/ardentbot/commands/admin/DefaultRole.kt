@@ -3,7 +3,7 @@ package com.ardentbot.commands.admin
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Flag
 import com.ardentbot.core.Sender
-import com.ardentbot.core.commands.ArgumentInformation
+import com.ardentbot.core.commands.Argument
 import com.ardentbot.core.commands.Command
 import com.ardentbot.core.commands.ELEVATED_PERMISSIONS
 import com.ardentbot.core.commands.ModuleMapping
@@ -22,8 +22,9 @@ class DefaultRole : Command("defaultrole", arrayOf("dr"), null) {
         }
 
         val data = register.database.getGuildData(event.guild)
-        when (arguments.getOrNull(0)) {
-            "view" -> {
+        val arg = arguments.getOrNull(0)
+        when {
+            arg?.isTranslatedArgument("view", event.guild, register) == true -> {
                 val role = data.defaultRoleId?.let { event.guild.getRoleById(it) }
                 val embed = getEmbed("Default Role | Ardent", event.author, event.guild)
                         .appendDescription("**Default role:**" + " " + (role?.name ?: "None"))
@@ -33,7 +34,7 @@ class DefaultRole : Command("defaultrole", arrayOf("dr"), null) {
                         .apply(event.guild.members.filter { it.roles.contains(role) }.size))
                 register.sender.cmdSend(embed, this, event)
             }
-            "set" -> {
+            arg?.isTranslatedArgument("set", event.guild, register) == true -> {
                 if (invokePrecondition(ELEVATED_PERMISSIONS(listOf(Permission.MANAGE_SERVER)), event, arguments, flags, register)) {
                     if (arguments.size == 1) {
                         register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd +
@@ -80,7 +81,7 @@ class DefaultRole : Command("defaultrole", arrayOf("dr"), null) {
                     }
                 }
             }
-            "remove" -> {
+            arg?.isTranslatedArgument("remove", event.guild, register) == true -> {
                 if (invokePrecondition(ELEVATED_PERMISSIONS(listOf(Permission.MANAGE_SERVER)), event, arguments, flags, register)) {
                     val old = data.defaultRoleId?.let { event.guild.getRoleById(it) }
                     data.defaultRoleId = null
@@ -95,9 +96,9 @@ class DefaultRole : Command("defaultrole", arrayOf("dr"), null) {
         }
     }
 
-    val view = ArgumentInformation("view", "view the currently-set default role and how many people have it")
-    val set = ArgumentInformation("set [role name or mention]", "set the default role for this server")
-    val remove = ArgumentInformation("remove", "remove the set default role")
+    val view = Argument("view")
+    val set = Argument("set")
+    val remove = Argument("remove")
 
     val elevated = ELEVATED_PERMISSIONS(listOf(Permission.MANAGE_ROLES))
 }

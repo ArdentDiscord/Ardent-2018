@@ -3,7 +3,7 @@ package com.ardentbot.commands.`fun`
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Flag
 import com.ardentbot.core.commands.Command
-import com.ardentbot.core.commands.FlagInformation
+import com.ardentbot.core.commands.FlagModel
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.core.get
 import com.ardentbot.kotlin.Emojis
@@ -42,9 +42,9 @@ class Roll : Command("roll", null, null) {
         }
     }
 
-    val sides = FlagInformation("s", "side #", "set the amount of sides the rolled die should have (default 6)")
-    val number = FlagInformation("n", "# of times to roll", "set how many times you'd like to roll the die")
-    val default = FlagInformation("d", null, "use default settings (6-sided die, 1 roll)")
+    val sides = FlagModel("s", "sides")
+    val number = FlagModel("n", "number")
+    val default = FlagModel("d", "default")
 
     val example = "-d (roll a 6-sided die once)"
     val example2 = "-s 4 -n 2 (roll a 4-sided die 2 times)"

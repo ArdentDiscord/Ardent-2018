@@ -2,10 +2,7 @@ package com.ardentbot.commands.admin
 
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Flag
-import com.ardentbot.core.commands.ArgumentInformation
-import com.ardentbot.core.commands.Command
-import com.ardentbot.core.commands.ELEVATED_PERMISSIONS
-import com.ardentbot.core.commands.ModuleMapping
+import com.ardentbot.core.commands.*
 import com.ardentbot.kotlin.*
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
@@ -111,10 +108,10 @@ class JoinMessageCommand : Command("joinmessage", arrayOf("jm"), null) {
         }
     }
 
-    val params = ArgumentInformation("params", "see what special parameters you can use in your join message!")
-    val set = ArgumentInformation("set [message]", "set the join message.")
-    val channel = ArgumentInformation("channel [mentioned channel or name]", "set the channel where you want ")
-    val view = ArgumentInformation("view", "view the current message parameters")
-    val removeChannel = ArgumentInformation("remove channel", "remove the set join message channel")
-    val remove = ArgumentInformation("remove message", "remove the set join message")
+    val params = Argument("params")
+    val set = Argument("set")
+    val channel = Argument("channel")
+    val view = Argument("view")
+    val removeChannel = Argument("removechannel")
+    val remove = Argument("remove")
 }

@@ -2,7 +2,10 @@ package com.ardentbot.commands.admin
 
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Flag
-import com.ardentbot.core.commands.*
+import com.ardentbot.core.commands.Argument
+import com.ardentbot.core.commands.Command
+import com.ardentbot.core.commands.ELEVATED_PERMISSIONS
+import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.core.database.ArdentPrefix
 import com.ardentbot.kotlin.*
 import net.dv8tion.jda.core.Permission
@@ -65,9 +68,9 @@ class Prefix : Command("prefix", arrayOf("p"), null) {
         }
     }
 
-    val add = ArgumentInformation("add", "add a new prefix for Ardent")
-    val remove = ArgumentInformation("remove", "remove an existing prefix for Ardent")
-    val list = ArgumentInformation("list", "list all current Ardent prefixes for this server")
+    val add = Argument("add")
+    val remove = Argument("remove")
+    val list = Argument("list")
 
     val example = "add !"
 }

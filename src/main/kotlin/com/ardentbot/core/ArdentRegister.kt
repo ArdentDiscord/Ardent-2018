@@ -54,7 +54,7 @@ class ArdentRegister(val args: Array<String>) {
             .setToken(config["token"])
             .setEventManager(AnnotatedEventManager())
             .addEventListener(processor)
-            //.setAudioSendFactory(NativeAudioSendFactory())
+            .setAudioSendFactory(NativeAudioSendFactory())
             .buildBlocking()
     val selfUser = jda.selfUser
 

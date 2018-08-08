@@ -1,7 +1,7 @@
 package com.ardentbot.commands.games
 
 import com.ardentbot.core.*
-import com.ardentbot.core.commands.ArgumentInformation
+import com.ardentbot.core.commands.Argument
 import com.ardentbot.core.commands.Command
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.kotlin.*
@@ -149,8 +149,9 @@ class TriviaCommand : Command("trivia", null, null) {
             }
             register.sender.cmdSend(Emojis.WHITE_HEAVY_CHECKMARK.cmd + "Generated questions", this, event)
         }
-        when (arguments.getOrNull(0)) {
-            "solo" -> {
+        val arg = arguments.getOrNull(0)
+        when {
+            arg?.isTranslatedArgument("solo", event.guild, register) == true -> {
                 if (event.member.isInGameOrLobby()) event.channel.send("[], You're already in game! You can't create another game!"
                         .apply(event.member.asMention), register)
                 /*else if (event.guild.hasGameType(GameType.TRIVIA) && !event.member.hasDonationLevel(event.textChannel, DonationLevel.INTERMEDIATE, failQuietly = true)) {
@@ -158,7 +159,7 @@ class TriviaCommand : Command("trivia", null, null) {
                 } */
                 else TriviaGame(event.channel, event.member.user.id, 1, false, register).startEvent()
             }
-            "multi", "multiplayer" -> {
+            arg?.isTranslatedArgument("multi", event.guild, register) == true -> {
                 if (event.member.isInGameOrLobby()) event.channel.send("[], You're already in game! You can't create another game!"
                         .apply(event.member.asMention), register)
                 /*else if (event.guild.hasGameType(GameType.TRIVIA) && !event.member.hasDonationLevel(event.textChannel, DonationLevel.INTERMEDIATE, failQuietly = true)) {
@@ -186,8 +187,8 @@ class TriviaCommand : Command("trivia", null, null) {
         }
     }
 
-    val solo = ArgumentInformation("solo", "start a solo trivia game")
-    val multi = ArgumentInformation("multi/multiplayer", "start a multiplayer trivia game")
+    val solo = Argument("solo")
+    val multi = Argument("multi")
 }
 
 data class SanitizedTriviaRound(val hasWinner: Boolean, val winner: User?, val losers: List<User?>, val question: TriviaQuestion)

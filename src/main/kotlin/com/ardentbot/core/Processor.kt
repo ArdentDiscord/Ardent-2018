@@ -54,7 +54,7 @@ class Processor(val register: ArdentRegister) {
                                     register.sender.cmdSend("Oh no! There was an exception running your command. The " +
                                             "error message is: **${e.localizedMessage}**. The developers have been alerted.\n\n" +
                                             "To learn more, join https://discord.gg/Dtg23A7 and mention the error message", command, event)
-                                    register.getTextChannel("419283618976759809")!!.sendMessage(
+                                    register.getTextChannel(register.config["error_channel"])!!.sendMessage(
                                             "**Time:** ${System.currentTimeMillis()}\n" +
                                                     "**User/Channel/Guild:** by ${event.author.display()} " +
                                                     "(${event.author.id}) in *${event.channel.name}* in server " +
@@ -62,7 +62,7 @@ class Processor(val register: ArdentRegister) {
                                                     "**Command:** ${command.name}\n" +
                                                     "**Message:** ${e.localizedMessage}"
                                     ).queue()
-                                    register.getTextChannel("419283618976759809")!!.sendMessage("^\n" +
+                                    register.getTextChannel(register.config["error_channel"])!!.sendMessage("^\n" +
                                             ExceptionUtils.getStackTrace(e)).queue()
                                 }
                             }

@@ -3,7 +3,7 @@ package com.ardentbot.commands.`fun`
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Flag
 import com.ardentbot.core.commands.Command
-import com.ardentbot.core.commands.FlagInformation
+import com.ardentbot.core.commands.FlagModel
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.core.get
 import com.ardentbot.kotlin.Emojis
@@ -32,9 +32,8 @@ class Random : Command("random", null, null) {
         }
     }
 
-    val num = FlagInformation("n", "**number**", "select a random number between 1 and the specified number")
-    val options = FlagInformation("options", "**quote-separated list of options**. e.g. /random -options \"one\" \"two\"",
-            "select a random option given a list")
+    val num = FlagModel("n", "number")
+    val options = FlagModel("options", "options")
 
     val example = "-options \"one\" \"two\" \"three\""
 }

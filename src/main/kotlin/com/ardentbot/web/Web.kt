@@ -843,13 +843,13 @@ class Web(val register: ArdentRegister) {
         staticFiles.location("/public")
         exception(Exception::class.java) { exception, request, _ ->
             exception.printStackTrace()
-            register.getTextChannel("419283618976759809")!!.sendMessage(
+            register.getTextChannel(register.config["error_channel"])!!.sendMessage(
                     "**Time:** ${System.currentTimeMillis()}\n" +
                             "**Path:** ${request.pathInfo()}\n" +
                             "**Params:** ${request.params()}\n" +
                             "**Message:** ${exception.localizedMessage}"
             ).queue()
-            register.getTextChannel("419283618976759809")!!.sendMessage("^\n" +
+            register.getTextChannel(register.config["error_channel"])!!.sendMessage("^\n" +
                     ExceptionUtils.getStackTrace(exception)).queue()
         }
         notFound { request, response ->

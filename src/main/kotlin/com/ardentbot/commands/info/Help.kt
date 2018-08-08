@@ -84,5 +84,4 @@ class Help : Command("help", null, null) {
 
         register.sender.cmdSend(embed, this, event)
     }
-
 }
