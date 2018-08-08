@@ -1,0 +1,13 @@
+{{> header.hbs }}
+{{#if showSnackbar}}
+    <a href="#" style="margin: 50px auto 0 auto; width: 75%; display: block;"
+       class="button special small">{{snackbarMessage}}</a>
+{{/if}}
+<!-- Main -->
+<section id="main" class="container 75%">
+    <h1 style="font-size: 50px;">404</h1>
+    <img src="/images/kitty.jpg">
+    <h5><b>We tried really hard, but couldn't find the page you were looking for :(</b></h5>
+</section>
+
+{{> footer.hbs }}

@@ -1,0 +1,33 @@
+{{> header.hbs }}
+
+<!-- Main -->
+<section id="main" class="container 75%">
+    <header>
+        <h2>Command Help</h2>
+    </header>
+    {{#each wrappers}}
+        <h3 style="text-align: center"><b>{{categoryName}}</b></h3>
+        <h4 style="text-align: center">ID: {{categoryId}}</h4>
+        <hr style="width: 25%; margin-left: auto; margin-right: auto;"/>
+        <div class="table-wrapper">
+            <table class="alt" style="text-align: center; margin-left: auto; margin-right: auto;">
+                <thead>
+                <tr>
+                    <th style="text-align: center;">Name</th>
+                    <th style="text-align: center;">Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                {{#each commands}}
+                    <tr>
+                        <td>{{name}}</td>
+                        <td>{{description}}</td>
+                    </tr>
+                {{/each}}
+                </tbody>
+            </table>
+        </div>
+    {{/each}}
+</section>
+
+{{> footer.hbs }}

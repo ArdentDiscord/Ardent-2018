@@ -1,0 +1,91 @@
+{{> header.hbs }}
+
+{{#if snackbar}}
+    <a href="{{#if snackbarUrl}}{{snackbarUrl}}{{else}}#{{/if}}" style="margin: 50px auto 0 auto; width: 75%; display: block;"
+       class="button special small">{{snackbar}}</a>
+{{/if}}
+
+<figure style="margin-top: 40px">
+    <img style="display: block; margin: 0 auto 0 auto;" src="{{profUser.effectiveAvatarUrl}}">
+    <h3 style="text-align: center">{{profUser.name}}#{{profUser.discriminator}}</h3>
+</figure>
+
+<section id="main" class="container 75%">
+    <div class="box">
+        <h3>Info</h3>
+        <p class="list"><b>About:</b>
+            {{#if aboutMe}}<i>{{& aboutMe}}</i>{{else}}This user hasn't set an about me :({{/if}}
+        </p>
+        <p class="list"><b>From:</b> {{#if from}}{{from}}{{else}}This user hasn't set where they're from{{/if}}</p>
+        <p class="list"><b>Speaks:</b> {{#if languages}}{{languages}}{{else}}
+            This user hasn't set the languages they speak{{/if}}</p>
+        <p class="list"><b>Spotify account:</b> {{#if spotifyId}}{{spotifyId}}{{else}}Not linked!{{/if}}</p>
+        <p class="list"><b>Ardent Gold:</b> {{money}}</p>
+        <br/>
+        <p><i>You can change this information by typing <b>/profile help</b></i></p>
+    </div>
+    <div class="box">
+        <h3>Music Library</h3>
+        {{#if hasLocalMusic}}
+            {{#with musicLibrary}}
+                <p class="list"><b>Last Modified:</b> {{dateFancy lastModified}}</p>
+                <div class="table-wrapper">
+                    <table class="alt">
+                        <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Author</th>
+                            {{#if isUser}}
+                                <th>Remove</th>{{/if}}
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#each tracks}}
+                            <tr>
+                                <td>{{title}}</td>
+                                <td>{{author}}</td>
+                                {{#if isUser}}
+                                    <td><a class="a-form"
+                                           href="/api/music/removesong?redirect=/profile/{{profUser.id}}&song={{@index}}">
+                                        <img height="16" width="16" src="/images/x_button.png"></a></td>
+                                {{/if}}
+                            </tr>
+                        {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+                {{#unless isUser}}<p>Sign in to add (or delete) tracks!</p>{{/unless}}
+            {{/with}}
+        {{else}}
+            <p>{{#if isUser}}Oh no! You don't have any tracks. Add one below!
+            {{else}}Uh oh, {{profUser.name}} doesn't have any local music. Sign in to add some!{{/if}}</p>
+        {{/if}}
+        {{#if isUser}}
+            <form method="get" name="add-song" action="/api/music/addsong">
+                <div class="row uniform 50%">
+                    <div class="5u">
+                        <input type="text" name="song" id="song" value=""
+                               placeholder="Type song url (or name) here..."/>
+                    </div>
+                    <div class="3u 12u(mobilep)">
+                        <input type="submit" value="Add Song" class="alt"/>
+                    </div>
+                </div>
+            </form>
+        {{/if}}
+    </div>
+    <div class="box">
+        <h3>Music Playlists</h3>
+        {{#if hasPlaylists}}
+            {{#each playlists}}
+                <h2>{{@index_1}}: <a href="/music/playlist/{{id}}"><b>{{name}}</b></a></h2>
+            {{/each}}
+        {{else}}
+            <p>{{#if isUser}}You don't have any playlists.
+            {{else}}{{profUser.name}} hasn't created any playlists.{{/if}}</p>
+            <br/>
+            <p><i>Create playlists by typing <b>/playlist create [name]</b> inside Discord</i></p>
+        {{/if}}
+    </div>
+</section>
+{{> footer.hbs }}

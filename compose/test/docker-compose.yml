@@ -1,0 +1,14 @@
+version: '3'
+services:
+  rethinkdb:
+    image: rethinkdb
+    volumes:
+      - rethinkdb:/data
+    ports:
+      - "8081:8080"
+  ardent-test:
+    image: ardent-test
+    ports:
+      - "443:443"
+volumes:
+  rethinkdb:

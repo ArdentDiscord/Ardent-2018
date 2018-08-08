@@ -1,0 +1,8 @@
+**
+!build/libs/*.jar
+!config
+!test-config
+!ardent.jks
+!translations/all.zip
+!Dockerfile.ardent.test
+!Dockerfile

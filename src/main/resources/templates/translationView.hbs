@@ -1,0 +1,48 @@
+{{> header.hbs }}
+{{#if showSnackbar}}
+    <a href="#" style="margin: 50px auto 0 auto; width: 75%; display: block;"
+       class="button special small">{{snackbarMessage}}</a>
+{{/if}}
+<!-- Main -->
+<section id="main" class="container 75%" xmlns="http://www.w3.org/1999/html">
+    <header>
+        <h2>{{language.readable}} Translation</h2>
+    </header>
+    <form action="/translation/ar/{{language.code}}/update/{{encoded}}">
+        <div class="row uniform 50%">
+            <div class="8u">
+                <h3>English</h3>
+                <textarea rows="5" disabled>{{english}}</textarea>
+            </div>
+            <div class="8u">
+                <h3>Translation</h3>
+                <textarea rows="5" id="n" name="n"
+                          placeholder="Write translation here...">{{langTranslation}}</textarea>
+            </div>
+            <br/>
+            <div class="3u 12u(mobilep)">
+                <input type="submit" value="Update" class="alt"/>
+            </div>
+        </div>
+    </form>
+    {{#if isAdmin}}
+        <h3>Remove</h3>
+        <form action="/api/internal/administrators/translations/remove">
+            <div class="row uniform 50%">
+                <div class="5u">
+                    <div class="select-wrapper">
+                        <select name="content" id="content">
+                            <option value="{{encoded}}||{{command}}">{{english}}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="3u 12u(mobilep)">
+                    <input type="submit" value="Remove" class="alt"/>
+                </div>
+            </div>
+        </form>
+    {{/if}}
+    <p><a href="/translation/ar/{{language.code}}/hi/guys">Click here to go back to your language page</a></p>
+</section>
+
+{{> footer.hbs }}

@@ -1,0 +1,51 @@
+{{> header.hbs }}
+<script>
+    $(document).ready(function(){
+        $('#datetimepicker1').datetimepicker({
+            format: 'ddd D MMMM, YYYY @ h:mm:ss a',
+            allowInputToggle: true,
+            useCurrent: 'minute'
+        });
+
+        $("#time-submit").submit( function(eventObj) {
+            $('<input />')
+                    .attr('name', "time")
+                    .attr('id', "time")
+                    .attr('type', "hidden")
+                    .attr('value', moment($("#data").val(), "ddd D MMMM, YYYY @ h:mm:ss a").valueOf())
+                    .appendTo('#time-submit');
+            return true;
+        })
+    });
+</script>
+
+<!-- Main -->
+<section id="main" class="container 75%">
+    <header>
+        <h2>Date + Time Selector (Times in: <b>Eastern Daylight Time</b>)</h2>
+    </header>
+    <div>
+        <div class="container">
+            <div class="panel panel-primary">
+                <form id="time-submit" action="/dynamic/accept/time/{{random}}/{{random1}}">
+                    <input type="hidden" name="request-identifier" id="request-identifier" value="{{request-identifier}}">
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="form-group">
+                                <label class="control-label">{{title}}</label>
+                                <div class='input-group date' id='datetimepicker1'>
+                                    <input type='text' class="form-control" name="data" id="data"/>
+                                    <span class="input-group-addon">
+                     <span class="glyphicon glyphicon-calendar"></span>
+                     </span>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="submit" class="btn btn-primary" value="Submit">
+                    </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{{> footer.hbs }}

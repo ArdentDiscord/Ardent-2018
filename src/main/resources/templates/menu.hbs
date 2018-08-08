@@ -1,0 +1,28 @@
+<h1><a href="/">Ardent</a> | Discord Bot</h1>
+<nav id="nav">
+    <ul>
+        <li><a href="/invite">Invite</a></li>
+        <li><a href="/status">Status</a></li>
+        <li><a href="/commands">Commands</a></li>
+        <li>
+            <a href="#" class="icon fa-angle-down">Info</a>
+            <ul>
+                <li><a href="/patreon">Patreon</a></li>
+                <li>
+                    <a href="#" class="icon fa-angle-down">Discord Guides</a>
+                    <ul>
+                        <li><a href="/getting-started">Getting Started With Ardent</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+        {{# if validSession}}
+            <li><a href="/manage" class="button">Manage</a></li>
+            <li><a href="/profile" class="button">My Profile</a></li>
+            <li><a href="/logout" class="button">Log Out</a></li>
+        {{else}}
+            <li><a href="/login" class="button">Login</a></li>
+        {{/if}}
+    </ul>
+</nav>
+</header>
