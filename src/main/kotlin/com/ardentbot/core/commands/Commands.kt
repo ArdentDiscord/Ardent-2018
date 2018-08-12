@@ -187,7 +187,7 @@ abstract class Command(name: String, aliases: Array<String>?, cooldown: Int?) : 
     fun String.isTranslatedArgument(argumentName: String, guild: Guild, register: ArdentRegister): Boolean {
         val translated = getTranslatedArgument(argumentName, guild, register)
         val english = getTranslatedArgument(argumentName, Language.ENGLISH, register)!!
-        return (translated?.value ?: translated?.name)?.equals(this, true) == true || (english.value
+        return (translated.value ?: translated.name).equals(this, true) || (english.value
                 ?: english.name).equals(this, true)
     }
 

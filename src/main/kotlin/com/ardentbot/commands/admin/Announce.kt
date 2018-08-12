@@ -262,13 +262,16 @@ class Announce : Command("announce", arrayOf("announcement", "announcements"), n
             }
             arg?.isTranslatedArgument("list", event.guild, register) == true -> {
                 val announcements = register.database.getAnnouncements(event.guild)
-                val embed = getEmbed("Announcements | []".apply(event.guild.name), event.author, event.guild)
-                embed.appendDescription(announcements.mapIndexed { i, announcement ->
-                    "[**[]**] | Message: *[]*".apply(i + 1, announcement.message)
-                }.embedify())
-                        .appendDescription("\n\n")
-                        .appendDescription("View detailed information about each announcement with /announce info *number*")
-                event.channel.send(embed, register)
+                if (announcements.isEmpty()) event.channel.send("There aren't any announcements!", register)
+                else {
+                    val embed = getEmbed("Announcements | []".apply(event.guild.name), event.author, event.guild)
+                    embed.appendDescription(announcements.mapIndexed { i, announcement ->
+                        "[**[]**] | Message: *[]*".apply(i + 1, announcement.message)
+                    }.embedify())
+                            .appendDescription("\n\n")
+                            .appendDescription("View detailed information about each announcement with /announce info *number*")
+                    event.channel.send(embed, register)
+                }
             }
             arg?.isTranslatedArgument("info", event.guild, register) == true -> {
                 val announcements = register.database.getAnnouncements(event.guild)

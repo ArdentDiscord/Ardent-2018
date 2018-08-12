@@ -11,7 +11,7 @@ fun String.remove(other: String, ignoreCase: Boolean = true): String {
     return split(" ").filter { !it.equals(other, ignoreCase) }.concat()
 }
 
-fun String.encode(): String = URLEncoder.encode(this, "UTF-8")
+fun String.encode(): String = URLEncoder.encode(this, "UTF-8").replace("+", "%20").replace("%2F", "_")
 
 fun String.apply(vararg parameters: Any): String = apply(parameters.map { it.toString() })
 

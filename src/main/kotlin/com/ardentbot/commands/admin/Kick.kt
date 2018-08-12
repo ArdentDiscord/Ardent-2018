@@ -21,13 +21,15 @@ class Kick : Command("kick", null, null) {
                 if (mentioned.hasPermission(Permission.KICK_MEMBERS)) {
                     register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd + "You cannot kick this user", this, event)
                 } else {
-                    event.guild.controller.kick(mentioned).reason("Kicked by ${event.author.display()}").queue({
-                        register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd +
-                                "Successfully kicked) **[]**".apply(mentioned.user.display()), this, event)
-                    }, {
+                    try {
+                        event.guild.controller.kick(mentioned).reason("Kicked by ${event.author.display()}").queue {
+                            register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd +
+                                    "Successfully kicked) **[]**".apply(mentioned.user.display()), this, event)
+                        }
+                    } catch (e: Exception) {
                         register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd +
                                 "Unable to kick **[]** - check my permissions?".apply(mentioned.user.display()), this, event)
-                    })
+                    }
                 }
             }
         }

@@ -2,7 +2,10 @@ package com.ardentbot.commands.admin
 
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Flag
-import com.ardentbot.core.commands.*
+import com.ardentbot.core.commands.Argument
+import com.ardentbot.core.commands.Command
+import com.ardentbot.core.commands.ELEVATED_PERMISSIONS
+import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.core.database.DisabledCommand
 import com.ardentbot.kotlin.*
 import net.dv8tion.jda.core.Permission
@@ -19,7 +22,8 @@ class DisableCommand : Command("disablecommand", arrayOf("dcommand"), null) {
                 "add" -> {
                     if (command == null) register.sender.cmdSend(Emojis.CROSS_MARK.cmd + "You need to specify a valid command. Use /help for a complete list",
                             this, event)
-                    else if (register.holder.getModuleFor(command).name == "admin" || command.name == "help" || command.name == "suggest") {
+                    else if (register.holder.getModuleFor(command).name == "admin" || command.name == "help" || command.name == "suggest"
+                            || command.name == "disablecommand" || command.name == "disablemodule" || command.name == "audit") {
                         register.sender.cmdSend(Emojis.CROSS_MARK.cmd + "You cannot disable this command.", this, event)
                     } else {
                         if (exists) register.sender.cmdSend(Emojis.CROSS_MARK.cmd + "This command has already been disabled!", this, event)
