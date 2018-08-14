@@ -11,8 +11,9 @@ import java.util.concurrent.TimeUnit
 @ModuleMapping("fun")
 class Coinflip : Command("coinflip", arrayOf("coin"), null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        register.sender.cmdSend("Flipping a coin now..", this, event, callback = {
-            it.editMessage("Flipped a coin. Result: **[]**".apply(if (register.random.nextBoolean()) "Heads" else "Tails"))
+        register.sender.cmdSend(translate("coinflip.flipping", event, register), this, event, callback = {
+            it.editMessage(translate("coinflip.result", event, register).apply(if (register.random.nextBoolean())
+                translate("coinflip.heads", event, register) else translate("coinflip.tails", event, register)))
                     .queueAfter(2, TimeUnit.SECONDS)
         })
     }

@@ -12,7 +12,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 @ModuleMapping("fun")
 class EightBall : Command("8ball", arrayOf("8b"), null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        if (arguments.isEmpty()) register.sender.cmdSend("${Emojis.HEAVY_MULTIPLICATION_X} " + "How dare you try to ask the 8-ball an empty question??!!",
+        if (arguments.isEmpty()) register.sender.cmdSend("${Emojis.HEAVY_MULTIPLICATION_X} " + translate("8ball.no",event, register),
                 this, event)
         else register.sender.cmdSend(":8ball: " + register.database.deserializeWebsite("https://8ball.delegator.com/magic/JSON/${arguments.concat().encode()}",
                 BallResponse::class.java).magic.answer, this, event)

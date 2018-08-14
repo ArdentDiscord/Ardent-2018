@@ -23,7 +23,8 @@ class Nick : Command("nick", null, null) {
                     event.message.delete().reason("/nick trigger").queue()
                 }
             } catch (e: Exception) {
-                event.channel.send(Emojis.THINKING_FACE.cmd + "Hmm.. make sure I have permission to change nicknames", register)
+                event.channel.send(Emojis.THINKING_FACE.cmd + translate("permission", event, register)
+                        .apply(translate("nick.permission", event, register)), register)
             }
         }
     }

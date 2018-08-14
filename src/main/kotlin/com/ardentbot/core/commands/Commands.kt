@@ -191,7 +191,6 @@ abstract class Command(name: String, aliases: Array<String>?, cooldown: Int?) : 
         return (translated.value ?: translated.name).equals(this, true) || (english.value
                 ?: english.name).equals(this, true)
     }
-
 }
 
 // checked at runtime by the PreconditionMapping annotations

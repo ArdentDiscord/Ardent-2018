@@ -20,8 +20,9 @@ class Daily : Command("daily", null, null) {
             data.money += amount
             data.dailyCollectedAt.add(System.currentTimeMillis())
             register.database.update(data)
-            register.sender.cmdSend(Emojis.HEAVY_CHECK_MARK.cmd + "You collected $[]!".apply("**$amount**"), this, event)
-        } else register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd + "You'll be able to use this again at []"
+            register.sender.cmdSend(Emojis.HEAVY_CHECK_MARK.cmd + translate("daily.collect", event, register)
+                        .apply("**$amount**"), this, event)
+        } else register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd + translate("daily.use_later",event, register)
                 .apply("**" + (data.dailyCollectedAt.last() + TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS)).localeDate() + "**"), this, event)
     }
 }
