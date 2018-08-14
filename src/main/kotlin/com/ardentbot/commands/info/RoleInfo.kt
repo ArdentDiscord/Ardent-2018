@@ -16,17 +16,17 @@ class RoleInfo : Command("roleinfo", arrayOf("ri"), null) {
                     .getOrNull(0) else null
             if (role == null) {
                 register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd +
-                        "You need to mention or enter the name of a role!", this, event)
+                        translate("general.need_to_mention_role", event, register), this, event)
             } else roles.add(role)
         }
         roles.forEach { role ->
-            val embed = getEmbed("[] | Role Info".apply(role.name), event.author, event.guild)
+            val embed = getEmbed(translate("roleinfo.embed_title", event, register).apply(role.name), event.author, event.guild)
                     .setThumbnail(event.guild.iconUrl)
-                    .addField("# with role", "[] members".apply(event.guild.members.filter { it.roles.contains(role) }
-                            .count().toString()), true)
-                    .addField("Role ID", role.id, true)
-                    .addField("Creation Date", (role.creationTime.toEpochSecond() / 1000).localeDate(), true)
-                    .addField("Permissions", role.permissions.map { it.getName() }.joinToString(), true)
+                    .addField(translate("roleinfo.num_with_role", event, register), "[] ".apply(event.guild.members.filter { it.roles.contains(role) }
+                            .count().toString() + translate("general.members", event, register)), true)
+                    .addField(translate("roleinfo.id", event, register), role.id, true)
+                    .addField(translate("roleinfo.creation", event, register), (role.creationTime.toEpochSecond() / 1000).localeDate(), true)
+                    .addField(translate("roleinfo.permissions", event, register), role.permissions.joinToString { it.getName() }, true)
             register.sender.cmdSend(embed, this, event)
         }
     }
