@@ -14,10 +14,8 @@ import java.util.concurrent.TimeUnit
 
 class TranslationManager(val register: ArdentRegister, val languages: MutableList<ArdentLanguage> = mutableListOf()) {
     fun translateNull(id: String, language: Language): String? {
-        return languages.first { language == it.language }
-                .translations.find { id == it.identifier }?.translation
-                ?: languages.first { it.language == Language.ENGLISH }
-                        .translations.find { id == it.identifier }?.translation
+        return languages.first { language == it.language }.translations.find { id == it.identifier }?.translation
+                ?: languages.first { it.language == Language.ENGLISH }.translations.find { id == it.identifier }?.translation
     }
 
     fun translate(id: String, language: Language): String = translateNull(id, language) ?: {
@@ -61,14 +59,17 @@ class TranslationManager(val register: ArdentRegister, val languages: MutableLis
             else null
 
             parser.forEach { record ->
-                val id = record[0]
-                val context = record[1]
-                val english = record[2]
-                val translated = record[3]
-                if (english != translated) {
-                    translations.add(ArdentTranslation(id, context, english, translated))
+                try {
+                    val id = record[0]
+                    val context = record[1]
+                    val english = record[2]
+                    val translated = record[3]
+                    if (english != translated) {
+                        translations.add(ArdentTranslation(id, context, english, translated))
+                    }
+                    englishTranslations?.add(ArdentTranslation(id, context, english, english))
+                } catch (ignored: IndexOutOfBoundsException) {
                 }
-                englishTranslations?.add(ArdentTranslation(id, context, english, english))
             }
             languages.add(ArdentLanguage(language, translations))
             if (englishTranslations != null) languages.add(ArdentLanguage(Language.ENGLISH, englishTranslations))
