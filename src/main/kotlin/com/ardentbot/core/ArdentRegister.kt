@@ -61,6 +61,7 @@ class ArdentRegister(val args: Array<String>) {
     fun process(event: GuildMessageReceivedEvent) = processor.process(event)
 
     fun getTextChannel(id: String): TextChannel? {
+
         return try {
             jda.getTextChannelById(id)
         } catch (e: Exception) {

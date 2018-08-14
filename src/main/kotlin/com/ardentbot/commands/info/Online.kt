@@ -29,7 +29,7 @@ class Online : Command("online", null, null) {
     }
 
     private fun getAdminsOf(guild: Guild, data: GuildData): List<Member> {
-        return guild.members.filter { it.hasPermission(Permission.ADMINISTRATOR) || it.roles.map { it.id }.contains(data.adminRoleId) }
+        return guild.members.filter { it.hasPermission(Permission.ADMINISTRATOR) || it.roles.map { role -> role.id }.contains(data.adminRoleId) }
     }
 
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {

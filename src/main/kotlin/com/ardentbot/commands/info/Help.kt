@@ -27,10 +27,10 @@ class Help : Command("help", null, null) {
                         }
                         if (module != null) return onInvoke(event, listOf(), listOf(Flag("m", "\"${module.key.name}\"")), register)
                         register.sender.cmdSend(Emojis.CROSS_MARK.cmd +
-                                "I couldn't find a command with the name **[]**".apply(arguments[0]), this, event)
+                                translate("help.nocommandwithname", event, register).apply(arguments[0]), this, event)
                     }
-                    register.database.getGuildData(event.guild).disabledModules.map { it.name }.contains(register.holder.getModuleFor(command).id) -> register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd + "Your server administrators have " +
-                            "chosen to disable the **[]** module in Ardent".apply(register.holder.getModuleFor(command).name), this, event)
+                    register.database.getGuildData(event.guild).disabledModules.map { it.name }.contains(register.holder.getModuleFor(command).id) -> register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd
+                            + translate("help.moduleisdisabled", event, register).apply(register.holder.getModuleFor(command).name), this, event)
                     else -> command.displayHelp(event, arguments, flags, register)
                 }
             } else if (flags.get("m") != null) {
@@ -39,48 +39,50 @@ class Help : Command("help", null, null) {
                     val module = register.holder.modules.keys.first { it.name.equals(flag.value, true) || it.id.equals(flag.value, true) }
                     val data = register.database.getGuildData(event.guild)
                     if (data.disabledModules.map { it.name }.contains(module.id)) {
-                        register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd + "Your server administrators have " +
-                                "chosen to disable the **[]** module in Ardent".apply(module.name), this, event)
+                        register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd +
+                                translate("help.moduleisdisabled", event, register).apply(module.name), this, event)
                         return
                     }
-                    val embed = getEmbed(module.name + " | " + "Module Help", event.author, event.guild)
-                            .appendDescription("**Commands**")
+                    val embed = getEmbed(module.name + " | " + translate("help.module_help", event, register)
+                            , event.author, event.guild)
+                            .appendDescription("**${translate("help.command_list", event, register)}**")
                             .appendDescription("\n")
                     register.holder.modules[module]!!.forEachIndexed { i, command ->
                         embed.appendDescription("   ${i.diamond()} **" + command.name + "**: "
                                 + (command.getTranslatedDescription(event.guild, register)
-                                ?: "no description available for this command"))
+                                ?: translate("help.no_description_available", event, register)))
                         if (command.aliases?.isNotEmpty() == true) {
-                            embed.appendDescription("\n     aliases: *${command.aliases.joinToString()}*")
+                            embed.appendDescription("\n     " + translate("help.command_aliases", event, register)
+                                    .apply("*${command.aliases.joinToString()}*"))
                         }
                         embed.appendDescription("\n")
                     }
                     register.sender.cmdSend(embed, this, event)
                 } catch (e: NoSuchElementException) {
-                    register.sender.cmdSend(Emojis.CROSS_MARK.cmd + "I couldn't find a module by that name", this, event)
+                    register.sender.cmdSend(Emojis.CROSS_MARK.cmd + translate("help.no_module_with_name", event, register),
+                            this, event)
                 }
             } else displayHelp(event, arguments, flags, register)
         }
     }
 
     override fun displayHelp(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        val embed = getEmbed("Ardent | Command Overview", event.author, event.guild)
-                .appendDescription("To learn what's *changed*, *been improved* and what **flags** and " +
-                        "**arguments** are, type _ardent 2018_")
+        val embed = getEmbed(translate("help.embed_title", event, register), event.author, event.guild)
+                .appendDescription(translate("help.whats_new",event, register))
                 .appendDescription("\n\n")
-                .appendDescription("__Modules__:" + " "
+                .appendDescription("__" + translate("help.modules",event, register) + "__:" + " "
                         + register.holder.modules.keys.sortedBy { it.name }.joinToString { "`${it.name} (${it.id})`" })
                 .appendDescription("\n\n")
         val data = register.database.getGuildData(event.guild)
-        register.holder.modules.filter { !data.disabledModules.map { it.name }.contains(it.key.id) }.toList()
+        register.holder.modules.filter { !data.disabledModules.map { disabledModule -> disabledModule.name }.contains(it.key.id) }.toList()
                 .sortedBy { it.first.name }.forEach { (module, moduleCommands) ->
                     embed.appendDescription("**__${module.name}__** ").appendDescription("`")
                             .appendDescription(moduleCommands.sortedBy { it.name }.joinToString { it.name })
                     embed.appendDescription("`\n\n")
                 }
-        embed.appendDescription("To get help on a specific command, type _/help **command**_.")
+        embed.appendDescription(translate("help.gethelp",event, register))
                 .appendDescription("\n")
-                .appendDescription("To see a module's commands, type _/help -m **module**_")
+                .appendDescription(translate("help.see_module",event, register))
 
         register.sender.cmdSend(embed, this, event)
     }

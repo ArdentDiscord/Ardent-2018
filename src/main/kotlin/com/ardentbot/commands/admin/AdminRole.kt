@@ -18,18 +18,18 @@ class AdminRole : Command("adminrole", arrayOf("adm"), null) {
         val arg = arguments.getOrNull(0)
         when {
             arg?.isTranslatedArgument("set", event.guild, register) == true -> {
-                if (arguments.size == 1) register.sender.cmdSend(Emojis.CROSS_MARK.cmd + "You need to specify a role to set as the admin role!",
+                if (arguments.size == 1) register.sender.cmdSend(Emojis.CROSS_MARK.cmd + translate("general.specifyrole", event, register),
                         this, event)
                 else {
                     if (invokePrecondition(ELEVATED_PERMISSIONS(listOf(Permission.MANAGE_SERVER)), event, arguments, flags, register)) {
                         val role = event.guild.getRolesByName(arguments.without(0).concat(), true).getOrNull(0)
-                                ?: return event.channel.send(Emojis.CROSS_MARK.cmd + "No role with that name was found", register)
+                                ?: return event.channel.send(Emojis.CROSS_MARK.cmd + translate("general.norolefound", event, register), register)
                         val old = data.adminRoleId
                         data.adminRoleId = role.id
                         register.database.update(data)
-                        event.channel.send(Emojis.HEAVY_CHECK_MARK.cmd + "Updated the admin role to []".apply("**${role.name}**"), register)
+                        event.channel.send(Emojis.HEAVY_CHECK_MARK.cmd + translate("adminrole.updated", event, register).apply("**${role.name}**"), register)
                         if (old != null) {
-                            event.channel.send(Emojis.WARNING_SIGN.cmd + "An administrator must update the roles of anyone with the previous admin role", register)
+                            event.channel.send(Emojis.WARNING_SIGN.cmd + translate("adminrole.warning", event, register), register)
                         }
                     }
                 }
@@ -38,18 +38,19 @@ class AdminRole : Command("adminrole", arrayOf("adm"), null) {
                 if (invokePrecondition(ELEVATED_PERMISSIONS(listOf(Permission.MANAGE_SERVER)), event, arguments, flags, register)) {
                     data.adminRoleId = null
                     register.database.update(data)
-                    register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd + "Removed the admin role", this, event)
+                    register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd + translate("adminrole.removed", event, register), this, event)
                 }
             }
             arg?.isTranslatedArgument("audit", event.guild, register) == true -> {
                 val currentRole = data.adminRoleId?.let { event.guild.getRoleById(it) }
                 val usersWithRole = currentRole?.let { role -> event.guild.members.filter { it.roles.contains(role) } }
-                val embed = getEmbed("Admin Role", event.author,event.guild)
-                        .appendDescription("The current admin role is: **[]**".apply(currentRole?.asMention ?: "Not set!") + "\n\n")
-                        if (usersWithRole != null) {
-                            embed.appendDescription("Currently, these are the users with the admin role: []"
-                                    .apply(usersWithRole.map { it.asMention }.joinToString()))
-                        }
+                val embed = getEmbed(translate("adminrole.adminrole", event, register), event.author, event.guild)
+                        .appendDescription(translate("adminrole.current", event, register).apply(currentRole?.asMention
+                                ?: "Not set!") + "\n\n")
+                if (usersWithRole != null) {
+                    embed.appendDescription(translate("adminrole.userswithcurrent", event, register)
+                            .apply(usersWithRole.map { it.asMention }.joinToString()))
+                }
                 event.channel.send(embed, register)
             }
             else -> displayHelp(event, arguments, flags, register)

@@ -12,20 +12,20 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 class GetId : Command("getid", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         event.message.mentionedUsers.take(5).forEach {
-            register.sender.cmdSend("The Discord id of **[]** is: **[]**"
+            register.sender.cmdSend(translate("getid.response", event, register)
                     .apply(it.display(), it.id), this, event)
         }
         event.message.mentionedRoles.take(5).forEach {
-            register.sender.cmdSend("The Discord id of **[]** is: **[]**"
+            register.sender.cmdSend(translate("getid.response", event, register)
                     .apply(it.asMention, it.id), this, event)
         }
         event.message.mentionedChannels.take(5).forEach {
-            register.sender.cmdSend("The Discord id of **[]** is: **[]**"
+            register.sender.cmdSend(translate("getid.response", event, register)
                     .apply(it.asMention, it.id), this, event)
         }
         if (event.message.mentionedUsers.isEmpty() && event.message.mentionedRoles.isEmpty()
                 && event.message.mentionedChannels.isEmpty()) {
-            register.sender.cmdSend("Your Discord id is **[]**. Get a role, channel, or user's id by mentioning them!"
+            register.sender.cmdSend(translate("getid.default",event, register)
                     .apply(event.author.id), this, event)
         }
     }
