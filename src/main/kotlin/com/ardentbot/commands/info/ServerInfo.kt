@@ -17,19 +17,19 @@ class ServerInfo : Command("serverinfo", null, null) {
         val guild = event.guild
         val data = register.database.getGuildData(guild)
 
-        val embed = getEmbed("[] | Server Info".apply(guild.name), event.author, event.guild)
-                .addField("Number of members", guild.members.size.toString(), true)
-                .addField("Online users", guild.members.stream().filter { m -> m.onlineStatus != OnlineStatus.OFFLINE }.count().format(), true)
-                .addField("Prefixes", data.prefixes.joinToString { it.prefix }, true)
-                .addField("Admin Role", data.adminRoleId?.let { guild.getRoleById(it) }
-                        ?.let { it.name + "(${it.id})" } ?: "None", true)
-                .addField("Owner", guild.owner.user.display(), true)
-                .addField("Creation Date", guild.creationTime.toLocalDate().toString(), true)
-                .addField("# of Voice Channels", guild.voiceChannels.size.toString(), true)
-                .addField("# of Text Channels", guild.textChannels.size.toString(), true)
-                .addField("# of Roles", guild.roles.size.toString(), true)
-                .addField("Region", guild.region.getName(), true)
-                .addField("Verification Level", guild.verificationLevel.toString(), true)
+        val embed = getEmbed(translate("serverinfo.embed_title",event, register).apply(guild.name), event.author, event.guild)
+                .addField(translate("serverinfo.num_members",event, register), guild.members.size.toString(), true)
+                .addField(translate("serverinfo.online",event, register), guild.members.stream().filter { m -> m.onlineStatus != OnlineStatus.OFFLINE }.count().format(), true)
+                .addField(translate("general.prefixes",event, register), data.prefixes.joinToString { it.prefix }, true)
+                .addField(translate("serverinfo.admin_role",event, register), data.adminRoleId?.let { guild.getRoleById(it) }
+                        ?.let { it.name + "(${it.id})" } ?: translate("general.none",event, register), true)
+                .addField(translate("serverinfo.owner",event, register), guild.owner.user.display(), true)
+                .addField(translate("serverinfo.creation",event, register), guild.creationTime.toLocalDate().toString(), true)
+                .addField(translate("serverinfo.num_voice",event, register), guild.voiceChannels.size.toString(), true)
+                .addField(translate("serverinfo.num_text",event, register), guild.textChannels.size.toString(), true)
+                .addField(translate("serverinfo.num_roles",event, register), guild.roles.size.toString(), true)
+                .addField(translate("serverinfo.region",event, register), guild.region.getName(), true)
+                .addField(translate("serverinfo.verification_level",event, register), guild.verificationLevel.toString(), true)
         register.sender.cmdSend(embed, this, event)
     }
 }
