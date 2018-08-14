@@ -97,7 +97,7 @@ class ArdentRegister(val args: Array<String>) {
     fun getAllUsers() = jda.users
     fun getApiCalls() = jda.responseTotal
     fun getMutualGuildsWith(user: User): List<Guild> {
-        return getAllGuilds().filter { it.members.map { it.user.id }.contains(user.id) }
+        return getAllGuilds().filter { guild -> guild.members.map { it.user.id }.contains(user.id) }
     }
 
     init {
@@ -168,10 +168,10 @@ class ArdentRegister(val args: Array<String>) {
                             try {
                                 guild.controller.removeRolesFromMember(member, member.roles.first { it.id == data.muteRoleId })
                                         .reason("Unmuted").queue {
-                                            member.user.openPrivateChannel().queue {
+                                            member.user.openPrivateChannel().queue { channel ->
                                                 sender.send("You've been unmuted in **[]** []"
                                                         .apply(guild.name, Emojis.SLIGHTLY_SMILING_FACE.symbol),
-                                                        null, it, member.user, null)
+                                                        null, channel, member.user, null)
                                             }
                                         }
                                 database.delete(mute, blocking = false)
@@ -185,7 +185,7 @@ class ArdentRegister(val args: Array<String>) {
 
         Sender.scheduledExecutor.scheduleWithFixedDelay({
             val users = database.getStatusChangeUsers().toList().map { it.toLong() }
-            getAllGuilds().map { it.members.map { it.user to it.onlineStatus } }.flatten()
+            getAllGuilds().map { guild -> guild.members.map { it.user to it.onlineStatus } }.flatten()
                     .filterNot { it.first.idLong in users }.forEachIndexed { i, it ->
                         println("Status Insert > $i")
                         database.insert(StatusUpdate(it.first.id, it.second), blocking = false)
@@ -194,6 +194,8 @@ class ArdentRegister(val args: Array<String>) {
 
         jda.presence.game = Game.of(Game.GameType.STREAMING, "in beta!",
                 "https://twitch.tv/ ")
+
+        println("Ardent has started ${Emojis.SMILING_FACE_WITH_SUN_GLASS.symbol}")
     }
 
     private fun checkQueueBackups() {
@@ -221,7 +223,7 @@ class ArdentRegister(val args: Array<String>) {
     private fun checkVoiceChannels() {
         managers.filter {
             it.value.guild.audioManager.connectedChannel != null && !database.getGuildMusicSettings(it.value.guild).stayInChannel
-            && it.value.guild.audioManager.connectedChannel.members.filterNot { it.user.isBot }.count() == 0
+                    && it.value.guild.audioManager.connectedChannel.members.filterNot { member -> member.user.isBot }.count() == 0
         }.forEach { (idLong, manager) ->
             manager.player.destroy()
             managers.remove(idLong)

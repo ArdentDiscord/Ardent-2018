@@ -8,7 +8,9 @@ import net.dv8tion.jda.core.entities.User
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 
 fun getUser(query: String, event: GuildMessageReceivedEvent, command: Command, register: ArdentRegister, callback: (User?) -> Unit) {
-    val users = event.guild.members.filter { it.effectiveName.contains(query, true) || it.user.name.contains(query, true) }
+    val users = if (query.isNotBlank()) event.guild.members.filter { it.effectiveName.contains(query, true) || it.user.name.contains(query, true) }
+    else event.message.mentionedMembers
+
     when {
         users.isEmpty() -> callback(null)
         users.size > 9 -> event.channel.send(Emojis.HEAVY_MULTIPLICATION_X.cmd +

@@ -24,7 +24,7 @@ class Database(val register: ArdentRegister) {
     init {
         while (true) {
             try {
-                conn =  r.connection().hostname("rethinkdb").port(28015).db("ardent").connect()
+                conn = r.connection().hostname("rethinkdb").port(28015).db("ardent").connect()
                 r.dbList().run<List<String>>(conn).contains("ardent")
                 break
             } catch (e: Throwable) {
@@ -62,6 +62,14 @@ class Database(val register: ArdentRegister) {
             if (!r.db("ardent").tableList().run<List<String>>(conn).contains(table)) {
                 println("Creating table '$table'")
                 r.db("ardent").tableCreate(table).run<Any>(conn)
+            }
+            when (table) {
+                "logs", "status_changes" -> {
+                    r.db("ardent").table(table).indexCreate("userId").run<Any>(conn)
+                }
+                "users" -> {
+                    r.db("ardent").table(table).indexCreate("money").run<Any>(conn)
+                }
             }
         }
     }
