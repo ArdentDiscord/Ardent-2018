@@ -12,12 +12,12 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 class AcceptInvitation : Command("accept", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         if (event.member.isInGameOrLobby()) {
-            register.sender.cmdSend("You can't join another game! You must leave the game you're currently in first", this, event)
+            register.sender.cmdSend(translate("accept.ingame", event, register), this, event)
         } else {
             gamesInLobby.forEach { game ->
                 if (checkInvite(event, game, register)) return
             }
-            register.sender.cmdSend("You must be invited by the creator of a game to join!", this, event)
+            register.sender.cmdSend(translate("accept.need_invite", event, register), this, event)
         }
     }
 }

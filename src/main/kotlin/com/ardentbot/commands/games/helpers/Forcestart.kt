@@ -15,11 +15,11 @@ class Forcestart : Command("start", arrayOf("forcestart"), null) {
         gamesInLobby.forEach { game ->
             if (game.creator == event.author.id && game.channel.guild == event.guild) {
                 if (game.players.size == 1 && game.type != GameType.TRIVIA) {
-                    register.sender.cmdSend("You can't force start a game with only **1** person!", this, event)
+                    register.sender.cmdSend(translate("start.only_one", event, register), this, event)
                 } else game.startEvent()
                 return
             }
         }
-        register.sender.cmdSend(Emojis.NO_ENTRY_SIGN.cmd + "You're not the creator of a game in lobby!", this, event)
+        register.sender.cmdSend(Emojis.NO_ENTRY_SIGN.cmd + translate("games.not_creator_in_lobby", event, register), this, event)
     }
 }

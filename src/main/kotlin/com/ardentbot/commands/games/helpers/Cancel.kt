@@ -18,17 +18,18 @@ class Cancel : Command("cancel", null, null) {
         gamesInLobby.forEach { game ->
             if (game.creator == event.author.id) {
                 found = true
-                register.sender.cmdSend("${Emojis.HEAVY_EXCLAMATION_MARK_SYMBOL}" +
-                        "Are you sure you want to cancel your __[]__ game? Type **".apply(game.type.readable) + "yes" + "** if so or **" + "no" + "** if you're not sure." + "\n" +
-                        "Current players in lobby: *[]*".apply(game.players.toUsersDisplay(register)), this, event)
+                register.sender.cmdSend(Emojis.HEAVY_EXCLAMATION_MARK_SYMBOL.cmd +
+                        translate("cancel.confirmation", event, register).apply(game.type.readable) + "\n" +
+                        translate("games.current_lobby", event, register).apply(game.players.toUsersDisplay(register)), this, event)
                 Sender.waitForMessage({ it.author.id == event.author.id && it.channel.id == event.channel.id && it.guild.id == event.guild.id },
                         {
-                            if (it.message.contentRaw.startsWith("y", true) || it.message.contentRaw.startsWith("yes", true)) {
+                            if (it.message.contentRaw.startsWith("y", true) || it.message.contentRaw.isTranslatedPhrase("yes", event.guild, register)) {
                                 game.cancel(event.member)
-                            } else register.sender.cmdSend("${Emojis.BALLOT_BOX_WITH_CHECK} " + "I'll keep the game in lobby", this, event)
+                            } else register.sender.cmdSend("${Emojis.BALLOT_BOX_WITH_CHECK} " + translate("cancel.keep_in_lobby", event, register), this, event)
                         })
             }
         }
-        if (!found) register.sender.cmdSend(Emojis.NO_ENTRY_SIGN.cmd + "You're not the creator of a game in lobby!", this, event)
+        if (!found) register.sender.cmdSend(Emojis.NO_ENTRY_SIGN.cmd + translate("games.not_creator_in_lobby", event, register),
+                this, event)
     }
 }

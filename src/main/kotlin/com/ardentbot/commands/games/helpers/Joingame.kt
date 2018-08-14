@@ -18,27 +18,27 @@ class Joingame : Command("join", arrayOf("joingame"), null) {
         if (arguments.size == 1) {
             val id = arguments[0].replace("#", "").toIntOrNull()
             if (id == null) {
-                register.sender.cmdSend("You need to include a Game ID! Example: **/join #123456**", this, event)
+                register.sender.cmdSend(translate("join.id", event, register), this, event)
                 return
             }
             gamesInLobby.forEach { game ->
                 if (game.channel.guild == event.guild) {
                     if (event.member.isInGameOrLobby()) {
-                        register.sender.cmdSend("You can't join another game! You must leave the game you're currently in first",
-                                this, event)
+                        register.sender.cmdSend(translate("accept.ingame", event, register), this, event)
                     } else {
                         if (game.isPublic || checkInvite(event, game, register)) {
                             game.players.add(event.author.id)
-                            register.sender.cmdSend("**[]** has joined **[]**'s game of []".apply(event.author.display(),
-                                    game.creator.toUser(register)?.display() ?: "unknown", game.type.readable) + "\n" +
-                                    "Current players in lobby: *[]*".apply(game.players.toUsersDisplay(register)), this, event)
+                            register.sender.cmdSend(translate("games.joined", event, register).apply(event.author.display(),
+                                    game.creator.toUser(register)?.display()
+                                            ?: translate("unknown", event, register), game.type.readable) + "\n" +
+                                    translate("games.current_lobby", event, register).apply(game.players.toUsersDisplay(register)), this, event)
                         }
                     }
                     return
                 }
             }
-            register.sender.cmdSend("There's not a game in lobby with the ID of **#[]**".apply(id), this, event)
-        } else register.sender.cmdSend("You need to include a Game ID! Example: **/join #123456**", this, event)
+            register.sender.cmdSend(translate("join.no_game", event, register).apply(id), this, event)
+        } else register.sender.cmdSend(translate("join.id", event, register), this, event)
 
     }
 }

@@ -15,9 +15,10 @@ class Decline : Command("decline", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         if (invites.containsKey(event.author.id)) {
             val game = invites[event.author.id]!!
-            register.sender.cmdSend("[] declined an invite to **[]**'s game of **[]**".apply(event.author.asMention,
-                    game.creator.toUser(register)?.display() ?: "unknown", game.type.readable), this, event)
+            register.sender.cmdSend(translate("decline.response", event, register).apply(event.author.asMention,
+                    game.creator.toUser(register)?.display()
+                            ?: translate("unknown", event, register), game.type.readable), this, event)
             invites.remove(event.author.id)
-        } else register.sender.cmdSend("You don't have a pending invite to decline!", this, event)
+        } else register.sender.cmdSend(translate("decline.no_pending", event, register), this, event)
     }
 }

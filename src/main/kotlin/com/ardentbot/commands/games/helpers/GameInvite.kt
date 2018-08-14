@@ -10,12 +10,11 @@ import com.ardentbot.core.Sender
 import com.ardentbot.core.commands.Command
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.core.toUser
-import com.ardentbot.kotlin.Emojis
-import com.ardentbot.kotlin.apply
-import com.ardentbot.kotlin.display
-import com.ardentbot.kotlin.toUsersDisplay
+import com.ardentbot.core.translation.Language
+import com.ardentbot.kotlin.*
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 import java.util.concurrent.TimeUnit
+import kotlin.collections.set
 
 @ModuleMapping("games")
 class GameInvite : Command("gameinvite", arrayOf("ginvite", "gi"), null) {
@@ -23,24 +22,24 @@ class GameInvite : Command("gameinvite", arrayOf("ginvite", "gi"), null) {
         gamesInLobby.forEach { game ->
             if (game.creator == event.author.id && game.channel.guild == event.guild) {
                 if (game.isPublic) {
-                    register.sender.cmdSend("You don't need to invite people to a public game! Everyone can join", this, event)
+                    register.sender.cmdSend(translate("gameinvite.public", event, register), this, event)
                     return
                 }
-                val mentionedUsers = event.message.mentionedUsers
-                if (mentionedUsers.size == 0 || mentionedUsers[0].isBot) register.sender.cmdSend("You need to mention at least one member to invite them", this, event)
-                else {
-                    mentionedUsers.forEach { toInvite ->
+                getUser(arguments.concat(), event, this, register) { user ->
+                    if (user == null) register.sender.cmdSend(translate("general.specify_or_mention_user", event, register), this, event)
+                    else {
+                        val toInvite = user
                         when {
-                            invites.containsKey(toInvite.id) -> register.sender.cmdSend("You can't invite a member who already has a pending invite!", this, event)
-                            toInvite.isInGameOrLobby() -> register.sender.cmdSend("This person is already in a lobby or ingame!", this, event)
+                            invites.containsKey(toInvite.id) -> register.sender.cmdSend(translate("gameinvite.has_invite", event, register), this, event)
+                            toInvite.isInGameOrLobby() -> register.sender.cmdSend(translate("gameinvite.already_in", event, register), this, event)
                             else -> {
                                 invites[toInvite.id] = game
-                                register.sender.cmdSend("[], you're being invited by [] to join a game of **[]**! Type */accept* to accept this invite and join the game or decline by typing */decline*"
+                                register.sender.cmdSend(translate("gameinvite.response", event, register)
                                         .apply(toInvite.name, event.member.asMention, game.type.readable), this, event)
                                 val delay = 45
                                 Sender.scheduledExecutor.schedule({
                                     if (invites.containsKey(toInvite.id)) {
-                                        register.sender.cmdSend("[], your invite to **[]**'s game has expired after [] seconds."
+                                        register.sender.cmdSend(translate("gameinvite.expired", event, register)
                                                 .apply(toInvite.asMention, game.creator.toUser(register)?.display()
                                                         ?: "unknown", delay), this, event)
                                         invites.remove(toInvite.id)
@@ -53,7 +52,7 @@ class GameInvite : Command("gameinvite", arrayOf("ginvite", "gi"), null) {
                 return
             }
         }
-        register.sender.cmdSend(Emojis.NO_ENTRY_SIGN.cmd + "You're not the creator of a game in lobby!", this, event)
+        register.sender.cmdSend(Emojis.NO_ENTRY_SIGN.cmd + translate("games.not_creator_in_lobby", event, register), this, event)
     }
 }
 
@@ -61,9 +60,11 @@ fun checkInvite(event: GuildMessageReceivedEvent, game: Game, register: ArdentRe
     return if (!game.started && gamesInLobby.contains(game) && invites.containsKey(event.author.id) && invites[event.author.id]!!.gameId == game.gameId) {
         invites.remove(event.author.id)
         game.players.add(event.author.id)
-        register.sender.send("**[]** has joined **[]**'s game of []".apply(event.author.display(),
+        val language = register.database.getGuildData(event.guild).language ?: Language.ENGLISH
+        register.sender.send(register.translationManager.translate("games.joined", language).apply(event.author.display(),
                 game.creator.toUser(register)?.display() ?: "unknown", game.type.readable) + "\n" +
-                "Current players in lobby: *[]*".apply(game.players.toUsersDisplay(register)),
+                register.translationManager.translate("games.current_lobby", language)
+                        .apply(game.players.toUsersDisplay(register)),
                 null, event.channel, register.selfUser, null)
 
         true
