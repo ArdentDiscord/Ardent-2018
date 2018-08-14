@@ -35,14 +35,14 @@ class Online : Command("online", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         when (arguments.getOrNull(0)) {
             "types" -> {
-                val embed = getEmbed("Discord Status Types | Ardent", event.author, event.guild)
-                        .appendDescription("**Name** | **Flag argument**")
+                val embed = getEmbed(translate("online.embed_title", event, register), event.author, event.guild)
+                        .appendDescription(translate("online.types", event, register))
                         .appendDescription(
-                                listOf("Online: *online*",
-                                        "Offline: *offline*",
-                                        "Do Not Disturb: *dnd*, *donotdisturb*, *nodisturb*",
-                                        "Idle: *idle*",
-                                        "Unknown: *unknown*").embedify()
+                                listOf(translate("online.type_online", event, register).apply("online"),
+                                        translate("online.type_offline", event, register).apply("offline"),
+                                        translate("online.type_dnd", event, register).apply("*dnd*, *donotdisturb*, *nodisturb*"),
+                                        translate("online.type_idle", event, register).apply("idle"),
+                                        translate("online.type_unknown", event, register).apply("unknown")).embedify()
                         )
                 register.sender.cmdSend(embed, this, event)
             }
@@ -50,23 +50,23 @@ class Online : Command("online", null, null) {
                 val user = event.message.mentionedUsers.getOrNull(0) ?: event.author
                 val statusData = getStatusData(user.id, register)
                 val total = (statusData.dndTime + statusData.idleTime + statusData.offlineTime + statusData.onlineTime).toFloat()
-                val embed = getEmbed("Status Information | []".apply(user.display()), event.author, event.guild)
-                        .appendDescription("**Current Status**: *[]*, for *[]*".apply(statusData.current.key, statusData.currentTime.timeDisplay()))
+                val embed = getEmbed(translate("online.status_info", event, register).apply(user.display()), event.author, event.guild)
+                        .appendDescription(translate("online.current_status", event, register).apply(statusData.current.key, statusData.currentTime.timeDisplay()))
                         .appendDescription("\n")
                 if (statusData.statusSize > 1) {
-                    embed.appendDescription("**Previous Status**: *[]*, for *[]*".apply(statusData.last.key, statusData.lastTime.timeDisplay()))
+                    embed.appendDescription(translate("online.previous_status", event, register).apply(statusData.last.key, statusData.lastTime.timeDisplay()))
                             .appendDescription("\n")
                             .appendDescription(
-                                    listOf(if (statusData.onlineTime > 0) "__Online__: " + statusData.onlineTime.timeDisplay() + " (" + (statusData.onlineTime * 100 / total).withDecimalPlaceCount(1) + "%)" else "",
-                                            if (statusData.dndTime > 0) "__Do Not Disturb__: " + statusData.dndTime.timeDisplay() + " (" + (statusData.dndTime * 100 / total).withDecimalPlaceCount(1) + "%)" else "",
-                                            if (statusData.idleTime > 0) "__Idle__: " + statusData.idleTime.timeDisplay() + " (" + (statusData.idleTime * 100 / total).withDecimalPlaceCount(1) + "%)" else "",
-                                            if (statusData.offlineTime > 0) "__Offline__: " + statusData.offlineTime.timeDisplay() + " (" + (statusData.offlineTime * 100 / total).withDecimalPlaceCount(1) + "%)" else ""
+                                    listOf(if (statusData.onlineTime > 0) "__" + translate("online.online_str", event, register) + "__: " + statusData.onlineTime.timeDisplay() + " (" + (statusData.onlineTime * 100 / total).withDecimalPlaceCount(1) + "%)" else "",
+                                            if (statusData.dndTime > 0) "__" + translate("online.dnd_str", event, register) + "__: " + statusData.dndTime.timeDisplay() + " (" + (statusData.dndTime * 100 / total).withDecimalPlaceCount(1) + "%)" else "",
+                                            if (statusData.idleTime > 0) "__" + translate("online.idle_str", event, register) + "__: " + statusData.idleTime.timeDisplay() + " (" + (statusData.idleTime * 100 / total).withDecimalPlaceCount(1) + "%)" else "",
+                                            if (statusData.offlineTime > 0) "__" + translate("online.offline_str", event, register) + "__: " + statusData.offlineTime.timeDisplay() + " (" + (statusData.offlineTime * 100 / total).withDecimalPlaceCount(1) + "%)" else ""
                                     ).embedify()
                             )
                             .appendDescription("\n\n")
-                            .appendDescription(Emojis.INFORMATION_SOURCE.cmd + "I'm aware of []'s last **[]** status updates".apply(user.asMention, statusData.statusSize))
+                            .appendDescription(Emojis.INFORMATION_SOURCE.cmd + translate("online.aware_info", event, register).apply(user.asMention, statusData.statusSize))
                             .appendDescription("\n")
-                            .appendDescription("Total tracked time: **[]**".apply(total.toLong().timeDisplay()))
+                            .appendDescription(translate("online.total_tracked_time", event, register).apply(total.toLong().timeDisplay()))
                 }
                 register.sender.cmdSend(embed, this, event)
             }
@@ -77,14 +77,14 @@ class Online : Command("online", null, null) {
                                 .sort().map { (status, members) ->
                                     "**" + status.key + "** (${status.toEmoji()}): " +
                                             (if (members.size > 20 || status == INVISIBLE)
-                                                members.size.toString() + " members"
+                                                members.size.toString() + " " + translate("general.members", event, register)
                                             else "[" + members.joinToString { it.asMention } + "]" + "(${members.size})") + "\n"
                                 }
 
-                        val embed = getEmbed("Admins' Online Status | []".apply(event.guild.name), event.author, event.guild)
+                        val embed = getEmbed(translate("online.admins_status_title", event, register).apply(event.guild.name), event.author, event.guild)
                                 .appendDescription(statuses.embedify())
                                 .appendDescription("\n")
-                                .appendDescription("See a specific member's online statistics with */online stats @User*")
+                                .appendDescription(translate("online.see_member_stats", event, register))
                         register.sender.cmdSend(embed, this, event)
                     }
                     else -> {
@@ -101,9 +101,9 @@ class Online : Command("online", null, null) {
 
                         val grouped = event.guild.members.groupBy { it.onlineStatus }.filter { statusesToFilter == null || statusesToFilter.contains(it.key) }
                                 .map {
-                                    if (rolesToFilter == null) it.toPair() else it.key to it.value.filter {
+                                    if (rolesToFilter == null) it.toPair() else it.key to it.value.filter { member ->
                                         var found = false
-                                        it.roles.forEach { if (rolesToFilter.contains(it)) found = true }
+                                        member.roles.forEach { role -> if (rolesToFilter.contains(role)) found = true }
                                         found
                                     }
                                 }.toMap()
@@ -113,16 +113,16 @@ class Online : Command("online", null, null) {
                                 grouped.sort().map { (status, members) ->
                                     "**" + status.key + "** (${status.toEmoji()}): " +
                                             (if (members.size > 20 || status == INVISIBLE)
-                                                members.size.toString() + " members"
+                                                members.size.toString() + " " + translate("general.members", event, register)
                                             else "[" + members.joinToString { it.asMention } + "]" + "(${members.size})") +
-                                            (if (rolesToFilter != null && admins[status]?.isNotEmpty() == true) "\n" + " - ${admins[status]!!.size} " + " admins have this status"
+                                            (if (rolesToFilter != null && admins[status]?.isNotEmpty() == true) "\n" + " - ${admins[status]!!.size} " + " " + translate("online.admins_count", event, register)
                                             else "") + "\n"
                                 }
 
-                        val embed = getEmbed("Online Status | []".apply(event.guild.name), event.author, event.guild)
+                        val embed = getEmbed(translate("online.status_embed", event, register).apply(event.guild.name), event.author, event.guild)
                                 .appendDescription(statuses.embedify())
                                 .appendDescription("\n")
-                                .appendDescription("See a specific member's online statistics with */online stats @User*")
+                                .appendDescription(translate("online.see_member_stats", event, register))
                         register.sender.cmdSend(embed, this, event)
                     }
                 }
