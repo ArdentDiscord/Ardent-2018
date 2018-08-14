@@ -10,7 +10,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 @ModuleMapping("ardent")
 class Patreon : Command("patreon", arrayOf("donate"), null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        register.sender.cmdSend("Want to support our work and get recognized for it? Pledge at []!"
+        register.sender.cmdSend(translate("patreon.response", event, register)
                 .apply("https://ardentbot.com/patreon"), this, event)
     }
 }

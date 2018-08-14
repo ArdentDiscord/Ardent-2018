@@ -16,19 +16,19 @@ import java.lang.management.ManagementFactory
 class Status : Command("status", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         val internals = Internals(register)
-        val embed = getEmbed("Status | Ardent", event.author, event.guild)
-                .addField("Loaded Commands", internals.commandCount.toString(), true)
-                .addField("Messages Received", internals.messagesReceived.format(), true)
-                .addField("Commands Received", internals.commandsReceived.format(), true)
-                .addField("Servers", internals.guilds.format(), true)
-                .addField("Users", internals.users.format(), true)
-                .addField("Loaded Music Players", internals.loadedMusicPlayers.format(), true)
-                .addField("CPU Usage", "${internals.cpuUsage}%", true)
-                .addField("RAM Usage", "${internals.usedRam} / ${internals.totalRam} mb", true)
-                .addField("Uptime", internals.uptimeFancy, true)
-                .addField("Servers w/Ardent as only bot", internals.onlyBot.format() +
+        val embed = getEmbed(translate("status.embed_title", event, register), event.author, event.guild)
+                .addField(translate("status.loaded_commands", event, register), internals.commandCount.toString(), true)
+                .addField(translate("status.messages_received", event, register), internals.messagesReceived.format(), true)
+                .addField(translate("status.commands_received", event, register), internals.commandsReceived.format(), true)
+                .addField(translate("servers", event, register), internals.guilds.format(), true)
+                .addField(translate("users", event, register), internals.users.format(), true)
+                .addField(translate("status.loaded_music_players", event, register), internals.loadedMusicPlayers.format(), true)
+                .addField(translate("status.cpu", event, register), "${internals.cpuUsage}%", true)
+                .addField(translate("status.ram", event, register), "${internals.usedRam} / ${internals.totalRam} mb", true)
+                .addField(translate("status.uptime", event, register), internals.uptimeFancy, true)
+                .addField(translate("status.servers_only_bot", event, register), internals.onlyBot.format() +
                         " (${(internals.onlyBot * 100 / register.getAllGuilds().size.toFloat()).format()}%)", true)
-                .addField("Website", "https://ardentbot.com", true)
+                .addField(translate("status.website", event, register), "https://ardentbot.com", true)
         register.sender.cmdSend(embed, this, event)
     }
 }
@@ -47,5 +47,5 @@ class Internals(register: ArdentRegister) {
     val uptimeFancy: String
         get() = uptime.timeDisplay()
     val onlyBot = register.getAllGuilds().filter { guild -> guild.members.count { it.user.isBot } == 1 }.count()
-    val loadedMusicPlayers: Int = managers.filter { it.value.manager.current != null || it.value.player.playingTrack != null }.count()
+    val loadedMusicPlayers: Int = managers.filter { it.value.player.playingTrack != null }.count()
 }

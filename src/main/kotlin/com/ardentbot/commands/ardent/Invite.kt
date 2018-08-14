@@ -10,7 +10,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 @ModuleMapping("ardent")
 class Invite : Command("invite", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        register.sender.cmdSend("You can invite me by going to [] - thanks for using Ardent!"
+        register.sender.cmdSend(translate("invite.response", event, register)
                 .apply("<https://ardentbot.com/invite>"), this, event)
     }
 }

@@ -10,7 +10,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 @ModuleMapping("ardent")
 class Support : Command("support", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        register.sender.cmdSend("Need help? Something not working? Join our support server @ []"
+        register.sender.cmdSend(translate("support.response", event, register)
                 .apply("https://discord.gg/VebBB5z"), this, event)
     }
 }
