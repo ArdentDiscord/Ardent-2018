@@ -29,48 +29,51 @@ class TranslationManager(val register: ArdentRegister, val languages: MutableLis
     }.invoke()
 
     init {
-        Sender.scheduledExecutor.scheduleAtFixedRate({
-            val translationPath = "/translations/all"
+        getTranslations()
+        Sender.scheduledExecutor.scheduleAtFixedRate({ getTranslations() }, 5, 5, TimeUnit.MINUTES)
+    }
 
-            val file = File("/translations/all.zip")
-            if (file.exists() && register.config.values["project_crowdin_key"] == null) {
-                extractFolder("/translations/all.zip")
-            } else {
-                file.createNewFile()
-                val output = FileOutputStream(file)
-                output.write(Jsoup.connect("https://api.crowdin.com/api/project/ardent/download/all.zip?key=${register.config["project_crowdin_key"]}")
-                        .ignoreContentType(true).execute().bodyAsBytes())
-                output.close()
-                extractFolder("/translations/all.zip")
-                file.delete()
-            }
+    fun getTranslations() {
+        val translationPath = "/translations/all"
 
-            val translationRoot = File(translationPath)
-            translationRoot.listFiles().forEach { translationDirectory ->
-                val language = Language.values().first { it.id == translationDirectory.name }
-                val translations = mutableListOf<ArdentTranslation>()
+        val file = File("/translations/all.zip")
+        if (file.exists() && register.config.values["project_crowdin_key"] == null) {
+            extractFolder("/translations/all.zip")
+        } else {
+            file.createNewFile()
+            val output = FileOutputStream(file)
+            output.write(Jsoup.connect("https://api.crowdin.com/api/project/ardent/download/all.zip?key=${register.config["project_crowdin_key"]}")
+                    .ignoreContentType(true).execute().bodyAsBytes())
+            output.close()
+            extractFolder("/translations/all.zip")
+            file.delete()
+        }
 
-                val translationFile = translationDirectory.listFiles()[0]
-                val parser = CSVParser.parse(translationFile, Charset.defaultCharset(), CSVFormat.DEFAULT)
+        val translationRoot = File(translationPath)
+        translationRoot.listFiles().forEach { translationDirectory ->
+            val language = Language.values().first { it.id == translationDirectory.name }
+            val translations = mutableListOf<ArdentTranslation>()
 
-                val englishTranslations = if (languages.find { it.language == Language.ENGLISH } == null) mutableListOf<ArdentTranslation>()
-                else null
+            val translationFile = translationDirectory.listFiles()[0]
+            val parser = CSVParser.parse(translationFile, Charset.defaultCharset(), CSVFormat.DEFAULT)
 
-                parser.forEach { record ->
-                    val id = record[0]
-                    val context = record[1]
-                    val english = record[2]
-                    val translated = record[3]
-                    if (english != translated) {
-                        translations.add(ArdentTranslation(id, context, english, translated))
-                    }
-                    englishTranslations?.add(ArdentTranslation(id, context, english, english))
+            val englishTranslations = if (languages.find { it.language == Language.ENGLISH } == null) mutableListOf<ArdentTranslation>()
+            else null
+
+            parser.forEach { record ->
+                val id = record[0]
+                val context = record[1]
+                val english = record[2]
+                val translated = record[3]
+                if (english != translated) {
+                    translations.add(ArdentTranslation(id, context, english, translated))
                 }
-                languages.add(ArdentLanguage(language, translations))
-                if (englishTranslations != null) languages.add(ArdentLanguage(Language.ENGLISH, englishTranslations))
+                englishTranslations?.add(ArdentTranslation(id, context, english, english))
             }
-            translationRoot.deleteRecursively()
-        }, 0, 5, TimeUnit.MINUTES)
+            languages.add(ArdentLanguage(language, translations))
+            if (englishTranslations != null) languages.add(ArdentLanguage(Language.ENGLISH, englishTranslations))
+        }
+        translationRoot.deleteRecursively()
     }
 }
 

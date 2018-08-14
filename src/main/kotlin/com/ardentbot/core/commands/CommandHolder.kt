@@ -1,6 +1,7 @@
 package com.ardentbot.core.commands
 
 import com.ardentbot.core.ArdentRegister
+import com.ardentbot.core.translation.Language
 import com.ardentbot.core.utils.UnknownModuleFoundException
 import org.reflections.Reflections
 
@@ -20,8 +21,9 @@ class CommandHolder(val register: ArdentRegister) {
             if (!modules.map { it.key.id }.contains(moduleName)) throw UnknownModuleFoundException("$moduleName was not " +
                     "found as a module. Expected one of: ${modules.map { it.key.id }}")
             val command = clazz.constructors[0].newInstance() as Command
+            command.description = command.translate("${command.name}.description", Language.ENGLISH, register)
             clazz.declaredFields.filter { it.isAccessible = true; it.name.startsWith("example") }
-                    .map { it.get(command) as String}.let { command.ex.addAll(it) }
+                    .map { it.get(command) as String }.let { command.ex.addAll(it) }
             clazz.declaredFields.filter {
                 it.isAccessible = true; it.get(command) is Precondition
             }.forEach { precondition -> command.preconditions.add(precondition.get(command) as Precondition) }

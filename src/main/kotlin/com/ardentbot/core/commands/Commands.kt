@@ -32,6 +32,7 @@ abstract class Invokable(val name: String, val aliases: Array<String>?, val cool
 }
 
 abstract class Command(name: String, aliases: Array<String>?, cooldown: Int?) : Invokable(name, aliases, cooldown) {
+    lateinit var description: String
     val users = hashMapOf<String, Long>()
 
     val preconditions = mutableListOf<Precondition>()

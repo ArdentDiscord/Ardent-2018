@@ -1,14 +1,11 @@
 version: '3'
 services:
-  rethinkdb:
-    image: rethinkdb
-    volumes:
-      - ../../rethinkdb:/data
-    ports:
-      - "8080:8080"
   ardent:
     image: ardent
-    depends_on:
-      - rethinkdb
     ports:
       - "443:443"
+    networks:
+      - ardent
+networks:
+  ardent:
+    external: true

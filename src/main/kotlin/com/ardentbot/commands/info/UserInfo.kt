@@ -36,9 +36,10 @@ class UserInfo : Command("whois",
     private fun doCommand(mentioned: User?, event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         if (mentioned == null) {
             register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd +
-                    "You need to mention a user!", this, event)
+                    "You need to specify the name of a user or mention them!", this, event)
             return
         }
+
         val member = event.guild.getMember(mentioned)
         val embed = getEmbed("[] | User Information".apply(member.effectiveName), event.author, event.guild)
                 .setThumbnail(mentioned.avatarUrl)
@@ -48,7 +49,7 @@ class UserInfo : Command("whois",
                 .addField("Server Join Date", member.joinDate.toLocalDate().toString(), true)
                 .addField("Days in Guild",
                         ((Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() -
-                                event.member.joinDate.toInstant().atOffset(ZoneOffset.UTC).toEpochSecond()) / (60 * 60 * 24))
+                                member.joinDate.toInstant().atOffset(ZoneOffset.UTC).toEpochSecond()) / (60 * 60 * 24))
                                 .toString(), true)
                 .addField("Roles", member.roles.map { it.name }.joinToString(), true)
                 .addField("Account Creation Date", mentioned.creationTime.toLocalDate().toString(), true)
