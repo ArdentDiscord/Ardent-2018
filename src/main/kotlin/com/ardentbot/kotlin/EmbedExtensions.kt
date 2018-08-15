@@ -2,6 +2,7 @@ package com.ardentbot.kotlin
 
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Sender
+import com.ardentbot.core.translation.Language
 import net.dv8tion.jda.core.EmbedBuilder
 import net.dv8tion.jda.core.entities.Guild
 import net.dv8tion.jda.core.entities.Message
@@ -25,7 +26,7 @@ fun getEmbed(title: String, user: User, guild: Guild?, color: Color? = null): Em
 class PaginationEmbed(val user: String?, val dataSetter: (Int) -> EmbedBuilder, val hasPage: (Int) -> Boolean, var page: Int = 1,
                       val expirationTime: Int = 1, val expirationUnit: TimeUnit = TimeUnit.MINUTES, val register: ArdentRegister) {
     fun send(channel: TextChannel) {
-        if (!hasPage(page)) throw Exception("Page $page was provided, but hasPage($page) returned false!")
+        if (!hasPage(page)) throw IllegalArgumentException("Page $page was provided, but hasPage($page) returned false!")
         register.sender.send(dataSetter(page), null, channel, register.selfUser, null, callback = { message ->
             message.addReaction(Emojis.LEFTWARDS_BLACK_ARROW.symbol).queue()
             message.addReaction(Emojis.BLACK_RIGHTWARDS_ARROW.symbol).queue()
@@ -47,8 +48,10 @@ class PaginationEmbed(val user: String?, val dataSetter: (Int) -> EmbedBuilder, 
                                 page = if (it.reactionEmote.name == left) page - 1 else page + 1
                                 message.editMessage(dataSetter(page).build()).queue()
                             } else register.sender.send(Emojis.HEAVY_MULTIPLICATION_X.cmd +
-                                    "That's a non-existant page!", null, message.channel, register.selfUser, null, callback = {
-                                it.delete().queueAfter(2, TimeUnit.SECONDS)
+                                    register.translationManager.translate("general.non_existant_page",
+                                            register.database.getGuildData(message.guild).language ?: Language.ENGLISH),
+                                    null, message.channel, register.selfUser, null, callback = { callback ->
+                                callback.delete().queueAfter(2, TimeUnit.SECONDS)
                             })
                         }
                         Emojis.HEAVY_MULTIPLICATION_X.symbol -> message.delete().queue()
@@ -63,6 +66,6 @@ val MAX_PAGE = { max: Int -> { page: Int -> page in 1..max } }
 fun List<String>.embedify(): String {
     if (isEmpty()) throw IllegalArgumentException("The provided list was empty")
     val builder = StringBuilder()
-    forEachIndexed { i, s -> if (s.isNotEmpty()) builder.append("\n").append(i.diamond()).append(" ").append(s)}
+    forEachIndexed { i, s -> if (s.isNotEmpty()) builder.append("\n").append(i.diamond()).append(" ").append(s) }
     return builder.toString()
 }
