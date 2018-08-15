@@ -1,5 +1,6 @@
 package com.ardentbot.core.commands
 
+import com.ardentbot.core.translation.Language
 import com.ardentbot.kotlin.apply
 import net.dv8tion.jda.core.Permission
 
@@ -11,7 +12,8 @@ val ELEVATED_PERMISSIONS = { permissions: List<Permission> ->
                             && it.event.member.roles.contains(it.event.guild.getRoleById(data.adminRoleId))
                 }
     }, onFailure = {
-        listOf("You either need the `[]` permission(s) or this server's designated admin role to be able to use this command"
-                .apply(permissions.joinToString { it.getName() }))
+        listOf(it.register.translationManager.translate("precondition.no_permission",
+                it.register.database.getGuildData(it.event.guild).language ?: Language.ENGLISH)
+                .apply(permissions.joinToString { permission -> permission.getName() }))
     })
 }

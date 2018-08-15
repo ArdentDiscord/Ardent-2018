@@ -1,5 +1,6 @@
 package com.ardentbot.core
 
+import com.ardentbot.core.translation.Language
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.display
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent
@@ -10,7 +11,7 @@ class EventMessageSender {
     companion object {
         fun joinMessage(event: GuildMemberJoinEvent, register: ArdentRegister) {
             val data = register.database.getGuildData(event.guild)
-            val channel = data.joinMessage.channelId?.let { event.guild.getTextChannelById(it)}
+            val channel = data.joinMessage.channelId?.let { event.guild.getTextChannelById(it) }
             if (channel != null && data.joinMessage.message != null) {
                 channel.sendMessage(data.joinMessage.message!!
                         .replace("[user]", event.member.asMention)
@@ -22,17 +23,17 @@ class EventMessageSender {
             try {
                 event.guild.controller.addSingleRoleToMember(event.member, defaultRole).reason("Ardent default role")
                         .queue()
-            }
-            catch (e: InsufficientPermissionException) {
+            } catch (e: InsufficientPermissionException) {
                 event.guild.owner.user.openPrivateChannel().queue {
-                    it.sendMessage("You set up a default role in **[]** but I don't have permission to add it!"
-                            .apply(event.guild.name)).queue() }
+                    it.sendMessage(register.translationManager.translate("sender.default_role_fail", data.language
+                            ?: Language.ENGLISH).apply(event.guild.name)).queue()
+                }
             }
         }
 
         fun leaveMessage(event: GuildMemberLeaveEvent, register: ArdentRegister) {
             val data = register.database.getGuildData(event.guild)
-            val channel = data.leaveMessage.channelId?.let { event.guild.getTextChannelById(it)}
+            val channel = data.leaveMessage.channelId?.let { event.guild.getTextChannelById(it) }
             if (channel != null && data.leaveMessage.message != null) {
                 channel.sendMessage(data.leaveMessage.message!!
                         .replace("[user]", "**${event.user.display()}**")

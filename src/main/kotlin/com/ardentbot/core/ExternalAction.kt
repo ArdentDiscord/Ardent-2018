@@ -1,6 +1,7 @@
 package com.ardentbot.core
 
 import com.ardentbot.commands.games.send
+import com.ardentbot.core.translation.Language
 import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.apply
 import net.dv8tion.jda.core.entities.Member
@@ -31,8 +32,10 @@ class ExternalAction {
                 if (waitingCallbacks.contains(obj)) {
                     waitingCallbacks.remove(obj)
                     currentlyUsedExternalActions.removeIf { it.first == path }
-                    channel.send(Emojis.HEAVY_MULTIPLICATION_X.cmd + "[], your external action timed out after **5** minutes"
-                            .apply(member.asMention), register)
+                    channel.send(Emojis.HEAVY_MULTIPLICATION_X.cmd +
+                            register.translationManager.translate("external.timeout",
+                                    register.database.getGuildData(member.guild).language ?: Language.ENGLISH)
+                                    .apply(member.asMention), register)
                 }
                 currentlyUsedExternalActions.removeIf { it.first == path }
             }, 5, TimeUnit.MINUTES)

@@ -1,6 +1,7 @@
 package com.ardentbot.core
 
 import com.ardentbot.core.commands.Command
+import com.ardentbot.core.translation.Language
 import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.getEmbed
@@ -18,6 +19,9 @@ class Sender(val register: ArdentRegister) {
     fun send(message: Any, command: Command?, channel: MessageChannel, user: User,
              event: GuildMessageReceivedEvent?, guild: Guild? = event?.guild,
              parameters: List<String>? = null, callback: ((Message) -> Unit)? = null) {
+        val language = (guild ?: (channel as? TextChannel)?.guild)
+                ?.let { g -> register.database.getGuildData(g).language }
+                ?: Language.ENGLISH
         try {
             val action = if (message is EmbedBuilder) channel.sendMessage(message.build())
             else channel.sendMessage(message.toString().replace("@here", "@ here")
@@ -27,23 +31,23 @@ class Sender(val register: ArdentRegister) {
                 callback?.invoke(it)
             }, {
                 user.openPrivateChannel()
-                        .queue {
-                            it.sendMessage(
-                                    "I was unable to send [] response to [] inside **[]**"
-                                            .apply(if (message is EmbedBuilder) "an embed" else "a message",
+                        .queue { channel ->
+                            channel.sendMessage(
+                                    register.translationManager.translate("error.message_send", language)
+                                            .apply(if (message is EmbedBuilder) register.translationManager.translate("error.an_embed", language)
+                                            else register.translationManager.translate("error.a_message", language),
                                                     event?.message?.contentRaw ?: command?.name ?: channel.name
-                                                    ?: "that server",
-                                                    guild?.let { (channel as TextChannel).name }
-                                                            ?: "this private channel")
+                                                    ?: register.translationManager.translate("error.guild", language),
+                                                    guild?.let { _ -> (channel as TextChannel).name }
+                                                            ?: register.translationManager.translate("error.channel", language))
                             ).queue()
                         }
             })
         } catch (e: Exception) {
             if (e is InsufficientPermissionException) {
-                user.openPrivateChannel().complete().sendMessage("I couldn't send an [] in []!"
-                        .apply(if (message is EmbedBuilder) "embed" else "message", channel.name)).queue()
-            }
-            else e.printStackTrace()
+                user.openPrivateChannel().complete().sendMessage(register.translationManager.translate("error.cant_send_generic", language)
+                        .apply("**${channel.name}**")).queue()
+            } else e.printStackTrace()
         }
     }
 
@@ -115,10 +119,11 @@ class WaiterSettings<T : Event>(val condition: (T) -> Boolean, val callback: (T)
 
 fun TextChannel.selectFromList(member: Member, title: String, options: List<Any>, consumer: (Int, Message) -> Unit, footer: String? = null,
                                failure: (() -> Unit)? = null, register: ArdentRegister) {
+    val language = register.database.getGuildData(member.guild).language ?: Language.ENGLISH
     val embed = getEmbed(title, member.user, member.guild)
     options.forEachIndexed { i, obj -> embed.appendDescription("${Emojis.SMALL_BLUE_DIAMOND} **${i + 1}**: $obj\n") }
     footer?.let { embed.appendDescription("\n$it") }
-    embed.appendDescription("\n" + "__Please select **OR** type the number corresponding with the choice that you'd like to select or select **X** to cancel__" + "\n")
+    embed.appendDescription("\n" + "__${register.translationManager.translate("sender.choose", language)}__" + "\n")
 
     register.sender.send(embed, null, this, member.user, null, member.guild, callback = { message ->
         for (x in 1..options.size) {
@@ -143,7 +148,8 @@ fun TextChannel.selectFromList(member: Member, title: String, options: List<Any>
                 invoked = true
                 val responseInt = event.message.contentRaw.toIntOrNull()?.minus(1)
                 if (responseInt == null || responseInt !in 0..(options.size - 1)) {
-                    register.sender.send("You specified an invalid response!", null, this, member.user, null, guild)
+                    register.sender.send(register.translationManager.translate("sender.invalid_response", language),
+                            null, this, member.user, null, guild)
                 } else {
                     if (options.contains(event.message.contentRaw)) {
                         consumer.invoke(options.indexOf(event.message.contentRaw), message)
@@ -175,18 +181,19 @@ fun TextChannel.selectFromList(member: Member, title: String, options: List<Any>
                 } - 1
                 when {
                     chosen in 0..(options.size - 1) -> consumer.invoke(chosen, message)
-                    chosen != 68 -> register.sender.send("You specified an invalid reaction or response, cancelling selection",
+                    chosen != 68 -> register.sender.send(register.translationManager.translate("sender.invalid_response", language),
                             null, this, member.user, null, guild)
                     else -> {
-                        register.sender.send(Emojis.BALLOT_BOX_WITH_CHECK.cmd + "You canceled this selection", null, this,
-                                member.user, null, guild)
+                        register.sender.send(Emojis.BALLOT_BOX_WITH_CHECK.cmd + register.translationManager.translate("sender.canceled", language),
+                                null, this, member.user, null, guild)
                     }
                 }
                 message.delete().reason("list selection - Ardent").queue()
             }
         }, expiration = {
-            if (!invoked) failure?.invoke() ?: register.sender.send("Canceling.. You didn't respond in time! [] seconds"
-                    .apply(20), null, this, member.user, null, member.guild)
+            if (!invoked) failure?.invoke()
+                    ?: register.sender.send(register.translationManager.translate("sender.timeout", language)
+                            .apply(20), null, this, member.user, null, member.guild)
             message.delete().queue()
         })
     })
