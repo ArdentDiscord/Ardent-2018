@@ -20,8 +20,8 @@ class Message : Command("message", null, null) {
         }
         val name = arguments[0]
         val discrim = arguments[1]
-        register.jda.getUsersByName(name, true).forEach {
-            if (discrim == it.discriminator) it.openPrivateChannel()
+        register.jda.getUsersByName(name, true).forEach { user ->
+            if (discrim == user.discriminator) user.openPrivateChannel()
                     .queue {
                         it.sendMessage(Emojis.WAVING_HANDS.cmd +
                                 "Hey, you got a message from the Ardent developers: []"
@@ -29,14 +29,12 @@ class Message : Command("message", null, null) {
                                 "\n----------\n" +
                                 "Did you know Ardent has a community server where you can suggest new features and get help? " +
                                 "https://discord.gg/MANYqyq")
-                                .queue {
-                                    register.sender.cmdSend("Successfully sent message", this, event)
-                                }
+                                .queue { _ -> register.sender.cmdSend("Successfully sent message", this, event) }
                     }
         }
     }
 
     val developer = Precondition({ it.event.author.id == "169904324980244480" }, {
-        listOf(Emojis.HEAVY_MULTIPLICATION_X.cmd + "You need to be a bot developer to use this command!")
+        listOf(Emojis.HEAVY_MULTIPLICATION_X.cmd + it.translate("precondition.bot_developer"))
     })
 }

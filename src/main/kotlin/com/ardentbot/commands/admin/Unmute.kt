@@ -15,7 +15,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 class Unmute : Command("unmute", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         if (event.message.mentionedUsers.isEmpty()) register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd +
-                "You need to mention at least one user to unmute", this, event)
+                translate("unmute.mention", event, register), this, event)
         else {
             val mutes = register.database.getMutes().filter { it.guildId == event.guild.id }
             event.message.mentionedUsers.forEach { toUnmute ->
@@ -24,14 +24,14 @@ class Unmute : Command("unmute", null, null) {
                             event.guild.getRoleById(register.database.getGuildData(event.guild).muteRoleId))
                             .reason("Unmuted").queue({ _ ->
                                 register.database.delete(it, false)
-                                register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd + "Unmuted **[]**"
-                                        .apply(toUnmute.display()), this, event)
-                            }, {
-                                register.sender.cmdSend(Emojis.CROSS_MARK.cmd + "Couldn't unmute **[]**"
-                                        .apply(toUnmute.display()), this, event)
+                                register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd +
+                                        translate("unmute.unmuted", event, register).apply(toUnmute.display()), this, event)
+                            }, { _ ->
+                                register.sender.cmdSend(Emojis.CROSS_MARK.cmd +
+                                        translate("unmute.no_unmute", event, register).apply(toUnmute.display()), this, event)
                             })
-                } ?: register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd + "**[]** isn't muted!"
-                        .apply(toUnmute.display()), this, event)
+                } ?: register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd +
+                        translate("unmute.not_muted", event, register).apply(toUnmute.display()), this, event)
             }
         }
     }

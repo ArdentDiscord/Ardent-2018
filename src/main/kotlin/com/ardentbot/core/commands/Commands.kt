@@ -22,7 +22,11 @@ annotation class Excluded
 
 open class Module(val name: String, val id: String)
 
-data class EventParams(val event: GuildMessageReceivedEvent, val command: Command, val arguments: List<String>, val flags: List<Flag>, val register: ArdentRegister)
+data class EventParams(val event: GuildMessageReceivedEvent, val command: Command, val arguments: List<String>, val flags: List<Flag>, val register: ArdentRegister) {
+    fun translate(id: String): String {
+        return register.translationManager.translate(id, register.database.getGuildData(event.guild).language ?: Language.ENGLISH)
+    }
+}
 
 /**
  * Parent class of [Command]s and (soon) Tags. Represents an invokable object, whether object, tag, or other
