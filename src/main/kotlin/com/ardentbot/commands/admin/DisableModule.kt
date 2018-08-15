@@ -21,41 +21,45 @@ class DisableModule : Command("disablemodule", arrayOf("dmod", "disablemod"), nu
             val arg = arguments.getOrNull(0)
             when {
                 arg?.isTranslatedArgument("add", event.guild, register) == true -> {
-                    if (module == null) register.sender.cmdSend(Emojis.CROSS_MARK.cmd + "You need to specify a valid module. Use /help for a complete list",
+                    if (module == null) register.sender.cmdSend(Emojis.CROSS_MARK.cmd + translate("general.specify_valid_module", event, register),
                             this, event)
                     else if (module.id == "admin" || module.id == "info") {
-                        register.sender.cmdSend(Emojis.CROSS_MARK.cmd + "You cannot disable this module.", this, event)
+                        register.sender.cmdSend(Emojis.CROSS_MARK.cmd + translate("disablemodule.cannot_disable", event, register), this, event)
                     } else {
-                        if (exists) register.sender.cmdSend(Emojis.CROSS_MARK.cmd + "This module has already been disabled!", this, event)
+                        if (exists) register.sender.cmdSend(Emojis.CROSS_MARK.cmd + translate("disablemodule.already_disabled", event, register), this, event)
                         else {
                             data.disabledModules.add(DisabledModule(module.id, event.author.id, System.currentTimeMillis()))
                             register.database.update(data)
-                            register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd + "Disabled the **[]** module"
-                                    .apply(module.id), this, event)
+                            register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd +
+                                    translate("disablemodule.disabled", event, register).apply(module.id), this, event)
                         }
                     }
                 }
                 arg?.isTranslatedArgument("remove", event.guild, register) == true -> {
-                    if (module == null) register.sender.cmdSend(Emojis.CROSS_MARK.cmd + "You need to specify a valid module. Use /help for a complete list",
+                    if (module == null) register.sender.cmdSend(Emojis.CROSS_MARK.cmd +
+                            translate("general.specify_valid_module", event, register),
                             this, event)
                     else {
-                        if (!exists) register.sender.cmdSend(Emojis.CROSS_MARK.cmd + "This module hasn't been disabled!", this, event)
+                        if (!exists) register.sender.cmdSend(Emojis.CROSS_MARK.cmd +
+                                translate("disablemodule.no_disabled", event, register), this, event)
                         else {
                             data.disabledModules.removeIf { it.name == module.id }
                             register.database.update(data)
-                            register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd + "Re-enabled the **[]** module".apply(module.name), this, event)
+                            register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd +
+                                    translate("disablemodule.re-enable", event, register).apply(module.name), this, event)
                         }
                     }
                 }
                 else -> displayHelp(event, arguments, flags, register)
             }
         } else if (arguments.getOrNull(0)?.isTranslatedArgument("list", event.guild, register) == true) {
-            val embed = getEmbed("Disabled modules | []".apply(event.guild.name), event.author, event.guild)
-            if (data.disabledModules.isEmpty()) embed.appendDescription("There are no disabled modules!")
+            val embed = getEmbed(translate("disablemodule.title", event, register).apply(event.guild.name), event.author, event.guild)
+            if (data.disabledModules.isEmpty()) embed.appendDescription(translate("disablemodule.no_modules_disabled", event, register))
             else data.disabledModules.forEach { disabled ->
                 embed.appendDescription(Emojis.SMALL_ORANGE_DIAMOND.cmd
-                        + "**[]** - disabled *[]* by __[]__".apply(disabled.name, disabled.addDate.localeDate(),
-                        disabled.adder.toMember(event.guild)?.user?.display() ?: "unknown") + "\n")
+                        + translate("disablemodule.row", event, register).apply(disabled.name, disabled.addDate.localeDate(),
+                        disabled.adder.toMember(event.guild)?.user?.display()
+                                ?: translate("unknown", event, register)) + "\n")
             }
             register.sender.cmdSend(embed, this, event)
         } else displayHelp(event, arguments, flags, register)

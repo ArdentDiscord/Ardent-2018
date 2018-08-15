@@ -21,8 +21,7 @@ class Clear : Command("clear", arrayOf("cl"), 4) {
             return
         }
         val amount = flags.get("n")?.value?.toIntOrNull() ?: arguments.getOrNull(0)?.toIntOrNull() ?: 10
-        if (amount !in 2..100) register.sender.cmdSend("You specified an invalid number of messages to clear. Must be " +
-                "between 2 and 100!", this, event)
+        if (amount !in 2..100) register.sender.cmdSend(translate("clear.invalid_num", event, register), this, event)
         else {
             val channel = flags.get("c")?.value?.toChannelId()?.toChannel(event.guild) ?: event.channel
             val user = flags.get("u")?.value?.toUserId()?.toMember(event.guild)
@@ -40,13 +39,13 @@ class Clear : Command("clear", arrayOf("cl"), 4) {
                 }
             }
             event.message.delete().queue()
-            if (messages.isEmpty()) event.channel.send(Emojis.HEAVY_MULTIPLICATION_X.cmd + "No message matching your specification was found", register)
+            if (messages.isEmpty()) event.channel.send(Emojis.HEAVY_MULTIPLICATION_X.cmd + translate("clear.no_found", event, register), register)
             else {
                 (if (messages.size == 1) messages[0].delete() else channel.deleteMessages(messages.without(0))).queue({
-                    register.sender.cmdSend(Emojis.HEAVY_CHECK_MARK.cmd + "Cleared [] messages in []".apply(messages.size - 1, channel.asMention), this, event)
+                    register.sender.cmdSend(Emojis.HEAVY_CHECK_MARK.cmd + translate("clear.response", event, register).apply(messages.size - 1, channel.asMention), this, event)
                 }, { e ->
                     if (e is InsufficientPermissionException) {
-                        register.sender.cmdSend("I can't remove those messages. Please make sure I have the `Message Manage` permission!", this, event)
+                        register.sender.cmdSend(translate("clear.no_permission",event, register), this, event)
                         return@queue
                     } else e.printStackTrace()
                 })

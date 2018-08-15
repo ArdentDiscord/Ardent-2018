@@ -17,8 +17,7 @@ import java.util.concurrent.TimeUnit
 class DefaultRole : Command("defaultrole", arrayOf("dr"), null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         if (!event.guild.selfMember.hasPermission(Permission.MANAGE_ROLES)) {
-            register.sender.cmdSend(Emojis.WARNING_SIGN.cmd +
-                    "Warning! I don't have the `Manage Roles` permission, so I cannot administer the default role!", this, event)
+            register.sender.cmdSend(Emojis.WARNING_SIGN.cmd + translate("defaultrole.warning", event, register), this, event)
         }
 
         val data = register.database.getGuildData(event.guild)
@@ -26,8 +25,10 @@ class DefaultRole : Command("defaultrole", arrayOf("dr"), null) {
         when {
             arg?.isTranslatedArgument("view", event.guild, register) == true -> {
                 val role = data.defaultRoleId?.let { event.guild.getRoleById(it) }
-                val embed = getEmbed("Default Role | Ardent", event.author, event.guild)
-                        .appendDescription("**Default role:**" + " " + (role?.name ?: "None"))
+                val embed = getEmbed(translate("defaultrole.defaultrole_capitalized", event, register) + " | Ardent",
+                        event.author, event.guild)
+                        .appendDescription("**${translate("defaultrole.defaultrole_capitalized", event, register)}:**"
+                                + " " + (role?.name ?: translate("general.none", event, register)))
                         .appendDescription("\n\n")
 
                 if (role != null) embed.appendDescription("Total users with this role: **[]**"
@@ -38,14 +39,14 @@ class DefaultRole : Command("defaultrole", arrayOf("dr"), null) {
                 if (invokePrecondition(ELEVATED_PERMISSIONS(listOf(Permission.MANAGE_SERVER)), event, arguments, flags, register)) {
                     if (arguments.size == 1) {
                         register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd +
-                                "You need to specify a role name or mention a role!", this, event)
+                                translate("general.specifyrole", event, register), this, event)
                         return
                     }
                     val role = event.message.mentionedRoles.getOrNull(0)
                             ?: event.guild.getRolesByName(arguments.without(0).concat(), true).getOrNull(0)
                     if (role == null) {
                         register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd +
-                                "I couldn't find a role with that name. Please try again", this, event)
+                                translate("general.cant_find_role", event, register), this, event)
                         return
                     }
 
@@ -54,17 +55,20 @@ class DefaultRole : Command("defaultrole", arrayOf("dr"), null) {
                     register.database.update(data)
 
                     register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd +
-                            "You set the default role to: **[]**\nPrevious default role: **[]**"
-                                    .apply(role.name, old?.name ?: "None"), this, event)
+                            translate("general.update", event, register)
+                                    .apply(translate("defaultrole.defaultrole", event, register), role.name, old?.name
+                                            ?: translate("general.none", event, register)),
+                            this, event)
 
                     if (event.guild.members.any { it.roles.isEmpty() }) {
-                        register.sender.cmdSend("**Ardent Helpers** > Would you like to assign members with no roles to this role?", this, event)
+                        register.sender.cmdSend(translate("defaultrole.prompt", event, register), this, event)
                         Sender.scheduledExecutor.schedule({
-                            event.channel.selectFromList(event.member, "Ardent Helpers | Auto Assign", listOf("Yes", "No"),
+                            event.channel.selectFromList(event.member, translate("defaultrole.title", event, register),
+                                    listOf(translate("yes", event, register), translate("no", event, register)),
                                     consumer = { i, _ ->
                                         if (i == 0) {
                                             register.sender.cmdSend(Emojis.HEAVY_CHECK_MARK.cmd +
-                                                    "Created default role **[]**. Assigning users now.. (this may take a while)"
+                                                    translate("defaultrole.creating", event, register)
                                                             .apply(role.name), this, event)
                                             var assigned = 0
                                             event.guild.members.filter { it.roles.isEmpty() }.forEach {
@@ -73,10 +77,10 @@ class DefaultRole : Command("defaultrole", arrayOf("dr"), null) {
                                                 assigned++
                                             }
                                             register.sender.cmdSend(Emojis.HEAVY_CHECK_MARK.cmd +
-                                                    "Assigned **[]** members to the default role".apply(assigned), this, event)
-                                        } else register.sender.cmdSend("Ok, default role created" + " " +
-                                                Emojis.OK_HAND.symbol, this, event)
-                                    }, footer = "If you enjoy Ardent, join our hub server! Type /hub or /support!", register = register)
+                                                    translate("defaultrole.assigned", event, register).apply(assigned), this, event)
+                                        } else register.sender.cmdSend(Emojis.OK_HAND.cmd +
+                                                translate("defaultrole.created", event, register), this, event)
+                                    }, footer = translate("defaultrole.footer", event, register), register = register)
                         }, 2, TimeUnit.SECONDS)
                     }
                 }
@@ -86,10 +90,10 @@ class DefaultRole : Command("defaultrole", arrayOf("dr"), null) {
                     val old = data.defaultRoleId?.let { event.guild.getRoleById(it) }
                     data.defaultRoleId = null
                     register.database.update(data)
-
+                    val none = translate("general.none", event, register)
                     register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd +
-                            "You set the default role to: **[]**\nPrevious default role: **[]**"
-                                    .apply("None", old?.name ?: "None"), this, event)
+                            translate("general.update", event, register).apply(translate("defaultrole.defaultrole", event, register),
+                                    none, old?.name ?: none), this, event)
                 }
             }
             else -> displayHelp(event, arguments, flags, register)

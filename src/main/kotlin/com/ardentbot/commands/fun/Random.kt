@@ -17,16 +17,16 @@ class Random : Command("random", null, null) {
             flags.get("n") != null -> {
                 val number = flags.get("n")!!.value?.toIntOrNull()
                 when {
-                    number == null -> register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd + "You need to specify a valid number", this, event)
-                    number <= 0 -> register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd + "The number must be positive!", this, event)
-                    else -> register.sender.cmdSend("Your number is: **[]**".apply(register.random.nextInt(number) + 1), this, event)
+                    number == null -> register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd + translate("random.specify_valid_number", event, register), this, event)
+                    number <= 0 -> register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd + translate("general.need_positive_number", event, register), this, event)
+                    else -> register.sender.cmdSend(translate("random.chosen_number", event, register).apply(register.random.nextInt(number) + 1), this, event)
                 }
             }
             flags.get("options") != null -> {
                 val options = flags.get("options")!!.values
-                if (options == null || options.isEmpty()) register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd + "You need to specify at least 2 options " +
-                        "in the format: */random options \"one\" \"two\"", this, event)
-                else register.sender.cmdSend("Your chosen option is: **[]**".apply(options[register.random.nextInt(options.size)]), this, event)
+                if (options == null || options.isEmpty()) register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd +
+                        translate("random.specify_valid_options",event, register), this, event)
+                else register.sender.cmdSend(translate("random.chosen_option",event, register).apply(options[register.random.nextInt(options.size)]), this, event)
             }
             else -> displayHelp(event, arguments, flags, register)
         }

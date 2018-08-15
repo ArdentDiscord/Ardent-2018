@@ -13,13 +13,15 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 @ModuleMapping("rpg")
 class TopMoney : Command("top", arrayOf("topmoney"), 5) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        if (arguments.getOrNull(0) != "all" && arguments.getOrNull(0) != "server") displayHelp(event, arguments, flags, register)
+        val isAll = arguments.getOrNull(0)?.isTranslatedArgument("all", event.guild, register) == true
+        val isServer = arguments.getOrNull(0)?.isTranslatedArgument("server", event.guild, register) == true
+        if (!isAll && !isServer) displayHelp(event, arguments, flags, register)
         else {
-            val server = arguments[0] == "server"
+            val server = isServer
             val pageLimit = Math.ceil((if (server) event.guild.members.size else register.database.getUsersSize().toInt()).div(10.0)).toInt()
             PaginationEmbed(event.author.id, { page ->
-                val embed = getEmbed((if (server) "Global Money Leaderboards" else "[]'s Money Leaderboards".apply(event.guild.name)) +
-                        " - " + "Page []".apply(page), event.author, event.guild)
+                val embed = getEmbed((if (server) translate("top.global", event, register) else translate("top.local", event, register).apply(event.guild.name)) +
+                        " - " + translate("page", event, register).apply(page), event.author, event.guild)
                         .setThumbnail("https://bitcoin.org/img/icons/opengraph.png")
                 val users: List<Pair<User, Long>> = (if (server) {
                     event.guild.getUsersData(register).let { data ->

@@ -25,7 +25,7 @@ open class Module(val name: String, val id: String)
 data class EventParams(val event: GuildMessageReceivedEvent, val command: Command, val arguments: List<String>, val flags: List<Flag>, val register: ArdentRegister)
 
 /**
- * Parent class of [Command]s and [Tag]s. Represents an invokable object, whether object, tag, or other
+ * Parent class of [Command]s and (soon) Tags. Represents an invokable object, whether object, tag, or other
  */
 abstract class Invokable(val name: String, val aliases: Array<String>?, val cooldown: Int?) {
     abstract fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister)
@@ -191,7 +191,6 @@ abstract class Command(name: String, aliases: Array<String>?, cooldown: Int?) : 
         return (translated.value ?: translated.name).equals(this, true) || (english.value
                 ?: english.name).equals(this, true)
     }
-
 }
 
 // checked at runtime by the PreconditionMapping annotations

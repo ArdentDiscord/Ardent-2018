@@ -92,7 +92,8 @@ class Web(val register: ArdentRegister) {
                 map["total"] = games.size
                 games.removeIf { it.second.creator.toUser(register) == null }
                 map["recentGames"] = games.map {
-                    SanitizedGame(it.second.creator.toUser(register)!!.display(), it.second.endTime.localeDate(), it.first.readable, "https://ardentbot.com/games/${it.first.readable.toLowerCase()}/${it.second.id}")
+                    SanitizedGame(it.second.creator.toUser(register)?.display()
+                            ?: "Unknown", it.second.endTime.localeDate(), it.first.readable, "https://ardentbot.com/games/${it.first.readable.toLowerCase()}/${it.second.id}")
                 }.take(30)
                 handlebars.render(ModelAndView(map, "recentgames.hbs"))
             }
@@ -114,13 +115,13 @@ class Web(val register: ArdentRegister) {
                             map["title"] = "Gamemode not found"
                             ModelAndView(map, "404.hbs")
                         } else {
-                            val user = game.creator.toUser(register)!!
+                            val user = game.creator.toUser(register)
                             map["title"] = "Blackjack Game #$id"
                             map["game"] = game
                             map["idLong"] = (game.id as Double).toLong()
                             map["user"] = user
                             map["date"] = game.startTime.localeDate()
-                            map["data"] = user.getData(register)
+                            map["data"] = user?.getData(register)
                             ModelAndView(map, "blackjack.hbs")
                         }
                     }
@@ -133,13 +134,13 @@ class Web(val register: ArdentRegister) {
                             map["title"] = "Gamemode not found"
                             ModelAndView(map, "404.hbs")
                         } else {
-                            val user = game.creator.toUser(register)!!
+                            val user = game.creator.toUser(register)
                             map["title"] = "Slots Game #$id"
                             map["game"] = game
                             map["idLong"] = (game.id as Double).toLong()
                             map["user"] = user
                             map["date"] = game.startTime.localeDate()
-                            map["data"] = user.getData(register)
+                            map["data"] = user?.getData(register)
                             ModelAndView(map, "slots.hbs")
                         }
                     }
@@ -152,16 +153,16 @@ class Web(val register: ArdentRegister) {
                             map["title"] = "Gamemode not found"
                             ModelAndView(map, "404.hbs")
                         } else {
-                            val user = game.creator.toUser(register)!!
+                            val user = game.creator.toUser(register)
                             map["title"] = "Connect 4 Game #$id"
                             map["game"] = game
                             map["board"] = game.game.replace("\n", "<br />").replace("⚪", "◯")
-                            map["winner"] = game.winner.toUser(register)!!
-                            map["loser"] = game.loser.toUser(register)!!
+                            map["winner"] = game.winner.toUser(register)
+                            map["loser"] = game.loser.toUser(register)
                             map["user"] = user
                             map["idLong"] = (game.id as Double).toLong()
                             map["date"] = game.startTime.localeDate()
-                            map["data"] = user.getData(register)
+                            map["data"] = user?.getData(register)
                             ModelAndView(map, "connect_4.hbs")
                         }
                     }
@@ -176,16 +177,16 @@ class Web(val register: ArdentRegister) {
                         } else {
                             map["title"] = "Tic Tac Toe Game #$id"
                             map["game"] = game
-                            map["user"] = game.creator.toUser(register)!!
+                            map["user"] = game.creator.toUser(register)
                             map["board"] = game.game.replace("\n", "<br />")
                             if (game.winner == null) {
                                 map["hasWinner"] = false
-                                map["player1"] = game.playerOne.toUser(register)!!
-                                map["player2"] = game.playerTwo.toUser(register)!!
+                                map["player1"] = game.playerOne.toUser(register)
+                                map["player2"] = game.playerTwo.toUser(register)
                             } else {
                                 map["hasWinner"] = true
-                                map["winner"] = game.winner.toUser(register)!!
-                                map["loser"] = (if (game.winner != game.playerOne) game.playerOne else game.playerTwo).toUser(register)!!
+                                map["winner"] = game.winner.toUser(register)
+                                map["loser"] = (if (game.winner != game.playerOne) game.playerOne else game.playerTwo).toUser(register)
                             }
                             map["idLong"] = (game.id as Double).toLong()
                             map["date"] = game.startTime.localeDate()
@@ -201,13 +202,13 @@ class Web(val register: ArdentRegister) {
                             map["title"] = "Gamemode not found"
                             ModelAndView(map, "404.hbs")
                         } else {
-                            val user = game.creator.toUser(register)!!
+                            val user = game.creator.toUser(register)
                             map["title"] = "Trivia Game #$id"
                             map["game"] = game.sanitize(register)
                             map["user"] = user
                             map["idLong"] = (game.id as Double).toLong()
                             map["date"] = game.startTime.localeDate()
-                            map["data"] = user.getData(register)
+                            map["data"] = user?.getData(register)
                             ModelAndView(map, "trivia.hbs")
                         }
                     }
@@ -220,7 +221,7 @@ class Web(val register: ArdentRegister) {
                             map["title"] = "Gamemode not found"
                             ModelAndView(map, "404.hbs")
                         } else {
-                            val creator = game.creator.toUser(register)!!
+                            val creator = game.creator.toUser(register)
                             map["title"] = "Betting Game #$id"
                             map["idLong"] = (game.id as Double).toLong()
                             map["game"] = game

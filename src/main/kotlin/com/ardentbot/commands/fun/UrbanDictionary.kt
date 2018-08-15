@@ -17,18 +17,18 @@ class UrbanDictionary : Command("urban",
             val search = register.database.deserializeWebsite("http://api.urbandictionary.com/v0/define?term=${arguments.concat().encode()}",
                     UrbanDictionarySearch::class.java)
             if (search.list.isEmpty()) register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd +
-                    "No results found for this search query", this, event)
+                    translate("ud.404", event, register), this, event)
             else {
                 val result = search.list[0]
-                val embed = getEmbed("Urban Dictionary Definition (first) for []".apply(result.word), event.author, event.guild)
+                val embed = getEmbed(translate("ud.embed_title", event, register).apply(result.word), event.author, event.guild)
                         .setThumbnail("https://i.gyazo.com/6a40e32928743e68e9006396ee7c2a14.jpg")
                         .setColor(Color.decode("#00B7BE"))
-                        .addField("Definition", result.definition shortenTo 1024, true)
-                        .addField("Example", result.example shortenTo 1024, true)
-                        .addField("Thumbs Up " + Emojis.THUMBS_UP.symbol, result.thumbs_up.toString(), true)
-                        .addField("Thumbs Down" + Emojis.THUMBS_DOWN.symbol, result.thumbs_down.toString(), true)
-                        .addField("Author", result.author, true)
-                        .addField("Permalink", result.permalink, true)
+                        .addField(translate("ud.definition", event, register), result.definition shortenTo 1024, true)
+                        .addField(translate("cmd.example", event, register), result.example shortenTo 1024, true)
+                        .addField(translate("ud.thumbs_up", event, register) + " " + Emojis.THUMBS_UP.symbol, result.thumbs_up.toString(), true)
+                        .addField(translate("ud.thumbs_down", event, register) + " " + Emojis.THUMBS_DOWN.symbol, result.thumbs_down.toString(), true)
+                        .addField(translate("ud.author", event, register), result.author, true)
+                        .addField(translate("ud.permalink", event, register), result.permalink, true)
                 register.sender.cmdSend(embed, this, event)
             }
         }

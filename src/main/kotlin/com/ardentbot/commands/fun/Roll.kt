@@ -31,11 +31,11 @@ class Roll : Command("roll", null, null) {
             }
 
             if (number == 1) {
-                register.sender.cmdSend(":game_die Rolling IRL . . .", this, event, callback = {
-                    it.editMessage("Rolled a []-sided die. Result: **[]**".apply(sides, register.random.nextInt(6) + 1)).queue()
+                register.sender.cmdSend(":game_die " + translate("roll.rolling", event, register) + " . . .", this, event, callback = {
+                    it.editMessage(translate("roll.result",event, register).apply(sides, register.random.nextInt(6) + 1)).queue()
                 })
             } else {
-                val embed = getEmbed("Roll | []-sided die".apply(sides), event.author, event.guild)
+                val embed = getEmbed(translate("roll.embed_title",event, register).apply(sides), event.author, event.guild)
                 repeat(number) { embed.appendDescription(it.diamond() + "**${it + 1}**: " + (register.random.nextInt(sides) + 1) + "\n") }
                 register.sender.cmdSend(embed, this, event)
             }

@@ -22,13 +22,14 @@ class Nickme : Command("nickme", arrayOf("nameme"), null) {
 
         try {
             event.guild.controller.setNickname(event.member, word).reason("/nickme").queue {
-                register.sender.cmdSend("[], your nickname is now **[]**".apply(event.author.name, word), this, event)
+                register.sender.cmdSend(translate("nickme.changed", event, register).apply(event.author.name, word), this, event)
             }
         } catch (e: Exception) {
             if (e is HierarchyException) register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd +
-                    "Unable to set your nickname. Due to Discord limitations, I cannot set the nickname of the server owner or members with a higher role than myself. " +
-                    if (word != arguments.concat()) "However, the generated name is **[]**".apply(word) else "", this, event)
-            else register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd + "Unable to set your nickname.. do I have permission?", this, event)
+                    translate("nickme.exception", event, register) +
+                    " " + if (word != arguments.concat()) translate("nickme.however", event, register).apply(word) else "", this, event)
+            else register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd + translate("permission", event, register)
+                    .apply(translate("nick.permission", event, register)), this, event)
         }
     }
 

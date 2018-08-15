@@ -23,19 +23,20 @@ class Translate : Command("translate", null, 5) {
 
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         if (arguments.getOrNull(0)?.equals("list") == true) {
-            val embed = getEmbed("Language list | Translate", event.author, event.guild)
-                    .appendDescription("You can go to our [language list](https://hastebin.com/elivozosef) to see a full list of supported languages."
-                            + "\n\n" + "Common languages: French (fr), Spanish (es), Russian (ru), German (de), English (en)")
+            val embed = getEmbed(translate("translate.embed_title", event, register), event.author, event.guild)
+                    .appendDescription(translate("translate.language_list", event, register).apply("https://ardentbot.com/commands/translate")
+                            + "\n\n" + translate("translate.common", event, register))
             register.sender.cmdSend(embed, this, event)
             return
         }
         val toLanguage = arguments.getOrNull(0)?.let { getLanguage(it) }
         if (toLanguage == null || arguments.size < 2) register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd +
-                "You need to specify a valid language to translate to. Type **/translate list** to get a list of supported languages." + "\n" +
-                "**Example**: /translate *[]*".apply(example), this, event)
+                translate("translate.invalid_language", event, register) + "\n" +
+                translate("translate.e", event, register).apply(example), this, event)
         else {
             val content = arguments.without(0).concat()
-            register.sender.cmdSend("**Translation:** []".apply(translateApi.translationApi().translate(content, toLanguage)),
+            register.sender.cmdSend(translate("translate.response", event, register)
+                    .apply(translateApi.translationApi().translate(content, toLanguage)),
                     this, event)
 
         }

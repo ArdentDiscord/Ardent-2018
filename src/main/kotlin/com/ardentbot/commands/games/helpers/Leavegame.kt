@@ -15,16 +15,16 @@ class Leavegame : Command("leavegame", arrayOf("leaveg"), null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         gamesInLobby.forEach { game ->
             if (game.creator == event.author.id && game.channel.guild == event.guild) {
-                register.sender.cmdSend("You can't leave the game that you've started! If you want to cancel the game, type **/cancel**", this, event)
+                register.sender.cmdSend(translate("games.cant_leave_own", event, register), this, event)
                 return
             } else if (game.players.contains(event.author.id)) {
                 game.players.remove(event.author.id)
-                register.sender.cmdSend("[], you successfully left **[]**'s game".apply(event.author.asMention, game.creator.toUser(register)?.display()
-                        ?: "unknown"), this, event)
+                register.sender.cmdSend(translate("leavegame.response", event, register).apply(event.author.asMention, game.creator.toUser(register)?.display()
+                        ?: translate("unknown", event, register)), this, event)
                 return
             }
         }
-        register.sender.cmdSend("You're not in a game lobby!", this, event)
+        register.sender.cmdSend(translate("games.not_in_lobby", event, register), this, event)
 
     }
 }
