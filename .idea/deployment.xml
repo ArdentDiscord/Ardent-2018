@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" autoUpload="Always" serverName="ardent" compareModeInSync="TEXT">
+    <serverData>
+      <paths name="ardent">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/ardent/Ardent" local="$PROJECT_DIR$" web="/" />
+          </mappings>
+          <excludedPaths>
+            <excludedPath path="/ardent/Ardent/rethinkdb" />
+            <excludedPath path="/ardent/Ardent/build" />
+            <excludedPath path="/ardent/Ardent/.gradle" />
+            <excludedPath path="/ardent/Ardent/gradle" />
+          </excludedPaths>
+        </serverdata>
+      </paths>
+    </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
+  </component>
+</project>
