@@ -46,7 +46,7 @@ class AdminRole : Command("adminrole", arrayOf("adm"), null) {
                 val usersWithRole = currentRole?.let { role -> event.guild.members.filter { it.roles.contains(role) } }
                 val embed = getEmbed(translate("adminrole.adminrole", event, register), event.author, event.guild)
                         .appendDescription(translate("adminrole.current", event, register).apply(currentRole?.asMention
-                                ?: "Not set!") + "\n\n")
+                                ?: translate("general.not_set",event, register)) + "\n\n")
                 if (usersWithRole != null) {
                     embed.appendDescription(translate("adminrole.userswithcurrent", event, register)
                             .apply(usersWithRole.map { it.asMention }.joinToString()))
