@@ -12,6 +12,6 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 @ModuleMapping("admin")
 class Manage : Command("manage", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        event.channel.send("You can manage your server at []".apply("$base/manage/${event.guild.id}"), register)
+        event.channel.send(translate("manage.response", event, register).apply("$base/manage/${event.guild.id}"), register)
     }
 }
