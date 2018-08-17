@@ -18,21 +18,22 @@ class BetGame(channel: TextChannel, creator: String, register: ArdentRegister) :
 
     private fun doRound(user: User) {
         val data = user.getData(register)
-        channel.send("How much would you like to bet? You current have **[] gold**. Type the amount below. You can also bet a **percentage** of your net worth, e.g. *40%*".apply(data.money), register)
+        channel.send(translate("bet.how_much").apply(data.money), register)
         Sender.waitForMessage({ it.author.id == user.id && it.guild.id == channel.guild.id && it.channel.id == channel.id }, {
             val content = it.message.contentRaw.removePrefix("/bet ").remove("bet ")
-            if (content.equals("cancel", true)) {
-                channel.send("Cancelling game...", register)
+            if (content.equals(translate("cancel"), true)) {
+                channel.send(translate("games.cancel"), register)
                 cancel(user)
             } else {
                 val bet = if (content.contains("%")) content.removeSuffix("%").toDoubleOrNull()?.div(100)?.times(data.money)?.toInt() else content.toIntOrNull()
                 if (bet != null) {
                     if (bet > data.money || bet <= 0) {
-                        channel.send("You specified an invalid bet amount! Please retry or type `cancel` to cancel the game", register)
+                        channel.send(translate("bet.invalid_amount"), register)
                         doRound(user)
                         return@waitForMessage
                     } else {
-                        channel.selectFromList(channel.guild.getMember(user), "What color will the next card I draw be?", mutableListOf("Black", "Red"), { selection, _ ->
+                        channel.selectFromList(channel.guild.getMember(user), translate("bet.embed_title"),
+                                mutableListOf(translate("color.black"), translate("color.red")), { selection, _ ->
                             val suit = BlackjackGame.Hand(false, end = false).generate().suit
                             val won = when (suit) {
                                 BlackjackGame.Suit.HEART, BlackjackGame.Suit.DIAMOND -> selection == 1
@@ -47,27 +48,27 @@ class BetGame(channel: TextChannel, creator: String, register: ArdentRegister) :
                             }
                             register.database.update(data)
                             rounds.add(Round(won, bet.toDouble(), suit))
-                            channel.send("Would you like to go again? Type `yes` if so or `no` to end the game", register)
+                            channel.send(translate("bet.go_again"), register)
 
                             Sender.waitForMessage({ it.author.id == user.id && it.guild.id == channel.guild.id && it.channel.id == channel.id }, {
                                 if (it.message.contentRaw.startsWith("y", true)) doRound(user)
                                 else {
-                                    channel.send("Ending the game and inserting data into the database..", register)
+                                    channel.send(translate("bet.end"), register)
                                     val gameData = GameDataBetting(gameId, creator, startTime!!, rounds)
                                     cleanup(gameData)
                                 }
                             }, {
-                                channel.send("Ending the game and inserting data into the database..", register)
+                                channel.send(translate("bet.end"), register)
                                 val gameData = GameDataBetting(gameId, creator, startTime!!, rounds)
                                 cleanup(gameData)
                             })
 
                         }, failure = {
                             if (rounds.size == 0) {
-                                channel.send("Invalid response... Cancelling game now", register)
+                                channel.send(translate("games.invalid_response_cancel"), register)
                                 cancel(user)
                             } else {
-                                channel.send("Invalid response... ending the game and inserting data into the database..", register)
+                                channel.send(translate("games.invalid_response_end_game"), register)
                                 val gameData = GameDataBetting(gameId, creator, startTime!!, rounds)
                                 cleanup(gameData)
                             }
@@ -75,10 +76,10 @@ class BetGame(channel: TextChannel, creator: String, register: ArdentRegister) :
                     }
                 } else {
                     if (rounds.size == 0) {
-                        channel.send("Invalid bet amount... Cancelling game now", register)
+                        channel.send(translate("games.invalid_response_cancel"), register)
                         cancel(user)
                     } else {
-                        channel.send("Invalid bet amount... ending the game and inserting data into the database..", register)
+                        channel.send(translate("games.invalid_response_end_game"), register)
                         val gameData = GameDataBetting(gameId, creator, startTime!!, rounds)
                         cleanup(gameData)
                     }
@@ -88,13 +89,14 @@ class BetGame(channel: TextChannel, creator: String, register: ArdentRegister) :
     }
 
     data class Round(val won: Boolean, val betAmount: Double, val suit: BlackjackGame.Suit)
+
 }
 
 @ModuleMapping("games")
 class BetCommand : Command("bet", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         val member = event.member
-        if (member.isInGameOrLobby()) event.channel.send("[], you're already in game! You can't create another game!".apply(member.asMention), register)
+        if (member.isInGameOrLobby()) event.channel.send(translate("games.already_in_game", event, register).apply(member.asMention), register)
         else BetGame(event.channel, member.user.id, register).startEvent()
     }
 }

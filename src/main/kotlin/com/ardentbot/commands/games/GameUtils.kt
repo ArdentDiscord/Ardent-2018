@@ -3,8 +3,10 @@ package com.ardentbot.commands.games
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Sender
 import com.ardentbot.core.database.DbObject
+import com.ardentbot.core.database.getLanguage
 import com.ardentbot.core.database.getUserData
 import com.ardentbot.core.toUser
+import com.ardentbot.core.translation.Language
 import com.ardentbot.kotlin.*
 import net.dv8tion.jda.core.EmbedBuilder
 import net.dv8tion.jda.core.entities.*
@@ -165,6 +167,10 @@ abstract class Game(val type: GameType, val channel: TextChannel, val creator: S
             register.sender.send("You successfully created a **Public []** game with ID #__[]__!\nAnyone in this server can join by typing */minigames join #[]*"
                     .apply(type.readable, gameId, gameId), null, channel, register.selfUser, null)
         }
+    }
+
+    fun translate(id: String): String {
+        return register.translationManager.translate(id, channel.guild.getLanguage(register) ?: Language.ENGLISH)
     }
 }
 

@@ -29,22 +29,18 @@ class BlackjackGame(channel: TextChannel, creator: String, playerCount: Int, isP
         if (playerData.money == 0L) {
             playerData.money += 15
             register.database.update(playerData)
-            channel.send("Because you were broke, the Blackjack Gods took pity on you and gave you **15.0** gold to bet with", register)
+            channel.send(translate("blackjack.broke_pity").apply("**15**"), register)
         }
-        channel.send("How much would you like to bet, []? You current have a balance of **[]** gold".apply(user.asMention, playerData.money), register)
-        Sender.waitForMessage({ it.author.id == user.id && it.guild.id == channel.guild.id && it.channel.id == channel.id }, {
-            val bet = it.message.contentRaw.toLongOrNull()
+        channel.send(translate("blackjack.how_much").apply(user.asMention, playerData.money), register)
+        Sender.waitForMessage({ it.author.id == user.id && it.guild.id == channel.guild.id && it.channel.id == channel.id }, { event ->
+            val bet = event.message.contentRaw.toLongOrNull()
             if (bet == null || bet <= 0 || bet > playerData.money) {
-                channel.send("You specified an invalid amount.. resetting the round", register)
+                channel.send(translate("blackjack.invalid_reset"), register)
                 doRound(user)
             } else {
                 val dealerHand = Hand(true).blackjackPlus(2)
                 val userHand = Hand().blackjackPlus(1)
-                display(dealerHand, userHand, "You've been dealt 1 card." + " " +
-                        "The dealer's second card is hidden." + " " +
-                        "The goal is to get as close as possible to **21**. Type `" +
-                        "hit" + "` if you'd like to get another card or `" + "stay" +
-                        "` to stay at your current amount", post = {
+                display(dealerHand, userHand, translate("blackjack.info"), post = {
                     wait(bet, dealerHand, userHand, user, it)
                 })
             }
@@ -53,56 +49,52 @@ class BlackjackGame(channel: TextChannel, creator: String, playerCount: Int, isP
     }
 
     fun wait(bet: Long, dealerHand: Hand, userHand: Hand, user: User, previous: Message?) {
-        Sender.waitForMessage({ it.author.id == user.id && it.guild.id == channel.guild.id && it.channel.id == channel.id }, {
+        Sender.waitForMessage({ it.author.id == user.id && it.guild.id == channel.guild.id && it.channel.id == channel.id }, { event ->
             previous?.delete()?.queue()
-            when (it.message.contentRaw) {
+            when (event.message.contentRaw) {
                 "hit" -> {
-                    it.message.delete().queue()
+                    event.message.delete().queue()
                     userHand.blackjackPlus(1)
                     if (userHand.value() >= 21) displayRoundScore(bet, dealerHand, userHand, user)
                     else {
-                        display(dealerHand, userHand, "You've been dealt 1 card." + " " +
-                                "The dealer's second card is hidden." + " " +
-                                "The goal is to get as close as possible to **21**. Type `" +
-                                "hit" + "` if you'd like to get another card or `" + "stay" +
-                                "` to stay at your current amount", post = {
+                        display(dealerHand, userHand, translate("blackjack.info"), post = {
                             wait(bet, dealerHand, userHand, user, it)
                         })
                     }
                 }
                 "stay" -> {
-                    it.message.delete().queue()
-                    channel.send("Generating dealer cards...", register)
+                    event.message.delete().queue()
+                    channel.send(translate("blackjack.generating_dealer"), register)
                     Thread.sleep(1500)
                     while (dealerHand.value() < 17) dealerHand.blackjackPlus(1)
                     displayRoundScore(bet, dealerHand, userHand, user)
                 }
                 else -> {
-                    register.sender.send("You specified an invalid response - please retry", null, channel, register.selfUser, null, callback = {
+                    register.sender.send(translate("games.invalid_retry"), null, channel, register.selfUser, null, callback = {
                         wait(bet, dealerHand, userHand, user, it)
                     })
                     return@waitForMessage
                 }
             }
         }, {
-            channel.send("[], you didn't specify a response and thus lost!".apply(user.asMention), register)
+            channel.send(translate("games.no_response_lost").apply(user.asMention), register)
             cancel(user, complain = false)
         }, 15, TimeUnit.SECONDS)
     }
 
     fun display(dealerHand: Hand, userHand: Hand, message: String, end: Boolean = false, post: (Message) -> Unit) {
-        val embed = getEmbed("Blackjack | Hand Values", channel)
+        val embed = getEmbed(translate("blackjack.view_embed_title"), channel)
                 .setDescription(message)
-                .addField("Your Hand", "$userHand (${userHand.value()})", true)
+                .addField(translate("blackjack.your_hand"), "$userHand (${userHand.value()})", true)
                 .addBlankField(true)
-        if (dealerHand.cards.size == 2 && !end) embed.addField("Dealer's Hand", "$dealerHand (${dealerHand.cards[0].value.representation} + ?)", true)
-        else embed.addField("Dealer's Hand", "$dealerHand (${dealerHand.value()})", true)
+        if (dealerHand.cards.size == 2 && !end) embed.addField(translate("blackjack.dealer_hand"), "$dealerHand (${dealerHand.cards[0].value.representation} + ?)", true)
+        else embed.addField(translate("blackjack.dealer_hand"), "$dealerHand (${dealerHand.value()})", true)
         register.sender.send(embed, null, channel, register.selfUser, null, callback = {
             post(it)
         })
     }
 
-    fun displayRoundScore(bet: Long, dealerHand: Hand, userHand: Hand, user: User) {
+    private fun displayRoundScore(bet: Long, dealerHand: Hand, userHand: Hand, user: User) {
         val result = when {
             userHand.value() > 21 -> Result.LOST
             dealerHand.value() > 21 -> Result.WON
@@ -115,23 +107,22 @@ class BlackjackGame(channel: TextChannel, creator: String, playerCount: Int, isP
             Result.LOST -> {
                 playerData.money -= bet
                 register.database.update(playerData)
-                "**Sorry, you lost [] gold!**".apply(bet)
+                translate("money.lost_gold").apply(bet)
             }
             Result.WON -> {
                 playerData.money += bet
                 register.database.update(playerData)
-                "**Congratulations, you won [] gold!**".apply(bet)
+                translate("money.won_gold").apply(bet)
             }
-            Result.TIED -> "**You tied and didn't lose the [] you bet!**".apply(bet)
+            Result.TIED -> translate("blackjack.tied").apply(bet)
         }
         roundResults.add(Round(result, userHand.end(), dealerHand.end(), bet))
-        display(dealerHand, userHand, message, true, post = {
-            channel.sendMessage("Would you like to go again? Type `" + "yes" + "` to replay or `" + "no" +
-                    "` to end the game").queueAfter(2, TimeUnit.SECONDS) { response ->
+        display(dealerHand, userHand, message, true, post = { _ ->
+            channel.sendMessage(translate("bet.go_again")).queueAfter(2, TimeUnit.SECONDS) { response ->
                 Sender.waitForMessage({ it.author.id == user.id && it.guild.id == channel.guild.id && it.channel.id == channel.id }, {
                     response.delete().queue()
-                    when (it.message.contentRaw) {
-                        "yes" -> doRound(user)
+                    when {
+                        it.message.contentRaw.startsWith("y") || translate("yes").equals(it.message.contentRaw, true) -> doRound(user)
                         else -> {
                             val gameData = GameDataBlackjack(gameId, creator, startTime!!, roundResults)
                             cleanup(gameData)
@@ -243,8 +234,7 @@ class BlackjackGame(channel: TextChannel, creator: String, playerCount: Int, isP
 class BlackjackCommand : Command("blackjack", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         val member = event.member
-        if (member.isInGameOrLobby()) event.channel.send("[], You're already in game! You can't create another game!".apply(member.asMention), register)
-
+        if (member.isInGameOrLobby()) event.channel.send(translate("games.already_in_game", event, register).apply(member.asMention), register)
         /*else if (event.guild.hasGameType(GameType.BLACKJACK) && !member.hasDonationLevel(channel, DonationLevel.INTERMEDIATE, failQuietly = true)) {
             channel.send("There can only be one *{0}* game active at a time in a server!. **Pledge $5 a month or buy the Intermediate rank at {1} to start more than one game per type at a time**".tr(event, "Blackjack", "<https://ardentbot.com/patreon>"))
         } */
