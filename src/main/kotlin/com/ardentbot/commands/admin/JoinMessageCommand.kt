@@ -14,8 +14,9 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 @ModuleMapping("admin")
 class JoinMessageCommand : Command("joinmessage", arrayOf("jm"), null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        when (arguments.getOrNull(0)) {
-            "params" -> {
+        val arg = arguments.getOrNull(0)
+        when {
+            arg?.isTranslatedArgument("params", event.guild, register) == true -> {
                 val params = listOf(
                         Pair("user", translate("messages.user_param", event, register)),
                         Pair("server", translate("messages.server_param", event, register)),
@@ -31,7 +32,7 @@ class JoinMessageCommand : Command("joinmessage", arrayOf("jm"), null) {
                         )
                 register.sender.cmdSend(embed, this, event)
             }
-            "view" -> {
+            arg?.isTranslatedArgument("view", event.guild, register) == true -> {
                 val data = register.database.getGuildData(event.guild)
                 val embed = getEmbed(translate("joinmessage.view_title", event, register), event.author, event.guild)
                         .appendDescription(translate("messages.message_heading", event, register) + " " +
@@ -44,7 +45,7 @@ class JoinMessageCommand : Command("joinmessage", arrayOf("jm"), null) {
                         .appendDescription(translate("messages.how_change", event, register).apply("/jm"))
                 register.sender.cmdSend(embed, this, event)
             }
-            "set" -> {
+            arg?.isTranslatedArgument("set", event.guild, register) == true -> {
                 if (invokePrecondition(ELEVATED_PERMISSIONS(listOf(Permission.MANAGE_SERVER)), event, arguments, flags, register)) {
                     if (arguments.size == 1) register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd
                             + translate("messages.add_message", event, register), this, event)
@@ -64,7 +65,7 @@ class JoinMessageCommand : Command("joinmessage", arrayOf("jm"), null) {
                     }
                 }
             }
-            "channel" -> {
+            arg?.isTranslatedArgument("channel", event.guild, register) == true -> {
                 if (invokePrecondition(ELEVATED_PERMISSIONS(listOf(Permission.MANAGE_SERVER)), event, arguments, flags, register)) {
                     if (arguments.size == 1) register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd
                             + translate("messages.add_message", event, register), this, event)
@@ -86,11 +87,11 @@ class JoinMessageCommand : Command("joinmessage", arrayOf("jm"), null) {
                     }
                 }
             }
-            "remove" -> {
+            arg?.isTranslatedArgument("remove", event.guild, register) == true -> {
                 if (invokePrecondition(ELEVATED_PERMISSIONS(listOf(Permission.MANAGE_SERVER)), event, arguments, flags, register)) {
                     val data = register.database.getGuildData(event.guild)
-                    when (arguments.getOrNull(1)) {
-                        "message" -> {
+                    when {
+                        arguments.getOrNull(1)?.isTranslatedPhrase("general.message", event.guild, register) == true -> {
                             val old = data.joinMessage.message
                             data.joinMessage.message = null
                             register.database.update(data)
@@ -99,7 +100,7 @@ class JoinMessageCommand : Command("joinmessage", arrayOf("jm"), null) {
                                             translate("general.none", event, register), old
                                             ?: translate("general.none", event, register)), this, event)
                         }
-                        "channel" -> {
+                        arguments.getOrNull(1)?.isTranslatedArgument("channel", event.guild, register) == true -> {
                             val old = data.joinMessage.channelId?.let { event.guild.getTextChannelById(it) }
                             data.joinMessage.channelId = null
                             register.database.update(data)

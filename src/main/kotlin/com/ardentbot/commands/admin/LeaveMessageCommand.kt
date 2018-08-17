@@ -1,8 +1,12 @@
 package com.ardentbot.commands.admin
 
+import com.ardentbot.commands.games.send
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Flag
-import com.ardentbot.core.commands.*
+import com.ardentbot.core.commands.Argument
+import com.ardentbot.core.commands.Command
+import com.ardentbot.core.commands.ELEVATED_PERMISSIONS
+import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.kotlin.*
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
@@ -10,16 +14,17 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 @ModuleMapping("admin")
 class LeaveMessageCommand : Command("leavemessage", arrayOf("lm"), null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        when (arguments.getOrNull(0)) {
-            "params" -> {
+        val arg = arguments.getOrNull(0)
+        when {
+            arg?.isTranslatedArgument("params", event.guild, register) == true -> {
                 val params = listOf(
-                        Pair("user", "displays the name of the user who has just left"),
-                        Pair("server", "replaced with the name of the server"),
-                        Pair("serversize", "replaced with the amount of users in this server")
+                        Pair("user", translate("messages.user_param", event, register)),
+                        Pair("server", translate("messages.server_param", event, register)),
+                        Pair("serversize", translate("messages.server_size", event, register))
                 )
-                val embed = getEmbed("Parameters | Leave Message", event.author, event.guild)
-                        .appendDescription("""In the leave message, you can use the following parameters to give
-                            |your server a more customized appearance.""".trimMargin() + "\n")
+                val embed = getEmbed(translate("leavemessage.params_title", event, register), event.author, event.guild)
+                        .appendDescription(translate("messages.params_explanation", event, register)
+                                .apply(translate("leavemessage.lm", event, register)) + "\n")
                         .appendDescription(
                                 params.joinToString("\n") {
                                     Emojis.SMALL_BLUE_DIAMOND.cmd + "**[${it.first}]**" + " " + it.second
@@ -27,78 +32,83 @@ class LeaveMessageCommand : Command("leavemessage", arrayOf("lm"), null) {
                         )
                 register.sender.cmdSend(embed, this, event)
             }
-            "view" -> {
+            arg?.isTranslatedArgument("view", event.guild, register) == true -> {
                 val data = register.database.getGuildData(event.guild)
-                val embed = getEmbed("Leave Message | Ardent", event.author, event.guild)
-                        .appendDescription("**Message**: " + (data.leaveMessage.message
-                                ?: "No message has been set up"))
+                val embed = getEmbed(translate("leavemessage.view_title", event, register), event.author, event.guild)
+                        .appendDescription(translate("messages.message_heading", event, register) + " " +
+                                (data.leaveMessage.message ?: translate("messages.no_message", event, register)))
                         .appendDescription("\n")
-                        .appendDescription("**Channel** to send message to: " +
+                        .appendDescription(translate("messages.where_send", event, register) + " " +
                                 (data.leaveMessage.channelId?.toChannel(event.guild)?.asMention
-                                        ?: "No channel has been set up"))
+                                        ?: translate("messages.no_channel", event, register)))
                         .appendDescription("\n\n")
-                        .appendDescription("You can change these settings. See how with /leavemessage")
+                        .appendDescription(translate("messages.how_change", event, register).apply("/lm"))
                 register.sender.cmdSend(embed, this, event)
             }
-            "set" -> {
+            arg?.isTranslatedArgument("set", event.guild, register) == true -> {
                 if (invokePrecondition(ELEVATED_PERMISSIONS(listOf(Permission.MANAGE_SERVER)), event, arguments, flags, register)) {
                     if (arguments.size == 1) register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd
-                            + "You need to add a message", this, event)
+                            + translate("messages.add_message", event, register), this, event)
                     else {
                         val data = register.database.getGuildData(event.guild)
                         val old = data.leaveMessage.message
                         data.leaveMessage.message = arguments.without(0).concat()
                         register.database.update(data)
-                        register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd +
-                                "You set the leave message to: **[]**\nOld message: **[]**"
-                                        .apply(data.leaveMessage.message!!, old ?: "None"), this, event)
+                        event.channel.send(Emojis.BALLOT_BOX_WITH_CHECK.cmd +
+                                translate("general.update", event, register).apply(translate("leavemessage.lm", event, register),
+                                        data.leaveMessage.message!!, old
+                                        ?: translate("general.none", event, register)), register)
                         if (data.leaveMessage.channelId == null) {
                             register.sender.cmdSend(Emojis.WARNING_SIGN.cmd +
-                                    "Warning! You've set a leave message, but not specified a channel to send it to. Without one set up, your automessage won't work", this, event)
+                                    translate("messages.setup_warning", event, register), this, event)
                         }
                     }
                 }
             }
-            "channel" -> {
+            arg?.isTranslatedArgument("channel", event.guild, register) == true -> {
                 if (invokePrecondition(ELEVATED_PERMISSIONS(listOf(Permission.MANAGE_SERVER)), event, arguments, flags, register)) {
                     if (arguments.size == 1) register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd
-                            + "You need to add a message", this, event)
+                            + translate("messages.add_message", event, register), this, event)
                     else {
                         val channel = event.message.mentionedChannels.getOrNull(0)
                                 ?: event.guild.getTextChannelsByName(arguments.without(0).concat(), true).getOrNull(0)
                         if (channel == null) register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd +
-                                "You need to specify a valid channel name or mention", this, event)
+                                translate("general.specify_channel", event, register), this, event)
                         else {
                             val data = register.database.getGuildData(event.guild)
-                            val old = data.leaveMessage.channelId?.let { event.guild.getTextChannelById(it)}
+                            val old = data.leaveMessage.channelId?.let { event.guild.getTextChannelById(it) }
                             data.leaveMessage.channelId = channel.id
                             register.database.update(data)
                             register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd +
-                                    "You set the leave message channel to: **[]**\nOld channel: **[]**"
-                                            .apply(channel.name, old?.name ?: "None"), this, event)
+                                    translate("general.update", event, register).apply(translate("leavemessage.channel", event, register),
+                                            channel.name, old?.name
+                                            ?: translate("general.none", event, register)), this, event)
                         }
                     }
                 }
             }
-            "remove" -> {
+            arg?.isTranslatedArgument("remove", event.guild, register) == true -> {
                 if (invokePrecondition(ELEVATED_PERMISSIONS(listOf(Permission.MANAGE_SERVER)), event, arguments, flags, register)) {
                     val data = register.database.getGuildData(event.guild)
-                    when (arguments.getOrNull(1)) {
-                        "message" -> {
+                    when {
+                        arguments.getOrNull(1)?.isTranslatedPhrase("general.message", event.guild, register) == true -> {
                             val old = data.leaveMessage.message
                             data.leaveMessage.message = null
                             register.database.update(data)
+
                             register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd +
-                                    "You set the leave message to: **[]**\nOld message: **[]**"
-                                            .apply("None", old ?: "None"), this, event)
+                                    translate("general.update", event, register).apply(translate("leavemessage.lm", event, register),
+                                            translate("general.none", event, register), old
+                                            ?: translate("general.none", event, register)), this, event)
                         }
-                        "channel" -> {
+                        arguments.getOrNull(1)?.isTranslatedArgument("channel", event.guild, register) == true -> {
                             val old = data.leaveMessage.channelId?.let { event.guild.getTextChannelById(it) }
                             data.leaveMessage.channelId = null
                             register.database.update(data)
                             register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd +
-                                    "You set the leave message channel to: **[]**\nOld channel: **[]**"
-                                            .apply("None", old?.name ?: "None"), this, event)
+                                    translate("general.update", event, register).apply(translate("leavemessage.channel", event, register),
+                                            translate("general.none", event, register), old?.name
+                                            ?: translate("general.none", event, register)), this, event)
                         }
                         else -> displayHelp(event, arguments, flags, register)
                     }
