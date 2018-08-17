@@ -22,7 +22,7 @@ class Stop : Command("stop", null, null) {
             managers.remove(audioManager.guild.idLong)
             event.guild.audioManager.closeAudioConnection()
             audioManager.scheduler.autoplay = false
-            event.channel.send(Emojis.HEAVY_CHECK_MARK.cmd + "Destroyed the music player", register)
-        } else event.channel.send(Emojis.HEAVY_MULTIPLICATION_X.cmd + "I'm not in a voice channel!", register)
+            event.channel.send(Emojis.HEAVY_CHECK_MARK.cmd + translate("stop.response", event, register), register)
+        } else event.channel.send(Emojis.HEAVY_MULTIPLICATION_X.cmd + translate("music.not_in_voice", event, register), register)
     }
 }

@@ -17,11 +17,11 @@ class Resume : Command("resume", null, null) {
         if (!event.member.checkSameChannel(event.channel, register) || !event.member.hasPermission(event.channel, register, musicCommand = true)) return
         val audioManager = event.guild.getAudioManager(event.channel, register)
         when {
-            audioManager.player.playingTrack == null -> event.channel.send("There isn't a playing track!", register)
-            !audioManager.player.isPaused -> event.channel.send("The player isn't paused!", register)
+            audioManager.player.playingTrack == null -> event.channel.send(translate("music.no_playing",event, register), register)
+            !audioManager.player.isPaused -> event.channel.send(translate("resume.player_not_paused",event, register), register)
             else -> {
                 audioManager.player.isPaused = false
-                event.channel.send("Resumed playback" + " ${Emojis.WHITE_HEAVY_CHECKMARK}", register)
+                event.channel.send(translate("resume.response",event, register) + " ${Emojis.WHITE_HEAVY_CHECKMARK}", register)
             }
         }
     }

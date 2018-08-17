@@ -15,24 +15,23 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 @ModuleMapping("music")
 class Queue : Command("queue", arrayOf("q"), null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        val embed = getEmbed("Current Music Queue",event.author,event.guild)
-        val audioManager = event.guild.getAudioManager(event.channel,register)
+        val embed = getEmbed("Current Music Queue", event.author, event.guild)
+        val audioManager = event.guild.getAudioManager(event.channel, register)
         if (audioManager.manager.current == null) {
-            embed.appendDescription(Emojis.INFORMATION_SOURCE.symbol + " " + "There aren't any currently playing tracks!")
-            embed.appendDescription("\n\n" + "You can view the queue online by clicking [here]([])".apply("https://ardentbot.com/music/queue/${event.guild.id}"))
+            embed.appendDescription(Emojis.INFORMATION_SOURCE.cmd + translate("music.no_playing", event, register))
+            embed.appendDescription("\n\n" + translate("queue.view_online", event, register).apply("https://ardentbot.com/music/queue/${event.guild.id}"))
         } else {
             if (audioManager.manager.queue.size == 0) {
-                embed.appendDescription("There are no songs in the queue!")
-            }
-            else {
+                embed.appendDescription(translate("queue.no_songs_in_queue", event, register))
+            } else {
                 var current = 1
                 audioManager.manager.queue.stream().limit(10).forEachOrdered {
-                    embed.appendDescription("#$current: " + it.getInfo(event.guild,register) + "\n")
+                    embed.appendDescription("#$current: " + it.getInfo(event.guild, register) + "\n")
                     current++
                 }
             }
-            embed.appendDescription("\n\n" + "You can view the queue online by clicking [here]([])".apply("https://ardentbot.com/music/queue/${event.guild.id}"))
+            embed.appendDescription("\n\n" + translate("queue.view_online", event, register).apply("https://ardentbot.com/music/queue/${event.guild.id}"))
         }
-        event.channel.send(embed,register)
+        event.channel.send(embed, register)
     }
 }

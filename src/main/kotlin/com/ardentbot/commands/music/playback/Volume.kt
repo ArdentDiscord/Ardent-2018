@@ -17,16 +17,15 @@ class Volume : Command("volume", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         val audioManager = event.guild.getAudioManager(event.channel, register)
         if (arguments.isEmpty()) event.channel.send(Emojis.PUBLIC_ADDRESS_LOUDSPEAKER.cmd +
-                "The volume of your server's music player is **[]**%. Change it using */volume [percent from 1 to 100 here]*"
-                        .apply(audioManager.player.volume), register)
+                translate("volume.info", event, register).apply(audioManager.player.volume), register)
         else {
             if (event.member.hasPermission(event.channel, register, true) && event.member.checkSameChannel(event.channel, register)) {
                 val volume = arguments[0].replace("%", "").toIntOrNull()
                 if (volume == null || volume < 0 || volume > 100) {
-                    event.channel.send(Emojis.HEAVY_MULTIPLICATION_X.cmd + "You need to specify a valid percentage!", register)
+                    event.channel.send(Emojis.HEAVY_MULTIPLICATION_X.cmd + translate("general.valid_percentage", event, register), register)
                 } else {
                     audioManager.player.volume = volume
-                    event.channel.send(Emojis.PUBLIC_ADDRESS_LOUDSPEAKER.cmd + "Successfully set Ardent volume to **[]**%".apply(volume), register)
+                    event.channel.send(Emojis.PUBLIC_ADDRESS_LOUDSPEAKER.cmd + translate("volume.response", event, register).apply(volume), register)
                 }
             }
         }

@@ -15,21 +15,22 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 @ModuleMapping("music")
 class Goto : Command("goto", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        if (arguments.isEmpty()) event.channel.send("Use this command to go to specific points in a track. For example, to go to **1 minute, 23 seconds** into a track, use */goto 1:23*", register)
+        if (arguments.isEmpty()) event.channel.send(translate("goto.how", event, register), register)
         else {
             val split = arguments[0].split(":")
             val minutes = split.getOrNull(0)?.toIntOrNull()
             val seconds = split.getOrNull(1)?.toIntOrNull()
-            if (split.size != 2 || minutes == null || seconds == null) event.channel.send("Use this command to go to specific points in a track. For example, to go to **1 minute, 23 seconds** into a track, use */goto 1:23*", register)
+            if (split.size != 2 || minutes == null || seconds == null) event.channel.send(translate("goto.how",event, register), register)
             else {
                 val audioManager = event.guild.getAudioManager(event.channel, register)
-                if (audioManager.manager.current == null) event.channel.send("There isn't a currently playing track!", register)
+                if (audioManager.manager.current == null) event.channel.send(translate("music.no_playing",event, register), register)
                 else if (event.member.hasPermission(event.channel, register, true) && event.member.checkSameChannel(event.channel, register)) {
                     if (minutes * 60 + seconds < 0 || minutes * 60 + seconds > audioManager.player.playingTrack.duration / 1000) {
-                        event.channel.send("You entered an invalid position!", register)
+                        event.channel.send(translate("goto.invalid_position",event, register), register)
                     } else {
                         audioManager.player.playingTrack.position = ((minutes * 60 + seconds) * 1000).toLong()
-                        event.channel.send(Emojis.BALLOT_BOX_WITH_CHECK.cmd + "Went to **[]** in the track".apply(arguments[0]), register)
+                        event.channel.send(Emojis.BALLOT_BOX_WITH_CHECK.cmd +
+                                translate("goto.response",event, register).apply(arguments[0]), register)
                     }
                 }
             }

@@ -18,8 +18,8 @@ class Repeat : Command("repeat", null, null) {
             val audioManager = event.guild.getAudioManager(event.channel, register)
             if (audioManager.manager.current != null) {
                 audioManager.manager.addToBeginningOfQueue(audioManager.manager.current!!)
-                event.channel.send(Emojis.WHITE_HEAVY_CHECKMARK.symbol + " " + "Added the current track to the front of the queue", register)
-            } else event.channel.send("There isn't a currently playing track!", register)
+                event.channel.send(Emojis.WHITE_HEAVY_CHECKMARK.cmd + translate("repeat.response", event, register), register)
+            } else event.channel.send(translate("music.no_playing", event, register), register)
         }
     }
 }

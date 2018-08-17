@@ -18,7 +18,7 @@ class ClearQueue : Command("clearqueue", arrayOf("clearq", "cq"), null) {
             val audioManager = event.guild.getAudioManager(event.channel, register)
             audioManager.scheduler.autoplay = false
             audioManager.manager.resetQueue()
-            event.channel.send(Emojis.BALLOT_BOX_WITH_CHECK.symbol + " " + "Successfully cleared the queue", register)
+            event.channel.send(Emojis.BALLOT_BOX_WITH_CHECK.cmd + translate("cq.response", event, register), register)
         }
     }
 }

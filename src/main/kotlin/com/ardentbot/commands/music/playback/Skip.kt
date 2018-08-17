@@ -20,9 +20,9 @@ class Skip : Command("skip", null, null) {
         val manager = event.guild.getAudioManager(event.channel, register)
         if (manager.player.playingTrack == null) return
         val track = manager.manager.current!!
-        event.channel.send("Skipped current track: **[]** by *[]* [] - added by **[]**"
+        event.channel.send(translate("skip.response", event, register) + translate("music.play_info", event, register)
                 .apply(track.track!!.info.title, track.track!!.info.author, track.track!!.getCurrentTime(), register.getUser(track.user)?.display()
-                        ?: "unable to determine track owner"), register)
+                        ?: translate("unknown", event, register)), register)
         manager.scheduler.autoplay = false
         manager.player.playingTrack.position = manager.player.playingTrack.duration - 1
     }

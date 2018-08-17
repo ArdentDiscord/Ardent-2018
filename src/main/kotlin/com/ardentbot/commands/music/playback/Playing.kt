@@ -15,11 +15,12 @@ class Playing : Command("playing", arrayOf("np"), null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         val manager = event.guild.getAudioManager(event.channel, register)
         val player = manager.player
-        if (player.playingTrack == null) event.channel.send("There isn't a playing track!", register)
+        if (player.playingTrack == null) event.channel.send(translate("music.no_playing", event, register), register)
         else {
             val track = manager.manager.current!!
-            event.channel.send(track.getInfo(event.guild, register,true), register)
-            if (manager.player.isPaused) event.channel.send(Emojis.INFORMATION_SOURCE.symbol + " " + "The player is currently paused", register)
+            event.channel.send(track.getInfo(event.guild, register, true), register)
+            if (manager.player.isPaused) event.channel.send(Emojis.INFORMATION_SOURCE.cmd +
+                    translate("music.currently_paused", event, register), register)
         }
 
     }
