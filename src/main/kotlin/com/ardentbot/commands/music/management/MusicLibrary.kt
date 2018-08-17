@@ -21,11 +21,14 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 @ModuleMapping("music")
 class MusicLibrary : Command("musiclibrary", arrayOf("library", "mymusic"), null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        when (arguments.getOrNull(0)) {
-            "view" -> event.channel.send("You can view your music library at []".apply("$base/profile/${event.author.id}"), register)
-            "add" -> {
+        val arg = arguments.getOrNull(0)
+        when {
+            arg?.isTranslatedArgument("view", event.guild, register) == true -> {
+                event.channel.send(translate("musiclibrary.view_at", event, register).apply("$base/profile/${event.author.id}"), register)
+            }
+            arg?.isTranslatedArgument("add", event.guild, register) == true -> {
                 if (arguments.isEmpty()) {
-                    event.channel.send("Please specify a song link or name", register)
+                    event.channel.send(translate("music.specify_song", event, register), register)
                 } else {
                     val library = register.database.getMusicLibrary(event.author.id)
                     arguments.concat().loadExternally(register) { audioTrack, _ ->
@@ -36,34 +39,35 @@ class MusicLibrary : Command("musiclibrary", arrayOf("library", "mymusic"), null
                     }
                 }
             }
-            "reset" -> {
-                event.channel.send(Emojis.INFORMATION_SOURCE.cmd + "Are you sure you want to reset your library? Type **yes** to continue", register)
+            arg?.isTranslatedArgument("reset", event.guild, register) == true -> {
+                event.channel.send(Emojis.INFORMATION_SOURCE.cmd + translate("musiclibrary.reset_warning", event, register), register)
                 Sender.waitForMessage({ it.author.id == event.author.id && it.channel.id == event.channel.id && it.guild.id == event.guild.id }, {
-                    if (it.message.contentRaw.startsWith("y", true)) {
+                    if (it.message.contentRaw.startsWith("y", true) || it.message.contentRaw.isTranslatedPhrase("yes", event.guild, register)) {
                         val library = register.database.getMusicLibrary(event.author.id)
                         library.tracks = mutableListOf()
                         register.database.update(library)
-                        event.channel.send(Emojis.BALLOT_BOX_WITH_CHECK.cmd + "Successfully reset your music library", register)
-                    } else event.channel.send("**Yes** wasn't provided, so I cancelled the reset", register)
+                        event.channel.send(Emojis.BALLOT_BOX_WITH_CHECK.cmd + translate("musiclibrary.reset_success", event, register), register)
+                    } else event.channel.send(translate("musiclibrary.reset_cancel", event, register), register)
                 })
             }
-            "remove" -> event.channel.send("You can remove tracks at []. You need to sign in!".apply("$base/profile/${event.author.id}"), register)
-            "play" -> {
+            arg?.isTranslatedArgument("remove", event.guild, register) == true -> {
+                event.channel.send(translate("musiclibrary.how_remove", event, register).apply("$base/profile/${event.author.id}"), register)
+            }
+            arg?.isTranslatedArgument("play", event.guild, register) == true -> {
                 val library = register.database.getMusicLibrary(event.author.id)
                 if (library.tracks.size == 0) event.channel.send(Emojis.HEAVY_MULTIPLICATION_X.cmd +
-                        "You don't have any tracks in your music library! Add some at [] or import your music library from **Spotify** with /mymusic import".apply("$base/profile/${event.author.id}")
+                        translate("musiclibrary.how_add_import", event, register).apply("$base/profile/${event.author.id}")
                         , register)
                 else {
-                    event.channel.send("Started loading **[]** tracks from your music library..".apply(library.tracks.size), register)
+                    event.channel.send(translate("musiclibrary.loading", event, register).apply(library.tracks.size), register)
                     library.load(event.member, event.channel, register)
                 }
             }
-            "import" -> {
+            arg?.isTranslatedArgument("import", event.guild, register) == true -> {
                 val url = register.spotifyApi.getAuthUrl(SpotifyClientAPI.Scope.USER_LIBRARY_READ, SpotifyClientAPI.Scope.PLAYLIST_READ_COLLABORATIVE,
                         SpotifyClientAPI.Scope.PLAYLIST_READ_PRIVATE, redirectUri = "$base/api/oauth/spotify") + "&state=${event.author.id}"
                 event.author.openPrivateChannel().queue { channel ->
-                    channel.sendMessage("To import your Spotify music library and add the tracks to your Ardent library, please login with your Spotify account using the following link: []"
-                            .apply(url)).queue { message ->
+                    channel.sendMessage(translate("musiclibrary.import_how", event, register).apply(url)).queue { message ->
                         ExternalAction.waitSpotify(event.member, event.channel, register) { any ->
                             message.delete().queue()
                             val client = any as SpotifyClientAPI
@@ -83,8 +87,8 @@ class MusicLibrary : Command("musiclibrary", arrayOf("library", "mymusic"), null
 
                                 register.database.update(library)
                                 register.sender.cmdSend(Emojis.HEAVY_CHECK_MARK.cmd +
-                                        "Imported **[]** tracks from your Spotify library. View here: []"
-                                                .apply(tracks.size, "$base/profile/${event.author.id}"), this, event)
+                                        translate("musiclibrary.successful_import", event, register).apply(tracks.size,
+                                                "$base/profile/${event.author.id}"), this, event)
                             }
                         }
                     }
