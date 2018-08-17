@@ -3,8 +3,10 @@ package com.ardentbot.commands.music
 
 import com.ardentbot.commands.games.send
 import com.ardentbot.core.ArdentRegister
+import com.ardentbot.core.database.getLanguage
 import com.ardentbot.core.playerManager
 import com.ardentbot.core.selectFromList
+import com.ardentbot.core.translation.Language
 import com.ardentbot.core.youtube
 import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.apply
@@ -27,7 +29,8 @@ val DEFAULT_TRACK_LOAD_HANDLER: (Member, TextChannel, AudioTrack, Boolean, Datab
         /* Spotify Playlist Id */, String? /* Spotify Album Id */, String? /* Spotify track id */, ArdentRegister) -> Unit =
         { member, channel, track, isQuiet, musicPlaylist, spotifyPlaylist, spotifyAlbum, spotifyTrack, register ->
             if (!isQuiet) channel.send("${Emojis.BALLOT_BOX_WITH_CHECK} " + (if (member.user.id == member.guild.selfMember.user.id) "**[Autoplay]**" else "")
-                    + "Adding **[]** by **[]** to the queue *[]*...".apply(track.info.title, track.info.author, track.getDurationString()), register)
+                    + register.translationManager.translate("music.add_to_queue", member.guild.getLanguage(register)
+                    ?: Language.ENGLISH).apply(track.info.title, track.info.author, track.getDurationString()), register)
             play(channel, member, LocalTrackObj(member.user.id, musicPlaylist?.owner
                     ?: member.user.id, musicPlaylist?.toLocalPlaylist(member),
                     spotifyPlaylist ?: musicPlaylist?.spotifyPlaylistId, spotifyAlbum
@@ -36,8 +39,8 @@ val DEFAULT_TRACK_LOAD_HANDLER: (Member, TextChannel, AudioTrack, Boolean, Datab
 
 val DEFAULT_YOUTUBE_PLAYLIST_LOAD_HANDLER: (Member, TextChannel, AudioPlaylist, Boolean, DatabaseMusicPlaylist?, ArdentRegister) -> Unit =
         { member, channel, tracksPlaylist, isQuiet, musicPlaylist, register ->
-            if (!isQuiet) channel.send("Loading YouTube playlist **[]** *[] tracks*"
-                    .apply(tracksPlaylist.name, tracksPlaylist.tracks.size), register)
+            if (!isQuiet) channel.send(register.translationManager.translate("music.add_youtube_playlist", member.guild.getLanguage(register)
+                    ?: Language.ENGLISH).apply(tracksPlaylist.name, tracksPlaylist.tracks.size), register)
             tracksPlaylist.tracks.forEach { track ->
                 play(channel, member, LocalTrackObj(member.user.id, musicPlaylist?.owner
                         ?: member.user.id, musicPlaylist?.toLocalPlaylist(member),
@@ -59,6 +62,7 @@ fun String.load(member: Member, channel: TextChannel, register: ArdentRegister, 
 
 fun String.loadYoutube(member: Member, channel: TextChannel, register: ArdentRegister, musicPlaylist: DatabaseMusicPlaylist? = null, search: Boolean = false, lucky: Boolean, consumer: ((AudioTrack) -> Unit)? = null) {
     val autoplay = member == member.guild.selfMember
+    val language = member.guild.getLanguage(register) ?: Language.ENGLISH
     playerManager.loadItemOrdered(member.guild.getAudioManager(channel, register), this, object : AudioLoadResultHandler {
         override fun trackLoaded(track: AudioTrack) {
             if (consumer != null) consumer.invoke(track)
@@ -75,8 +79,10 @@ fun String.loadYoutube(member: Member, channel: TextChannel, register: ArdentReg
                         }
                         autoplay -> {
                             val track = playlist.tracks[0]
-                            channel.send("${Emojis.BALLOT_BOX_WITH_CHECK} " + "[**Ardent Autoplay**]" + " " + "Adding **[]** by **[]** to the queue *[]*..."
-                                    .apply(track.info.title, track.info.author, track.getDurationString()), register)
+                            channel.send(Emojis.BALLOT_BOX_WITH_CHECK.cmd +
+                                    register.translationManager.translate("music.autoplay_response", language) + " " +
+                                    register.translationManager.translate("music.add_to_queue", language)
+                                            .apply(track.info.title, track.info.author, track.getDurationString()), register)
                             DEFAULT_TRACK_LOAD_HANDLER(member, channel, track, true, musicPlaylist, null, null, null, register)
                         }
                         else -> {
@@ -89,7 +95,7 @@ fun String.loadYoutube(member: Member, channel: TextChannel, register: ArdentReg
                                         .map { playlist.tracks[it - 1] }
                                         .map { it.info }
                                         .mapTo(selectFrom) { "${it.title} by *${it.author}*" }
-                                channel.selectFromList(member, "Select Song", selectFrom, { response, _ ->
+                                channel.selectFromList(member, register.translationManager.translate("music.select_song", language), selectFrom, { response, _ ->
                                     val track = playlist.tracks[response]
                                     DEFAULT_TRACK_LOAD_HANDLER(member, channel, track, false, musicPlaylist, null, null, null, register)
                                 }, register = register)
@@ -107,21 +113,21 @@ fun String.loadYoutube(member: Member, channel: TextChannel, register: ArdentReg
         override fun loadFailed(exception: FriendlyException) {
             if (exception.localizedMessage.contains("Something went wrong") || exception.localizedMessage.contains("503")) {
                 val results = this@loadYoutube.removePrefix("ytsearch:").searchYoutubeOfficialApi(register)
-                if (results == null || results.isEmpty()) channel.send("This track wasn't found on YouTube!", register)
+                if (results == null || results.isEmpty()) channel.send(register.translationManager.translate("music.not_found_youtube", language), register)
                 else {
-                    if (!autoplay) channel.selectFromList(member, "Select Song", results.map { it.first }.toMutableList(),
+                    if (!autoplay) channel.selectFromList(member, register.translationManager.translate("music.select_song", language), results.map { it.first }.toMutableList(),
                             { response, _ ->
                                 "https://www.youtube.com/watch?v=${results[response].second}"
                                         .loadYoutube(member, channel, register, musicPlaylist, false, lucky = lucky)
                             }, register = register)
                     else "https://www.youtube.com/watch?v=${results[0].second}".loadYoutube(member, channel, register, musicPlaylist, false, lucky = lucky)
                 }
-            } else channel.send("Something went wrong :/ **Exception**: []".apply(exception.localizedMessage), register)
+            } else channel.send(register.translationManager.translate("error.something_went_wrong", language).apply(exception.localizedMessage), register)
         }
 
         override fun noMatches() {
             if (search) {
-                if (!autoplay) channel.send("I was unable to find a track with that name. Please try again with a different query", register)
+                if (!autoplay) channel.send(register.translationManager.translate("music.track_not_found", language), register)
             } else "ytsearch:${this@loadYoutube}".loadYoutube(member, channel, register, musicPlaylist, true, consumer = consumer, lucky = lucky)
         }
     })
@@ -131,19 +137,22 @@ fun String.loadYoutube(member: Member, channel: TextChannel, register: ArdentReg
 fun String.loadSpotifyTrack(member: Member, channel: TextChannel, register: ArdentRegister, musicPlaylist: DatabaseMusicPlaylist? = null, consumerFoundTrack: ((AudioTrack, String) -> Unit)? = null) {
     register.spotifyApi.tracks.getTrack(this.removePrefix("https://open.spotify.com/track/")).queue { track ->
         track?.let {
-            "${it.name} ${it.artists.joinToString(", ") { it.name }}".getSingleTrack(member, channel, { _, _, loaded ->
+            "${it.name} ${it.artists.joinToString(", ") { artist -> artist.name }}".getSingleTrack(member, channel, { _, _, loaded ->
                 consumerFoundTrack?.invoke(loaded, track.id)
                         ?: DEFAULT_TRACK_LOAD_HANDLER(member, channel, loaded, false, musicPlaylist, null, null, track.id, register)
             }, register, false, false)
-        } ?: channel.send(" You need to specify a valid Spotify track!", register)
+        }
+                ?: channel.send(register.translationManager.translate("music.specify_valid_spotify_track", member.guild.getLanguage(register)
+                        ?: Language.ENGLISH), register)
     }
 }
 
 fun String.loadSpotifyAlbum(member: Member, channel: TextChannel, register: ArdentRegister, musicPlaylist: DatabaseMusicPlaylist? = null, consumerFoundTrack: ((AudioTrack, String) -> Unit)? = null) {
     val albumId = removePrefix("https://open.spotify.com/album/")
+    val language = member.guild.getLanguage(register) ?: Language.ENGLISH
     register.spotifyApi.albums.getAlbum(albumId).queue { album ->
         if (album != null) {
-            channel.send("Beginning track loading from Spotify album **[]**... This could take a few minutes!".apply(album.name), register)
+            channel.send(register.translationManager.translate("music.beginning_spotify_album", language).apply(album.name), register)
             album.tracks.items.forEach { track ->
                 "${track.name} ${track.artists[0].name}"
                         .getSingleTrack(member, channel, { _, _, loaded ->
@@ -152,19 +161,20 @@ fun String.loadSpotifyAlbum(member: Member, channel: TextChannel, register: Arde
                                             musicPlaylist, null, album.id, track.id, register)
                         }, register, true)
             }
-        } else channel.send("You provided an invalid album url!", register)
+        } else channel.send(register.translationManager.translate("music.invalid_spotify_album", language), register)
     }
 }
 
 fun String.loadSpotifyPlaylist(member: Member, channel: TextChannel, register: ArdentRegister, musicPlaylist: DatabaseMusicPlaylist? = null, consumerFoundTrack: ((AudioTrack, String) -> (Unit))? = null) {
+    val language = member.guild.getLanguage(register) ?: Language.ENGLISH
     val split = removePrefix("https://open.spotify.com/user/").split("/playlist/")
     val user = split.getOrNull(0)
     val playlistId = split.getOrNull(1)
-    if (user == null || playlistId == null) channel.send("You provided an invalid Spotify playlist url!", register)
+    if (user == null || playlistId == null) channel.send(register.translationManager.translate("music.invalid_spotify_playlist", language), register)
     else {
         register.spotifyApi.playlists.getPlaylist(user, playlistId).queue { playlist ->
             if (playlist != null) {
-                channel.send("Beginning track loading from Spotify playlist **[]**... This could take a few minutes!".apply(playlist.name), register)
+                channel.send(register.translationManager.translate("music.beginning_spotify_playlist", language).apply(playlist.name), register)
                 playlist.tracks.items.forEach { track ->
                     "${track.track.name} ${track.track.artists[0].name}"
                             .getSingleTrack(member, channel, { _, _, loaded ->
@@ -173,7 +183,7 @@ fun String.loadSpotifyPlaylist(member: Member, channel: TextChannel, register: A
                                                 musicPlaylist, playlist.id, null, track.track.id, register)
                             }, register, true)
                 }
-            } else channel.send("You provided an invalid Spotify playlist url!", register)
+            } else channel.send(register.translationManager.translate("music.invalid_spotify_playlist", language), register)
         }
     }
 }

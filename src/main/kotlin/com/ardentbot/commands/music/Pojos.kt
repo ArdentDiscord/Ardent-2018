@@ -4,6 +4,8 @@ import com.ardentbot.commands.games.send
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.database.DbObject
 import com.ardentbot.core.database.asPojo
+import com.ardentbot.core.database.getLanguage
+import com.ardentbot.core.translation.Language
 import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.apply
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
@@ -18,7 +20,8 @@ class DatabaseMusicLibrary(id: String, var tracks: MutableList<DatabaseTrackObj>
                 play(channel, member, LocalTrackObj(id as String, id as String, null, null, null, null, loaded), register)
             }
         }
-        channel.send(Emojis.WHITE_HEAVY_CHECKMARK.cmd + "Loaded all **[]** tracks.. Starting playback now!".apply(tracks.size), register)
+        channel.send(Emojis.WHITE_HEAVY_CHECKMARK.cmd + register.translationManager.translate("music.loaded_ardent_tracks",
+                member.guild.getLanguage(register) ?: Language.ENGLISH).apply(tracks.size), register)
     }
 }
 

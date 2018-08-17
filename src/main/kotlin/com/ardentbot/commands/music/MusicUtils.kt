@@ -4,8 +4,10 @@ import com.adamratzman.spotify.utils.SimpleTrack
 import com.ardentbot.commands.games.send
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Sender
+import com.ardentbot.core.database.getLanguage
 import com.ardentbot.core.managers
 import com.ardentbot.core.playerManager
+import com.ardentbot.core.translation.Language
 import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.display
@@ -154,22 +156,22 @@ class TrackScheduler(val manager: GuildMusicManager, val guild: Guild) : AudioEv
                                         ?.complete()?.tracks
                             }
                         }?.getOrNull(0)
+                        val language = guild.getLanguage(manager.register) ?: Language.ENGLISH
                         if (recommendation != null) {
                             val channel = manager.channel ?: guild.defaultChannel
                             if (channel != null) {
                                 "https://open.spotify.com/track/${recommendation.id}"
                                         .loadSpotifyTrack(guild.selfMember, channel, consumerFoundTrack = { audioTrack, _ ->
-                                            channel.send("${Emojis.BALLOT_BOX_WITH_CHECK} " + "**[Autoplay]** "
-                                                    + "Adding **[]** by **[]** to the queue *[]*...".apply(recommendation.name, recommendation.artists.joinToString { it.name },
+                                            channel.send(Emojis.BALLOT_BOX_WITH_CHECK.cmd + manager.register.translationManager.translate("autoplay.prefix", language) + " "
+                                                    + manager.register.translationManager.translate("music.add_to_queue", language).apply(recommendation.name, recommendation.artists.joinToString { it.name },
                                                     audioTrack.getDurationString()), manager.register)
                                             play(channel, guild.selfMember, LocalTrackObj(guild.selfMember.user.id, guild.selfMember.user.id, null,
                                                     null, null, recommendation.id, audioTrack), manager.register)
                                         }, register = manager.register)
                                 return
                             }
-                        } else manager.channel?.send("Couldn't find this song in the Spotify database, no autoplay available.", manager.register)
-                    }
-                    catch (e:Exception) {
+                        } else manager.channel?.send(manager.register.translationManager.translate("autoplay.could_not_find", language), manager.register)
+                    } catch (e: Exception) {
                         e.printStackTrace()
                     }
                 }
@@ -182,8 +184,8 @@ class TrackScheduler(val manager: GuildMusicManager, val guild: Guild) : AudioEv
 
     override fun onTrackStuck(player: AudioPlayer, track: AudioTrack, thresholdMs: Long) {
         manager.manager.skipToNextTrack()
-        manager.channel?.send("${Emojis.BALLOT_BOX_WITH_CHECK} " + "Oh no! My voice connection got stuck (#blamediscord) - I'll attempt to skip now now - If you encounter this repeatedly, please make me leave then rejoin the channel!",
-                manager.register)
+        manager.channel?.send(Emojis.BALLOT_BOX_WITH_CHECK.cmd + manager.register.translationManager.translate("music.voice_stuck", guild.getLanguage(manager.register)
+                ?: Language.ENGLISH), manager.register)
     }
 
     override fun onTrackException(player: AudioPlayer, track: AudioTrack, exception: FriendlyException) {
@@ -193,7 +195,8 @@ class TrackScheduler(val manager: GuildMusicManager, val guild: Guild) : AudioEv
     private fun onException(exception: FriendlyException) {
         manager.manager.current = null
         manager.manager.skipToNextTrack()
-        manager.channel?.send("I couldn't play that track, sorry :( - Reason: *[]*".apply(exception.localizedMessage), manager.register)
+        manager.channel?.send(manager.register.translationManager.translate("error.something_went_wrong", guild.getLanguage(manager.register)
+                ?: Language.ENGLISH).apply(exception.localizedMessage), manager.register)
     }
 }
 
@@ -242,8 +245,8 @@ fun VoiceChannel.connect(textChannel: TextChannel?, register: ArdentRegister, co
         audioManager.openAudioConnection(this)
         true
     } catch (e: Throwable) {
-        if (complain) textChannel?.send("${Emojis.CROSS_MARK} " + "I can't join the **[]** voice channel! Reason: *[]*".apply(name, e.localizedMessage),
-                register)
+        if (complain) textChannel?.send(Emojis.CROSS_MARK.cmd + register.translationManager.translate("music.cannot_join_vc",
+                guild.getLanguage(register) ?: Language.ENGLISH).apply(name, e.localizedMessage), register)
         false
     }
 }
@@ -251,7 +254,8 @@ fun VoiceChannel.connect(textChannel: TextChannel?, register: ArdentRegister, co
 fun play(channel: TextChannel?, member: Member, track: LocalTrackObj, register: ArdentRegister) {
     if (member.voiceState.channel != null) member.voiceState.channel.connect(channel, register)
     else {
-        channel?.send("Unable to join voice channel.. Are you sure you're in one?", register)
+        channel?.send(register.translationManager.translate("music.unable_join_vc", member.guild.getLanguage(register)
+                ?: Language.ENGLISH), register)
         return
     }
     member.guild.getAudioManager(channel, register).manager.queue(track)
@@ -265,7 +269,8 @@ fun List<LocalTrackObj>.toTrackDisplay(): List<TrackDisplay> {
 }
 
 fun LocalTrackObj.getInfo(guild: Guild, register: ArdentRegister, curr: Boolean = false): String {
-    return "**[]** by *[]* [] - added by **[]**"
+    val language = guild.getLanguage(register) ?: Language.ENGLISH
+    return register.translationManager.translate("music.play_info", language)
             .apply(track!!.info.title, track!!.info.author, if (curr) track!!.getCurrentTime() else track!!.getDurationString(), register.getUser(user)?.display()
-                    ?: "Unknown")
+                    ?: register.translationManager.translate("unknown", language))
 }
