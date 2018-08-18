@@ -46,20 +46,19 @@ abstract class Game(val type: GameType, val channel: TextChannel, val creator: S
             displayLobby()
             scheduledExecutor.scheduleAtFixedRate({ displayLobby() }, 60, 47, TimeUnit.SECONDS)
         } else if (type != GameType.BLACKJACK && type != GameType.BETTING && playerCount > 1) {
-            register.sender.send("Created your game! [], use **/gameinvite @User** to invite someone to your game".apply(creator.toUser(register)?.asMention
-                    ?: "unable to determine creator"), null, channel, register.selfUser, null)
+            register.sender.send(translate("games.created_private").apply(creator.toUser(register)?.asMention
+                    ?: translate("unknown")), null, channel, register.selfUser, null)
         }
         scheduledExecutor.scheduleWithFixedDelay({
             if (playerCount == players.size) {
-                channel.sendMessage("Starting a game of type **[]** with **[]** players ([])"
-                        .apply(type.readable, players.size, players.toUsersDisplay(register))
+                channel.sendMessage(translate("games.starting").apply(type.readable, players.size, players.toUsersDisplay(register))
                 ).queueAfter(2, TimeUnit.SECONDS) { _ -> startEvent() }
                 scheduledExecutor.shutdown()
             }
         }, 1, 1, TimeUnit.SECONDS)
         scheduledExecutor.schedule({
             if (gamesInLobby.contains(this)) {
-                register.sender.send("**10** minutes have passed in lobby, so I cancelled the game setup.",
+                register.sender.send(translate("games.lobby_time_exceeded"),
                         null, channel, register.selfUser, null)
                 cancel(creator.toUser(register)!!, false)
             }
@@ -72,17 +71,17 @@ abstract class Game(val type: GameType, val channel: TextChannel, val creator: S
     private fun displayLobby(): Message? {
         val member = channel.guild.selfMember
 
-        val embed = getEmbed("${type.readable} Game Lobby", creator.toUser(register)!!, channel.guild, Color.ORANGE)
-                .setFooter("Ardent Game Engine - by []".apply("Adam#9261"), member.user.avatarUrl)
-                .setDescription("This lobby has been active for []".apply(((System.currentTimeMillis() - creation) / 1000).toMinutesAndSeconds()) + "\n" +
-                        "It currently has **[]** of **[]** players required to start | []".apply(players.size, playerCount, players.toUsersDisplay(register)) + "\n" +
-                        "To start, the host can also type */forcestart*" + "\n\n" +
-                        "This game was created by __[]__".apply(creator.toUser(register)?.display()
-                                ?: "unable to determine"))
+        val embed = getEmbed(translate("games.lobby_embed").apply(type.readable), creator.toUser(register)!!, channel.guild, Color.ORANGE)
+                .setFooter(translate("games.ardent_game_engine").apply("Adam#9261"), member.user.avatarUrl)
+                .setDescription(translate("games.lobby_active_time").apply(((System.currentTimeMillis() - creation) / 1000).toMinutesAndSeconds()) + "\n" +
+                        translate("games.lobby_info").apply(players.size, playerCount, players.toUsersDisplay(register)) + "\n" +
+                        translate("games.notify_forcestart") + "\n\n" +
+                        translate("games.created_by").apply(creator.toUser(register)?.display()
+                                ?: translate("unknown")))
         var me: Message? = null
         channel.sendMessage(embed.build()).queue { m ->
-            register.sender.send("Join by typing **/join #$gameId**\n" +
-                    "*You can cancel this game by typing /cancel*", null, channel, register.selfUser, null, callback = {
+            register.sender.send(translate("games.how_join").apply(gameId) + "\n" +
+                    "*${translate("games.how_cancel")}*", null, channel, register.selfUser, null, callback = {
                 it.delete().queueAfter(90, TimeUnit.SECONDS)
                 m.delete().queueAfter(90, TimeUnit.SECONDS)
             })
@@ -101,7 +100,7 @@ abstract class Game(val type: GameType, val channel: TextChannel, val creator: S
             gamesInLobby.remove(this)
             activeGames.add(this)
             startTime = System.currentTimeMillis()
-            channel.send("Let's play **[]**!".apply(type.readable), register)
+            channel.send(translate("games.lets_play_start").apply(type.readable), register)
             Sender.scheduledExecutor.schedule({
                 try {
                     onStart()
@@ -130,8 +129,8 @@ abstract class Game(val type: GameType, val channel: TextChannel, val creator: S
         if (gamesInLobby.contains(this) || activeGames.contains(this)) {
             gamesInLobby.remove(this)
             activeGames.remove(this)
-            if (complain) register.sender.send("**[]** cancelled this game (likely due to no response) or the lobby was open for over 5 minutes ;("
-                    .apply(user.display()), null, channel, register.selfUser, null, callback = {
+            if (complain) register.sender.send(translate("games.game_canceled").apply(user.display()),
+                    null, channel, register.selfUser, null, callback = {
                 scheduledExecutor.shutdownNow()
             })
         }
@@ -151,21 +150,17 @@ abstract class Game(val type: GameType, val channel: TextChannel, val creator: S
             } else {
                 val newGameId = type.findNextId(register)
                 gameData.id = gameId
-                register.sender.send("This Game ID has already been inserted into the database. Your new Game ID is **[]**"
-                        .apply(newGameId), null, channel, register.selfUser, null)
+                register.sender.send(translate("games.generated_new_id").apply(newGameId), null, channel, register.selfUser, null)
                 register.database.insert(gameData)
             }
-            register.sender.send("Game Data has been successfully inserted into the database. To view the results and statistics for this match, you can go to https://ardentbot.com/games/[]/[]"
-                    .apply(type.name.toLowerCase(), gameId) + "\n\n" +
-                    "*Please consider making a small monthly pledge at [] if you enjoyed this game to support our hosting and development costs"
-                            .apply("<https://patreon.com/ardent>") + "\n   - Adam*", null, channel, register.selfUser, null)
+            register.sender.send(translate("games.data_inserted").apply("https://ardentbot.com/games/${type.name.toLowerCase()}/$gameId") + "\n\n" +
+                    "*" + translate("games.pledge_request").apply("<https://patreon.com/ardent>") + "\n   - Adam*", null, channel, register.selfUser, null)
         }
     }
 
     private fun announceCreation() {
         if (players.size > 1 && isPublic) {
-            register.sender.send("You successfully created a **Public []** game with ID #__[]__!\nAnyone in this server can join by typing */minigames join #[]*"
-                    .apply(type.readable, gameId, gameId), null, channel, register.selfUser, null)
+            register.sender.send(translate("games.created_public").apply(type.readable, gameId, gameId), null, channel, register.selfUser, null)
         }
     }
 

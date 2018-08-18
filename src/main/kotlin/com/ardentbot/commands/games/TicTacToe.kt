@@ -36,8 +36,8 @@ class TicTacToeGame(channel: TextChannel, creator: String, register: ArdentRegis
 
     private fun doRound(board: Board, player: String, cancelIfExpire: Boolean = false) {
         val member = channel.guild.getMemberById(player)
-        channel.sendMessage(getEmbed("Tic Tac Toe | Ardent", channel, Color.WHITE)
-                .appendDescription("[], you're up! Click where you want to place".apply(member.asMention) + "\n\n")
+        channel.sendMessage(getEmbed(translate("tictactoe.embed_title"), channel, Color.WHITE)
+                .appendDescription(translate("tictactoe.prompt").apply(member.asMention) + "\n\n")
                 .appendDescription(board.toString()).build()).queue { message ->
             message.addReaction(Emojis.NORTH_WEST_ARROW.symbol).queue()
             message.addReaction(Emojis.UPWARDS_BLACK_ARROW.symbol).queue()
@@ -67,7 +67,7 @@ class TicTacToeGame(channel: TextChannel, creator: String, register: ArdentRegis
                     else -> null
                 }
                 if (place == null) {
-                    channel.send("[] reacted with an invalid place! They'll have **one** more try or else I'll cancel the game..".apply(member.asMention), register)
+                    channel.send(translate("tictactoe.invalid_input").apply(member.asMention), register)
                     if (!cancelIfExpire) doRound(board, player, true)
                     else cancel(member)
                 } else {
@@ -76,20 +76,20 @@ class TicTacToeGame(channel: TextChannel, creator: String, register: ArdentRegis
                         if (winner == null) {
                             if (board.spacesLeft().size > 0) doRound(board, if (player == players[0]) players[1] else players[0])
                             else {
-                                message.editMessage(getEmbed("Tic Tac Toe | Ardent", channel, Color.WHITE)
-                                        .appendDescription("Game Over! Sadly, you guys **tied** and nobody won" + " :(\n\n")
+                                message.editMessage(getEmbed(translate("tictactoe.embed_title"), channel, Color.WHITE)
+                                        .appendDescription(translate("tictactoe.game_tied") + " :(\n\n")
                                         .appendDescription(board.toString()).build()).queue()
                                 doCleanup(board, null)
                             }
                         } else {
-                            message.editMessage(getEmbed("Tic Tac Toe | Ardent", channel, Color.WHITE)
-                                    .appendDescription("Game Over! The amazing [] has won!".apply(winner.toUser(register)?.asMention
-                                            ?: "Unknown") + "\n\n")
+                            message.editMessage(getEmbed(translate("tictactoe.embed_title"), channel, Color.WHITE)
+                                    .appendDescription(translate("tictactoe.game_over").apply(winner.toUser(register)?.asMention
+                                            ?: translate("unknown")) + "\n\n")
                                     .appendDescription(board.toString()).build()).queue()
                             doCleanup(board, winner)
                         }
                     } else {
-                        channel.send("[] reacted with an invalid place! They'll have **one** more try or else I'll cancel the game..".apply(member.asMention), register)
+                        channel.send(translate("tictactoe.invalid_input").apply(member.asMention), register)
                         if (!cancelIfExpire) doRound(board, player, true)
                         else cancel(member)
                     }
@@ -98,7 +98,7 @@ class TicTacToeGame(channel: TextChannel, creator: String, register: ArdentRegis
             }, {
                 if (cancelIfExpire) cancel(member)
                 else {
-                    channel.send("No input was received from []... They have **45** more seconds to play or the game will be automatically cancelled".apply(member.asMention), register)
+                    channel.send(translate("tictactoe.no_input").apply(member.asMention), register)
                     doRound(board, player, true)
                 }
                 message.delete().queue()
@@ -110,17 +110,17 @@ class TicTacToeGame(channel: TextChannel, creator: String, register: ArdentRegis
         Thread.sleep(2000)
         cleanup(GameDataTicTacToe(gameId, creator, startTime!!, players[0], players[1], winner, board.toString()))
         val creatorMember = channel.guild.getMemberById(creator)
-        channel.selectFromList(creatorMember, "Do you want to start another game?", mutableListOf("Yes", "No"), { selection, selectionMessage ->
+        channel.selectFromList(creatorMember, translate("tictactoe.start_again"), mutableListOf(translate("yes"), translate("no")), { selection, selectionMessage ->
             if (selection == 0) {
-                channel.send("**Creating game now..**", register)
+                channel.send(translate("tictactoe.creating"), register)
                 val newGame = TicTacToeGame(channel, creatorMember.user.id, register)
                 gamesInLobby.add(newGame)
-            } else channel.send("You selected not to play another game. **Cleaning up resources..**", register)
+            } else channel.send(translate("tictactoe.no_continue"), register)
             selectionMessage.delete().queue()
-        }, footer = "Only the creator of the game can do this selection", register = register)
+        }, footer = translate("tictactoe.only_creator"), register = register)
     }
 
-    data class Board(val playerOne: String, val playerTwo: String, val tiles: Array<String?> = Array(9, { null })) {
+    data class Board(val playerOne: String, val playerTwo: String, val tiles: Array<String?> = Array(9) { null }) {
         fun put(space: Int, isPlayerOne: Boolean): Boolean {
             return if (space !in 1..9 || tiles[space - 1] != null) false
             else {
