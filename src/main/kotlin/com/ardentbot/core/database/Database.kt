@@ -62,13 +62,14 @@ class Database(val register: ArdentRegister) {
             if (!r.db("ardent").tableList().run<List<String>>(conn).contains(table)) {
                 println("Creating table '$table'")
                 r.db("ardent").tableCreate(table).run<Any>(conn)
-            }
-            when (table) {
-                "logs", "status_changes" -> {
-                    r.db("ardent").table(table).indexCreate("userId").run<Any>(conn)
-                }
-                "users" -> {
-                    r.db("ardent").table(table).indexCreate("money").run<Any>(conn)
+
+                when (table) {
+                    "logs", "status_changes" -> {
+                        r.db("ardent").table(table).indexCreate("userId").run<Any>(conn)
+                    }
+                    "users" -> {
+                        r.db("ardent").table(table).indexCreate("money").run<Any>(conn)
+                    }
                 }
             }
         }
