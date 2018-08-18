@@ -16,8 +16,7 @@ class TicTacToeCommand : Command("tictactoe", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         val member = event.member
         val channel = event.channel
-        if (member.isInGameOrLobby()) channel.send("[], You're already in game! You can't create another game!".apply(member.asMention), register)
-
+        if (member.isInGameOrLobby()) event.channel.send(translate("games.already_in_game", event, register).apply(member.asMention), register)
         // restrict 1 game per server based on patreon support - disable for now
         /*   else if (event.guild.hasGameType(GameType.TIC_TAC_TOE) && !member.hasDonationLevel(channel, DonationLevel.INTERMEDIATE, failQuietly = true)) {
              channel.send("There can only be one *{0}* game active at a time in a server!. **Pledge $5 a month or buy the Intermediate rank at {1} to start more than one game per type at a time**".tr(event, "Tic Tac Toe", "<https://ardentbot.com/patreon>"))
@@ -35,7 +34,7 @@ class TicTacToeGame(channel: TextChannel, creator: String, register: ArdentRegis
         doRound(Board(players[0], players[1]), players[0])
     }
 
-    fun doRound(board: Board, player: String, cancelIfExpire: Boolean = false) {
+    private fun doRound(board: Board, player: String, cancelIfExpire: Boolean = false) {
         val member = channel.guild.getMemberById(player)
         channel.sendMessage(getEmbed("Tic Tac Toe | Ardent", channel, Color.WHITE)
                 .appendDescription("[], you're up! Click where you want to place".apply(member.asMention) + "\n\n")
@@ -107,7 +106,7 @@ class TicTacToeGame(channel: TextChannel, creator: String, register: ArdentRegis
         }
     }
 
-    fun doCleanup(board: Board, winner: String?) {
+    private fun doCleanup(board: Board, winner: String?) {
         Thread.sleep(2000)
         cleanup(GameDataTicTacToe(gameId, creator, startTime!!, players[0], players[1], winner, board.toString()))
         val creatorMember = channel.guild.getMemberById(creator)

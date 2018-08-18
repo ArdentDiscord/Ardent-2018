@@ -23,35 +23,35 @@ class SlotsGame(channel: TextChannel, creator: String, playerCount: Int, isPubli
 
     private fun doRound(member: Member) {
         val data = member.user.getData(register)
-        channel.send("How much would you like to bet? You currently have **[]** gold".apply(data.money), register)
+        channel.send(translate("slots.how_much").apply(data.money), register)
         Sender.waitForMessage({ it.author.id == member.user.id && it.guild.id == channel.guild.id && it.channel.id == channel.id }, {
             val bet = it.message.contentRaw.toIntOrNull()
             if (bet == null || bet <= 0 || bet > data.money) {
-                channel.send("You specified an invalid bet, please retry...", register)
+                channel.send(translate("slots.invalid_bet"), register)
                 doRound(member)
             } else {
                 var slots = SlotsGame()
                 if (!slots.won()) slots = SlotsGame() // you get two chances
                 Thread.sleep(2000)
                 channel.send(
-                        getEmbed("Slots Results", channel).setDescription("${if (slots.won()) "Congrats, you won **[]** gold".apply(bet) else "Darn, you lost **[]** gold :(".apply(bet)}\n$slots)")
+                        getEmbed("Slots Results", channel).setDescription("${if (slots.won()) translate("money.won_gold").apply(bet) else translate("money.lost_gold").apply(bet)}\n$slots)")
                         , register)
                 if (slots.won()) data.money += bet
                 else data.money -= bet
                 register.database.update(data)
                 rounds.add(Round(bet, slots.won(), slots.toString().replace("\n", "<br />")))
                 Thread.sleep(750)
-                channel.selectFromList(member, "Do you want to go again?", mutableListOf("Yes", "No"), { i, selectionMessage ->
+                channel.selectFromList(member, translate("slots.go_again"), mutableListOf(translate("yes"), translate("no")), { i, selectionMessage ->
                     if (i == 0) doRound(member)
                     else finish(member)
                     selectionMessage.delete().queue()
                 }, failure = {
-                    channel.send("You didn't respond in time, so I'll end the game now", register)
+                    channel.send(translate("slots.no_response_in_time"), register)
                     finish(member)
                 }, register = register)
             }
         }, {
-            channel.send("You didn't respond in time, so I'll end the game now", register)
+            channel.send(translate("slots.no_response_in_time"), register)
             finish(member)
         })
     }
@@ -111,7 +111,7 @@ class SlotsGame(channel: TextChannel, creator: String, playerCount: Int, isPubli
 class SlotsCommand : Command("slots", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         val member = event.member
-        if (member.isInGameOrLobby()) event.channel.send("[], You're already in game! You can't create another game!".apply(member.asMention), register)
+        if (member.isInGameOrLobby()) event.channel.send(translate("games.already_in_game", event, register).apply(member.asMention), register)
         /*else if (event.guild.hasGameType(GameType.SLOTS) && !member.hasDonationLevel(channel, DonationLevel.INTERMEDIATE, failQuietly = true)) {
             channel.send("There can only be one *{0}* game active at a time in a server!. **Pledge $5 a month or buy the Intermediate rank at {1} to start more than one game per type at a time**".tr(event, "Slots", "<https://ardentbot.com/patreon>"))
         } */

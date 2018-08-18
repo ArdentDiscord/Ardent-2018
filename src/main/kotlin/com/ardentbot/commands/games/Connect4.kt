@@ -16,7 +16,6 @@ import java.awt.Color
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-
 class Connect4Game(channel: TextChannel, creator: String, register: ArdentRegister)
     : Game(GameType.CONNECT_4, channel, creator, 2, false, register) {
     override fun onStart() {
@@ -27,15 +26,15 @@ class Connect4Game(channel: TextChannel, creator: String, register: ArdentRegist
 
     private fun doRound(game: GameBoard, player: Member, cancelIfExpired: Boolean = false) {
         if (game.full()) {
-            channel.send("All tiles have been placed without a winner (lol). Therefore, I choose [] as the winner! (They will not get any gold for winning this game)".apply(player.asMention), register)
-            val embed = getEmbed("Connect 4 | Results", channel, Color.BLUE)
-            embed.appendDescription("[] has won (technically) after a tied game, decided randomly in a coin toss".apply(player.asMention) + "\n$game")
+            channel.send(translate("connect4.game_tied").apply(player.asMention), register)
+            val embed = getEmbed(translate("connect4.result_title"), channel, Color.BLUE)
+            embed.appendDescription(translate("connect4.winner_tied").apply(player.asMention) + "\n$game")
             channel.send(embed, register)
             cleanup(GameDataConnect4(gameId, creator, startTime!!, player.user.id, if (player.user.id == players[0]) players[1] else players[0], game.toString()))
         } else {
-            val embed = getEmbed("Connect 4 Game Board", channel, Color.BLUE)
-            embed.appendDescription("[], it's your turn [] - React to place your chip"
-                    .apply(player.asMention, if (players[0] == player.user.id) "\uD83D\uDD34" else "\uD83D\uDD35") + "\n")
+            val embed = getEmbed(translate("connect4.board_title"), channel, Color.BLUE)
+            embed.appendDescription(translate("connect4.prompt").apply(player.asMention,
+                    if (players[0] == player.user.id) "\uD83D\uDD34" else "\uD83D\uDD35") + "\n")
             embed.appendDescription(game.toString())
             channel.sendMessage(embed.build()).queue { message ->
                 message.addReaction(Emojis.KEYCAP_DIGIT_ONE.symbol).queue()
@@ -56,8 +55,7 @@ class Connect4Game(channel: TextChannel, creator: String, register: ArdentRegist
                         Emojis.KEYCAP_DIGIT_SIX.symbol -> place(5, game, player)
                         Emojis.KEYCAP_DIGIT_SEVEN.symbol -> place(6, game, player)
                         else -> {
-                            channel.send("An unidentified reaction was received from []. Retrying the round... If they don't respond this time, the game will be cancelled"
-                                    .apply(player.asMention), register)
+                            channel.send(translate("connect4.invalid_input").apply(player.asMention), register)
                             doRound(game, player, true)
                         }
                     }
@@ -65,8 +63,7 @@ class Connect4Game(channel: TextChannel, creator: String, register: ArdentRegist
                 }, {
                     if (cancelIfExpired) cancel(creator.toUser(register)!!)
                     else {
-                        channel.send("No input was received from []. Retrying the round... If they don't respond this time, the game will be cancelled"
-                                .apply(player.asMention),register)
+                        channel.send(translate("connect4.no_input").apply(player.asMention),register)
                         message.delete().queue()
                         doRound(game, player, true)
                     }
@@ -78,15 +75,15 @@ class Connect4Game(channel: TextChannel, creator: String, register: ArdentRegist
     private fun place(column: Int, game: GameBoard, player: Member) {
         val tile = game.put(column, player.user.id == players[0])
         if (tile == null) {
-            channel.send("[], you specified an invalid column: Please retry..".apply(player.asMention), register)
+            channel.send(translate("connect4.invalid_column").apply(player.asMention), register)
             doRound(game, player, false)
         } else {
             val winnerId = game.checkWin(tile)
             if (winnerId == null) doRound(game, if (player.user.id == players[0]) channel.guild.getMemberById(players[1]) else channel.guild.getMemberById(players[0]))
             else {
                 val winner = channel.guild.getMemberById(winnerId)
-                val embed = getEmbed("Connect 4 | Results", channel, Color.BLUE)
-                embed.appendDescription("[] has won and got **500 gold**!".apply(winner.asMention) + "\n")
+                val embed = getEmbed(translate("connect4.result_title"), channel, Color.BLUE)
+                embed.appendDescription(translate("connect4.winner_congrats").apply(winner.asMention, 500) + "\n")
                 embed.appendDescription(game.toString())
                 channel.send(embed, register)
                 val data = winner.user.getData(register)
@@ -97,7 +94,7 @@ class Connect4Game(channel: TextChannel, creator: String, register: ArdentRegist
         }
     }
 
-    data class Column(val game: GameBoard, val number: Int, val tiles: Array<Tile> = Array(6, { Tile(game, number, it) })) {
+    data class Column(val game: GameBoard, val number: Int, val tiles: Array<Tile> = Array(6) { Tile(game, number, it) }) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false
@@ -146,7 +143,7 @@ class Connect4Game(channel: TextChannel, creator: String, register: ArdentRegist
             return null
         }
 
-        fun getRow(index: Int): ArrayList<Tile> {
+        private fun getRow(index: Int): ArrayList<Tile> {
             if (index !in 0..5) throw IllegalArgumentException("Row does not exist at index $index")
             else {
                 val row = arrayListOf<Tile>()
@@ -155,11 +152,11 @@ class Connect4Game(channel: TextChannel, creator: String, register: ArdentRegist
             }
         }
 
-        fun getTile(x: Int, y: Int): Tile? {
+        private fun getTile(x: Int, y: Int): Tile? {
             return grid.getOrNull(x)?.tiles?.getOrNull(y)
         }
 
-        fun getDiagonal(tile: Tile?, left: Boolean): MutableList<Tile> {
+        private fun getDiagonal(tile: Tile?, left: Boolean): MutableList<Tile> {
             if (tile == null) return mutableListOf()
             var xStart = tile.x
             var yStart = tile.y
@@ -208,7 +205,7 @@ class Connect4Game(channel: TextChannel, creator: String, register: ArdentRegist
             return null
         }
 
-        fun diagonal(tile: Tile, direction: Boolean /* True is left, false is right */): String? {
+        private fun diagonal(tile: Tile, direction: Boolean /* True is left, false is right */): String? {
             val tiles = if (direction) getDiagonal(tile, true) else getDiagonal(tile, false)
             var counter = 0
             var currentOwner: String? = null
@@ -249,7 +246,7 @@ class Connect4Game(channel: TextChannel, creator: String, register: ArdentRegist
 class Connect4Command : Command("connect4", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         val member = event.member
-        if (member.isInGameOrLobby()) event.channel.send("[], You're already in game! You can't create another game!".apply(member.asMention), register)
+        if (member.isInGameOrLobby()) event.channel.send(translate("games.already_in_game", event, register).apply(member.asMention), register)
         /*else if (event.guild.hasGameType(GameType.CONNECT_4) && !member.hasDonationLevel(channel, DonationLevel.INTERMEDIATE, failQuietly = true)) {
             channel.send("There can only be one *{0}* game active at a time in a server!. **Pledge $5 a month or buy the Intermediate rank at {1} to start more than one game per type at a time**".tr(event, "Connect 4", "<https://ardentbot.com/patreon>"))
         } */

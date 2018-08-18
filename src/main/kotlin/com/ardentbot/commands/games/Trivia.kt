@@ -152,16 +152,14 @@ class TriviaCommand : Command("trivia", null, null) {
         val arg = arguments.getOrNull(0)
         when {
             arg?.isTranslatedArgument("solo", event.guild, register) == true -> {
-                if (event.member.isInGameOrLobby()) event.channel.send("[], You're already in game! You can't create another game!"
-                        .apply(event.member.asMention), register)
+                if (event.member.isInGameOrLobby()) event.channel.send(translate("games.already_in_game", event, register).apply(event.member.asMention), register)
                 /*else if (event.guild.hasGameType(GameType.TRIVIA) && !event.member.hasDonationLevel(event.textChannel, DonationLevel.INTERMEDIATE, failQuietly = true)) {
                     event.channel.send("There can only be one *{0}* game active at a time in a server!. **Pledge $5 a month or buy the Intermediate rank at {1} to start more than one game per type at a time**".tr(event, "Trivia", "<https://ardentbot.com/patreon>"))
                 } */
                 else TriviaGame(event.channel, event.member.user.id, 1, false, register).startEvent()
             }
             arg?.isTranslatedArgument("multi", event.guild, register) == true -> {
-                if (event.member.isInGameOrLobby()) event.channel.send("[], You're already in game! You can't create another game!"
-                        .apply(event.member.asMention), register)
+                if (event.member.isInGameOrLobby()) event.channel.send(translate("games.already_in_game", event, register).apply(event.member.asMention), register)
                 /*else if (event.guild.hasGameType(GameType.TRIVIA) && !event.member.hasDonationLevel(event.textChannel, DonationLevel.INTERMEDIATE, failQuietly = true)) {
                     event.channel.send("There can only be one *{0}* game active at a time in a server!. **Pledge $5 a month or buy the Intermediate rank at {1} to start more than one game per type at a time**".tr(event, "Trivia", "<https://ardentbot.com/patreon>"))
                 } */
