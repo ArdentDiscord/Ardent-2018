@@ -59,7 +59,9 @@ abstract class Command(name: String, aliases: Array<String>?, cooldown: Int?) : 
         data.money += 5
         register.database.update(data)
 
+        val before = System.currentTimeMillis()
         onInvoke(event, arguments, flags, register)
+        println("Execution time: ${System.currentTimeMillis() - before}")
     }
 
     init {
@@ -169,7 +171,7 @@ abstract class Command(name: String, aliases: Array<String>?, cooldown: Int?) : 
     }
 
     fun getTranslatedName(guild: Guild, register: ArdentRegister) = translate(name, guild, register)
-    fun getTranslatedEnglishName(guild: Guild, register: ArdentRegister) = translate(name, guild, register)
+    fun getTranslatedEnglishName(register: ArdentRegister) = translate(name, Language.ENGLISH, register)
     fun getTranslatedDescription(guild: Guild, register: ArdentRegister) = translateNull("$name.description", guild, register)
     fun getTranslatedFlagDescription(flagName: String, guild: Guild, register: ArdentRegister): FlagInformation {
         return FlagInformation(flagName,

@@ -32,7 +32,7 @@ class Processor(val register: ArdentRegister) {
                 val commandName = register.parser.parseBase(event.message, prefixes) ?: return
                 register.holder.commands.firstOrNull {
                     it.getTranslatedName(event.guild, register) == commandName
-                            || it.getTranslatedEnglishName(event.guild, register) == commandName || it.aliases?.contains(commandName) == true
+                            || it.getTranslatedEnglishName(register) == commandName || it.aliases?.contains(commandName) == true
                 }
                         ?.let { command ->
                             register.database.insert(UserCommand(event.author.id, event.channel.id, event.guild.id, command.name), blocking = false)

@@ -9,7 +9,7 @@ class GuildData(id: String, val prefixes: MutableList<ArdentPrefix>, val disable
                 var logChannel: String? = null, val eventsLogged: MutableList<String> = mutableListOf(),
                 var muteRoleId: String? = null, val joinMessage: EventMessage = EventMessage(null, null),
                 val leaveMessage: EventMessage = EventMessage(null, null), var defaultRoleId: String? = null,
-                val language: Language? = null) : DbObject(id, "guilds") {
+                var language: Language? = null) : DbObject(id, "guilds") {
     fun prefixesModified(register: ArdentRegister): List<ArdentPrefix> {
         val withDefaults = if (register.config.test) mutableListOf(ArdentPrefix(".", register.selfUser.id, 0))
         else mutableListOf(ArdentPrefix("/", register.selfUser.id, 0), ArdentPrefix("ardent ", register.selfUser.id, 0),

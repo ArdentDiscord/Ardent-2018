@@ -53,6 +53,11 @@ to change your working directory and then deploy the bot.
 ## Getting started for developers
 Ardent uses a centralized command system that takes advantage of reflection to instantiate commands at runtime. I recommend you begin with the [Ardent register](https://github.com/ArdentDiscord/Ardent-2018/tree/master/src/main/kotlin/com/ardentbot/core/ArdentRegister.kt) to see what components are available. Then, look through the [commands directory](https://github.com/ArdentDiscord/Ardent-2018/tree/master/src/main/kotlin/com/ardentbot/core/commands) to understand how commands are defined, processed, and how help is sent. Afterwards, look at a few simple commands (like Ping.kt) to check your understand. Talk to Adam#9261 on our [Discord server](https://ardentbot.com/support) if you have questions, comments, or are ready to submit a pull request or work on a feature!
 
+When adding functionality (like commands), you are **not** able to register arguments and flags as part of a command. Thus, don't 
+worry about localizing - instead, use strings with the built-in Sender functions, and check for parameters using 
+`str.equals(other, true)`. When you submit a pull rqeuest, after testing your feature, I will localize all added 
+strings and commands.
+
 ### Note about Translations
 Since you don't have API access to Ardent's [crowdin](https://crowdin.com/project/ardent), you'll use a local zip file containing translations. As they're not updated in real time, they may get out of date. Make sure to pull regularly.
 
