@@ -186,7 +186,7 @@ abstract class Command(name: String, aliases: Array<String>?, cooldown: Int?) : 
 
     fun getTranslatedArgument(argumentName: String, language: Language, register: ArdentRegister): ArgumentInformation? {
         val value = translateNull("$name.arguments.$argumentName", language, register)
-        System.out.println("argumentName: $argumentName | value: $value | readable: ${translateNull("$name.arguments.$argumentName.readable", language, register)}")
+        //println("argumentName: $argumentName | value: $value | readable: ${translateNull("$name.arguments.$argumentName.readable", language, register)}")
         return ((translateNull("$name.arguments.$argumentName.readable", language, register) ?: value)
                 ?.let { ArgumentInformation(it, value, translate("$name.arguments.$argumentName.description", language, register)) })
     }

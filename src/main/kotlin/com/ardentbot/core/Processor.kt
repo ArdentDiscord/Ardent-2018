@@ -6,10 +6,14 @@ import com.ardentbot.core.translation.Language
 import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.display
+import net.dv8tion.jda.core.entities.Guild
+import net.dv8tion.jda.core.entities.TextChannel
 import net.dv8tion.jda.core.events.Event
+import net.dv8tion.jda.core.events.guild.GuildJoinEvent
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent
 import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent
 import net.dv8tion.jda.core.events.user.update.UserUpdateOnlineStatusEvent
 import net.dv8tion.jda.core.hooks.SubscribeEvent
 import org.apache.commons.lang3.exception.ExceptionUtils
@@ -74,6 +78,33 @@ class Processor(val register: ArdentRegister) {
             is GuildMemberJoinEvent -> EventMessageSender.joinMessage(event, register)
             is GuildMemberLeaveEvent -> EventMessageSender.leaveMessage(event, register)
             is UserUpdateOnlineStatusEvent -> StatusUpdateChanger.change(event, register)
+            is PrivateMessageReceivedEvent -> event.channel.sendMessage("Unfortunately, I don't support commands in private channels " +
+                    "right now. Please retry in a server").queue()
+            is GuildJoinEvent -> {
+                try {
+                    Thread.sleep(2500)
+                    getSendChannel(event.guild).sendMessage("""Welcome to **Ardent**!
+If this is your first time using Ardent, you may want to type **/help** to see what commands are available.
+If you run into any issues, join our support server at <https://ardentbot.com/support> and we'd love to help you!
+
+~Adam
+
+*p.s: we suggest __/play__!*
+                """.trimIndent()).queue()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
         }
     }
+}
+
+fun getSendChannel(guild: Guild): TextChannel {
+    return guild.textChannels.asSequence().map {
+        try {
+            it to it.getMessageById(it.latestMessageId).complete().creationTime.toEpochSecond()
+        } catch (e: Exception) {
+            null
+        }
+    }.filterNotNull().sortedByDescending { it.second }.toList().getOrNull(0)?.first ?: guild.textChannels[0]
 }

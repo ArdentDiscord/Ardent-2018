@@ -34,7 +34,7 @@ class Announce : Command("announce", arrayOf("announcement", "announcements"), n
                                 register.getAllGuilds().forEach { guild ->
                                     Sender.waitForMessage({it.guild.id == guild.id},{
                                         it.channel.sendMessage(Emojis.INFORMATION_SOURCE.cmd +
-                                                register.translationManager.translate("sender.announcement", it.guild.getLanguage(register) ?: Language.ENGLISH) +
+                                                register.translationManager.translate("sender.announce", it.guild.getLanguage(register) ?: Language.ENGLISH) +
                                                 " " + text.joinToString(" ")).queue()
                                     },time = 24,timeUnit = TimeUnit.HOURS)
                                 }

@@ -37,7 +37,7 @@ fun main(args: Array<String>) {
     ArdentRegister(args)
 }
 
-class ArdentRegister(val args: Array<String>) {
+class ArdentRegister(args: Array<String>) {
     val random = Random()
     val cachedExecutor = Executors.newCachedThreadPool()
     val config = Config(args[0], args.toList())
@@ -192,8 +192,15 @@ class ArdentRegister(val args: Array<String>) {
                     }
         }, 0, 15, TimeUnit.MINUTES)
 
-        jda.presence.game = Game.of(Game.GameType.STREAMING, "almost out of beta!",
-                "https://twitch.tv/ ")
+        Sender.scheduledExecutor.scheduleAtFixedRate({
+            jda.presence.game = Game.of(Game.GameType.STREAMING, when(random.nextInt(5)) {
+                0 -> "With ${holder.commands.size} commands!"
+                1 -> "Tell your friends!"
+                2 -> "We've released 1.0!"
+                else -> "Serving ${getAllGuilds().size} servers!"
+            }, "https://twitch.tv/ ")
+        },0,15,TimeUnit.SECONDS)
+
 
         println("Ardent has started ${Emojis.SMILING_FACE_WITH_SUN_GLASS.symbol}")
     }

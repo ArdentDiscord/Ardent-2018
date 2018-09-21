@@ -35,7 +35,7 @@ class UserInfo : Command("whois", arrayOf("userinfo", "uinfo", "ui"), 10) {
                 .addField(translate("userinfo.name", event, register), mentioned.display(), true)
                 .addField(translate("userinfo.nickname", event, register), member.nickname
                         ?: translate("general.none", event, register), true)
-                .addField(translate("userinfo.status", event, register), member.onlineStatus.name, true)
+                .addField(translate("userinfo.status", event, register), member.onlineStatus.key, true)
                 .addField(translate("userinfo.join_date", event, register), member.joinDate.toLocalDate().toString(), true)
                 .addField(translate("userinfo.days_in_guild", event, register),
                         ((Instant.now().atOffset(ZoneOffset.UTC).toEpochSecond() -
