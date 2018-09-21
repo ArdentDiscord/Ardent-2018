@@ -14,8 +14,9 @@ import java.util.concurrent.TimeUnit
 
 class TranslationManager(val register: ArdentRegister, val languages: MutableList<ArdentLanguage> = mutableListOf()) {
     fun translateNull(id: String, language: Language): String? {
-        return languages.first { language == it.language }.translations.find { id == it.identifier }?.translation
-                ?: languages.first { it.language == Language.ENGLISH }.translations.find { id == it.identifier }?.translation
+        return (languages.first { language == it.language }.translations.find { id == it.identifier }?.translation
+                ?: languages.first { it.language == Language.ENGLISH }.translations.find { id == it.identifier }?.translation)
+                ?.replace("\\n", "\n")
     }
 
     fun translate(id: String, language: Language): String = translateNull(id, language) ?: {
@@ -86,7 +87,8 @@ enum class Language(val readable: String, val id: String, val maturity: Language
     GERMAN("Deutsch", "de", LanguageMaturity.INFANCY), CROATIAN("Hrvatski", "hr", LanguageMaturity.INFANCY),
     CYRILLIC_SERBIAN("Cyrillic Serbian", "sr", LanguageMaturity.INFANCY), SPANISH("Español", "es-ES", LanguageMaturity.INFANCY),
     RUSSIAN("ру́сский язы́к", "ru", LanguageMaturity.INFANCY), DUTCH("Nederlands", "nl", LanguageMaturity.INFANCY),
-    POLISH("Polskie", "pl", LanguageMaturity.INFANCY), BRAZILIAN_PORTUGUESE("Portugues do Brasil", "pt-BR", LanguageMaturity.INFANCY);
+    POLISH("Polskie", "pl", LanguageMaturity.INFANCY), BRAZILIAN_PORTUGUESE("Portugues do Brasil", "pt-BR", LanguageMaturity.INFANCY),
+    HINDI("हिंदी", "hi", LanguageMaturity.INFANCY);
 
     override fun toString() = readable
 }

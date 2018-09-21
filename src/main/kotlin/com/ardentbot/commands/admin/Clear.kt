@@ -41,11 +41,11 @@ class Clear : Command("clear", arrayOf("cl"), 4) {
             event.message.delete().queue()
             if (messages.isEmpty()) event.channel.send(Emojis.HEAVY_MULTIPLICATION_X.cmd + translate("clear.no_found", event, register), register)
             else {
-                (if (messages.size == 1) messages[0].delete() else channel.deleteMessages(messages.without(0))).queue({
+                (if (messages.size == 1) messages[0].delete() else channel.deleteMessages(messages.without(0).take(99))).queue({
                     register.sender.cmdSend(Emojis.HEAVY_CHECK_MARK.cmd + translate("clear.response", event, register).apply(messages.size - 1, channel.asMention), this, event)
                 }, { e ->
                     if (e is InsufficientPermissionException) {
-                        register.sender.cmdSend(translate("clear.no_permission",event, register), this, event)
+                        register.sender.cmdSend(translate("clear.no_permission", event, register), this, event)
                         return@queue
                     } else e.printStackTrace()
                 })

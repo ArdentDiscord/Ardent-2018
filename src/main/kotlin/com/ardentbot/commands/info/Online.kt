@@ -6,6 +6,7 @@ import com.ardentbot.core.commands.Argument
 import com.ardentbot.core.commands.Command
 import com.ardentbot.core.commands.FlagModel
 import com.ardentbot.core.commands.ModuleMapping
+import com.ardentbot.core.database.DbObject
 import com.ardentbot.core.database.GuildData
 import com.ardentbot.core.get
 import com.ardentbot.kotlin.*
@@ -48,23 +49,36 @@ class Online : Command("online", null, null) {
             }
             "stats" -> {
                 val user = event.message.mentionedUsers.getOrNull(0) ?: event.author
-                val statusData = getStatusData(user.id, register)
+                val statusData = register.database.getStatusInfo(user.id)
+                        ?: {
+                            val data = StatusData(user.id, 0, 0, 0, 0,
+                                    event.guild.getMember(user).onlineStatus, System.currentTimeMillis())
+                            register.database.insert(data)
+                            data
+                        }.invoke()
+                val currTime = System.currentTimeMillis() - statusData.currentSwitchTime
+
+                when {
+                    event.guild.getMember(user).onlineStatus == ONLINE -> statusData.onlineTime += currTime
+                    event.guild.getMember(user).onlineStatus == IDLE -> statusData.idleTime += currTime
+                    event.guild.getMember(user).onlineStatus == DO_NOT_DISTURB -> statusData.dndTime += currTime
+                    event.guild.getMember(user).onlineStatus == OFFLINE -> statusData.offlineTime += currTime
+                }
+
                 val total = (statusData.dndTime + statusData.idleTime + statusData.offlineTime + statusData.onlineTime).toFloat()
                 val embed = getEmbed(translate("online.status_info", event, register).apply(user.display()), event.author, event.guild)
-                        .appendDescription(translate("online.current_status", event, register).apply(statusData.current.key, statusData.currentTime.timeDisplay()))
+                        .appendDescription(translate("online.current_status", event, register).apply(statusData.current.key, currTime.timeDisplay()))
                         .appendDescription("\n")
-                if (statusData.statusSize > 1) {
-                    embed.appendDescription(translate("online.previous_status", event, register).apply(statusData.last.key, statusData.lastTime.timeDisplay()))
-                            .appendDescription("\n")
-                            .appendDescription(
-                                    listOf(if (statusData.onlineTime > 0) "__" + translate("online.online_str", event, register) + "__: " + statusData.onlineTime.timeDisplay() + " (" + (statusData.onlineTime * 100 / total).withDecimalPlaceCount(1) + "%)" else "",
-                                            if (statusData.dndTime > 0) "__" + translate("online.dnd_str", event, register) + "__: " + statusData.dndTime.timeDisplay() + " (" + (statusData.dndTime * 100 / total).withDecimalPlaceCount(1) + "%)" else "",
-                                            if (statusData.idleTime > 0) "__" + translate("online.idle_str", event, register) + "__: " + statusData.idleTime.timeDisplay() + " (" + (statusData.idleTime * 100 / total).withDecimalPlaceCount(1) + "%)" else "",
-                                            if (statusData.offlineTime > 0) "__" + translate("online.offline_str", event, register) + "__: " + statusData.offlineTime.timeDisplay() + " (" + (statusData.offlineTime * 100 / total).withDecimalPlaceCount(1) + "%)" else ""
-                                    ).embedify()
-                            )
+                if (listOf(statusData.dndTime, statusData.onlineTime, statusData.offlineTime, statusData.idleTime).filter { it > 0 }.isNotEmpty()) {
+                    embed.appendDescription(
+                            listOf(if (statusData.onlineTime > 0) "__" + translate("online.online_str", event, register) + "__: " + statusData.onlineTime.timeDisplay() + " (" + (statusData.onlineTime * 100 / total).withDecimalPlaceCount(1) + "%)" else "",
+                                    if (statusData.dndTime > 0) "__" + translate("online.dnd_str", event, register) + "__: " + statusData.dndTime.timeDisplay() + " (" + (statusData.dndTime * 100 / total).withDecimalPlaceCount(1) + "%)" else "",
+                                    if (statusData.idleTime > 0) "__" + translate("online.idle_str", event, register) + "__: " + statusData.idleTime.timeDisplay() + " (" + (statusData.idleTime * 100 / total).withDecimalPlaceCount(1) + "%)" else "",
+                                    if (statusData.offlineTime > 0) "__" + translate("online.offline_str", event, register) + "__: " + statusData.offlineTime.timeDisplay() + " (" + (statusData.offlineTime * 100 / total).withDecimalPlaceCount(1) + "%)" else ""
+                            ).embedify()
+                    )
                             .appendDescription("\n\n")
-                            .appendDescription(Emojis.INFORMATION_SOURCE.cmd + translate("online.aware_info", event, register).apply(user.asMention, statusData.statusSize))
+                            .appendDescription(Emojis.INFORMATION_SOURCE.cmd + translate("online.aware_info", event, register).apply(user.asMention, statusData.statusSize + 1))
                             .appendDescription("\n")
                             .appendDescription(translate("online.total_tracked_time", event, register).apply(total.toLong().timeDisplay()))
                 }
@@ -152,30 +166,6 @@ private fun Map<OnlineStatus, List<Member>>.sort(): List<Pair<OnlineStatus, List
     return list
 }
 
-private fun getStatusData(id: String, register: ArdentRegister): StatusData {
-    val statusChanges = register.database.getStatusChanges(id)
-    var onlineTime = 0L
-    var idleTime = 0L
-    var dndTime = 0L
-    var offlineTime = 0L
-    (0..(statusChanges.size - 1)).forEach { i ->
-        val temp = statusChanges[i]
-        val timeSpent = if (i == 0) 0 else (statusChanges.getOrNull(i + 1)?.time
-                ?: System.currentTimeMillis()) - temp.time
-        when (temp.newStatus) {
-            ONLINE -> onlineTime += timeSpent
-            IDLE -> idleTime += timeSpent
-            DO_NOT_DISTURB -> dndTime += timeSpent
-            else -> offlineTime += timeSpent
-        }
-        if (i == statusChanges.lastIndex) {
-            return StatusData(id, onlineTime, dndTime, idleTime, offlineTime, temp.newStatus, System.currentTimeMillis() - temp.time, statusChanges[i - 1].newStatus,
-                    temp.time - statusChanges[i - 1].time, statusChanges.size)
-        }
-    }
-    throw Exception("how the fuck did this happen? status data retrieval failed")
-}
-
-data class StatusData(val id: String, val onlineTime: Long, val dndTime: Long, val idleTime: Long,
-                      val offlineTime: Long, val current: OnlineStatus, val currentTime: Long, val last: OnlineStatus,
-                      val lastTime: Long, val statusSize: Int)
+data class StatusData(val id1: String, var onlineTime: Long, var dndTime: Long, var idleTime: Long,
+                      var offlineTime: Long, var current: OnlineStatus, var currentSwitchTime: Long,
+                      var statusSize: Int = 0) : DbObject(id = id1, table = "status_changes")

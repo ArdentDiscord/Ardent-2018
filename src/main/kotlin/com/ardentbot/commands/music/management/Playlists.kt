@@ -40,8 +40,9 @@ class Playlists : Command("playlist", arrayOf("playlists"), null) {
                 else {
                     playlists.forEachIndexed { index, playlist ->
                         embed.appendDescription(index.diamond() +
-                                "[**[]**]($base/music/playlist/[]) - " + translate("playlists.list_row", event, register)
-                                .apply(playlist.name, playlist.id, playlist.id, playlist.lastModified.localeDate()) + "\n\n")
+                                "[**[]**]($base/music/playlist/[]) - ".apply(playlist.name, playlist.id) +
+                                translate("playlists.list_row", event, register)
+                                .apply(playlist.id, playlist.lastModified.localeDate()) + "\n\n")
                     }
                     embed.appendDescription(translate("playlists.how_play", event, register))
                 }

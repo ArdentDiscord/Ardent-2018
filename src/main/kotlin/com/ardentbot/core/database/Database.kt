@@ -2,6 +2,7 @@ package com.ardentbot.core.database
 
 import com.ardentbot.commands.admin.Announcement
 import com.ardentbot.commands.games.*
+import com.ardentbot.commands.info.StatusData
 import com.ardentbot.commands.music.DatabaseMusicLibrary
 import com.ardentbot.commands.music.DatabaseMusicPlaylist
 import com.ardentbot.commands.music.ServerQueue
@@ -47,7 +48,6 @@ class Database(val register: ArdentRegister) {
                 "announcements",
                 "commands",
                 "guilds",
-                "logs",
                 "marriages",
                 "music_libraries",
                 "music_played",
@@ -64,9 +64,6 @@ class Database(val register: ArdentRegister) {
                 r.db("ardent").tableCreate(table).run<Any>(conn)
 
                 when (table) {
-                    "logs", "status_changes" -> {
-                        r.db("ardent").table(table).indexCreate("userId").run<Any>(conn)
-                    }
                     "users" -> {
                         r.db("ardent").table(table).indexCreate("money").run<Any>(conn)
                     }
@@ -107,6 +104,7 @@ class Database(val register: ArdentRegister) {
 
     fun getGuildData(guild: Guild): GuildData {
         var data = asPojo(r.table("guilds").get(guild.id).run(conn), GuildData::class.java)
+        println(data?.toString() + " | $guild")
         return if (data != null) data else {
             data = GuildData(guild.id, mutableListOf(), mutableListOf())
             insert(data)
@@ -123,11 +121,6 @@ class Database(val register: ArdentRegister) {
         }
     }
 
-    fun getMessagesFor(user: User, guild: Guild): List<UserMessage> {
-        return r.table("logs").getAll(user.id).optArg("index", "userId").filter(r.hashMap("guildId", guild.id))
-                .run<Any>(conn).queryAsArrayList(UserMessage::class.java).filterNotNull()
-    }
-
     fun getMutes(): List<UserMute> {
         return r.table("mutes").run<Any>(conn).queryAsArrayList(UserMute::class.java).filterNotNull()
     }
@@ -135,13 +128,7 @@ class Database(val register: ArdentRegister) {
     fun getTotalCommandsReceived(): Int = r.table("commands").count().run<Int>(conn)
     fun getTotalMessagesReceived(): Long = r.table("logs").count().run<Long>(conn)
 
-    fun getStatusChanges(userId: String): List<StatusUpdate> {
-        return r.table("status_changes").getAll(userId).optArg("index", "userId")
-                .run<Any>(conn).queryAsArrayList(StatusUpdate::class.java).filterNotNull().sortedBy { it.time }
-                .let { it.filterIndexed { i, _ -> i == it.lastIndex || it[i + 1].time - it[i].time > 1000 } }
-    }
-
-    fun getStatusChangeUsers() = r.table("status_changes").distinct().optArg("index", "userId")
+    fun getStatusChangeUsers() = r.table("status_changes").distinct().optArg("index", "id")
             .run<Cursor<String>>(conn)
 
     fun getUserData(id: String): UserData {
@@ -209,6 +196,8 @@ class Database(val register: ArdentRegister) {
                 .forEach { if (it != null) playlists.add(it) }
         return playlists
     }
+
+    fun getStatusInfo(id: String): StatusData? = asPojo(r.table("status_changes").get(id).run(conn), StatusData::class.java)
 }
 
 fun Database.getUserData(user: User): UserData = getUserData(user.id)

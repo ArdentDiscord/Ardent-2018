@@ -7,17 +7,46 @@ import com.ardentbot.core.commands.Command
 import com.ardentbot.core.commands.ELEVATED_PERMISSIONS
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.core.database.DbObject
+import com.ardentbot.core.database.getLanguage
+import com.ardentbot.core.translation.Language
 import com.ardentbot.kotlin.*
 import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.TextChannel
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 import java.util.concurrent.TimeUnit
 
+val appendedAnnouncements = mutableListOf<AppendedAnnouncement>()
+data class AppendedAnnouncement(val text: String, val sentTo: MutableList<String> = mutableListOf())
+
 @ModuleMapping("admin")
 class Announce : Command("announce", arrayOf("announcement", "announcements"), null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         val arg = arguments.getOrNull(0)
         when {
+            (arg == "global" || arg == "appended") && event.author.id == "169904324980244480" -> {
+                val text = arguments.without(0)
+                if (text.isEmpty()) event.channel.send("That message is empty!", register)
+                else event.channel.send(Emojis.WARNING_SIGN.cmd + "Are you sure you want to send the following $arg message:\n${text.joinToString(" ")}",
+                        register) { _ ->
+                    Sender.waitForMessage({ it.author.id == event.author.id && it.channel.id == event.channel.id }, { confirmationEvent ->
+                        if (confirmationEvent.message.contentRaw == "yes") {
+                            if (arg == "global") {
+                                register.getAllGuilds().forEach { guild ->
+                                    Sender.waitForMessage({it.guild.id == guild.id},{
+                                        it.channel.sendMessage(Emojis.INFORMATION_SOURCE.cmd +
+                                                register.translationManager.translate("sender.announcement", it.guild.getLanguage(register) ?: Language.ENGLISH) +
+                                                " " + text.joinToString(" ")).queue()
+                                    },time = 24,timeUnit = TimeUnit.HOURS)
+                                }
+                                event.channel.send("started sending",register)
+                            } else {
+                                appendedAnnouncements.add(AppendedAnnouncement(text.joinToString(" ")))
+                                event.channel.send("added",register)
+                            }
+                        }
+                    })
+                }
+            }
             arg?.isTranslatedArgument("create", event.guild, register) == true -> {
                 if (invokePrecondition(ELEVATED_PERMISSIONS(listOf(Permission.MANAGE_SERVER)), event, arguments, flags, register)) {
                     event.channel.send("Starting announcement creation.. set options can be changed later with /announce edit", register)

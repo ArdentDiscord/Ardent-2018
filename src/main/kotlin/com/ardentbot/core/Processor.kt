@@ -2,7 +2,6 @@ package com.ardentbot.core
 
 import com.ardentbot.commands.games.send
 import com.ardentbot.core.database.UserCommand
-import com.ardentbot.core.database.UserMessage
 import com.ardentbot.core.translation.Language
 import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.apply
@@ -24,7 +23,6 @@ class Processor(val register: ArdentRegister) {
         when (event) {
             is GuildMessageReceivedEvent -> {
                 receivedMessages++
-                register.database.insert(UserMessage(event.author.id, event.channel.id, event.guild.id, event.message.contentRaw, System.currentTimeMillis()), blocking = false)
                 if (event.author.isBot || event.isWebhookMessage) return
                 val data = register.database.getGuildData(event.guild)
                 val language = data.language ?: Language.ENGLISH

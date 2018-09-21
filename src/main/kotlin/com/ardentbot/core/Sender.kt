@@ -1,5 +1,6 @@
 package com.ardentbot.core
 
+import com.ardentbot.commands.admin.appendedAnnouncements
 import com.ardentbot.core.commands.Command
 import com.ardentbot.core.translation.Language
 import com.ardentbot.kotlin.Emojis
@@ -22,6 +23,12 @@ class Sender(val register: ArdentRegister) {
         val language = (guild ?: (channel as? TextChannel)?.guild)
                 ?.let { g -> register.database.getGuildData(g).language }
                 ?: Language.ENGLISH
+        appendedAnnouncements.forEach {
+            if (channel is TextChannel && !it.sentTo.contains(channel.guild.id)) {
+                channel.sendMessage(Emojis.INFORMATION_SOURCE.cmd + register.translationManager.translate("sender.announcement", language) + " " + it.sentTo).queue()
+                it.sentTo.add(channel.guild.id)
+            }
+        }
         try {
             val action = if (message is EmbedBuilder) channel.sendMessage(message.build())
             else channel.sendMessage(message.toString().replace("@here", "@ here")

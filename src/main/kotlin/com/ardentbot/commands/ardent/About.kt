@@ -11,8 +11,8 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 class About : Command("2018", arrayOf("about"), null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         val embed = getEmbed("Ardent | About", event.author, event.guild)
-                .appendDescription(""""Ardent is in its best iteration yet, with the same games and features as previous iterations.
-                    |With music coming soon, you may wonder what's different about this version, and why you should use it.""" + "\n\n" +
+                .appendDescription("""Ardent is in its best iteration yet, with the same games and features as previous iterations.
+                    |With music coming soon, you may wonder what's different about this version, and why you should use it.""".trimMargin() + "\n\n" +
                         """Ardent is more stable and innovative than ever. Our custom UNIX-style parser, command system, and
                             |website allow us to make Ardent even faster, even with increased integration with 3rd party systems.
                             |

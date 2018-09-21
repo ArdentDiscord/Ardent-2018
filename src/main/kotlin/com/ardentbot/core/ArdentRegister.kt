@@ -2,10 +2,10 @@ package com.ardentbot.core
 
 import com.adamratzman.spotify.main.SpotifyAPI
 import com.ardentbot.commands.games.send
+import com.ardentbot.commands.info.StatusData
 import com.ardentbot.commands.music.*
 import com.ardentbot.core.commands.CommandHolder
 import com.ardentbot.core.database.Database
-import com.ardentbot.core.database.StatusUpdate
 import com.ardentbot.core.translation.TranslationManager
 import com.ardentbot.core.utils.Config
 import com.ardentbot.core.utils.ErrorService
@@ -187,12 +187,12 @@ class ArdentRegister(val args: Array<String>) {
             val users = database.getStatusChangeUsers().toList().map { it.toLong() }
             getAllGuilds().map { guild -> guild.members.map { it.user to it.onlineStatus } }.flatten()
                     .filterNot { it.first.idLong in users }.forEachIndexed { i, it ->
-                        println("Status Insert > $i")
-                        database.insert(StatusUpdate(it.first.id, it.second), blocking = false)
+                        if (i % 500 == 0) println("Inserted batch of 500 ($i) into statuses")
+                        database.insert(StatusData(it.first.id, 0, 0, 0, 0, it.second, System.currentTimeMillis()))
                     }
         }, 0, 15, TimeUnit.MINUTES)
 
-        jda.presence.game = Game.of(Game.GameType.STREAMING, "in beta!",
+        jda.presence.game = Game.of(Game.GameType.STREAMING, "almost out of beta!",
                 "https://twitch.tv/ ")
 
         println("Ardent has started ${Emojis.SMILING_FACE_WITH_SUN_GLASS.symbol}")

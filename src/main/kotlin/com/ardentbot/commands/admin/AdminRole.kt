@@ -49,7 +49,7 @@ class AdminRole : Command("adminrole", arrayOf("adm"), null) {
                                 ?: translate("general.not_set",event, register)) + "\n\n")
                 if (usersWithRole != null) {
                     embed.appendDescription(translate("adminrole.userswithcurrent", event, register)
-                            .apply(usersWithRole.map { it.asMention }.joinToString()))
+                            .apply(if (usersWithRole.size >= 15) usersWithRole.size else usersWithRole.joinToString { it.asMention }))
                 }
                 event.channel.send(embed, register)
             }
