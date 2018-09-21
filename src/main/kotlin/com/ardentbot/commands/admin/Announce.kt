@@ -16,6 +16,7 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 import java.util.concurrent.TimeUnit
 
 val appendedAnnouncements = mutableListOf<AppendedAnnouncement>()
+
 data class AppendedAnnouncement(val text: String, val sentTo: MutableList<String> = mutableListOf())
 
 @ModuleMapping("admin")
@@ -32,16 +33,20 @@ class Announce : Command("announce", arrayOf("announcement", "announcements"), n
                         if (confirmationEvent.message.contentRaw == "yes") {
                             if (arg == "global") {
                                 register.getAllGuilds().forEach { guild ->
-                                    Sender.waitForMessage({it.guild.id == guild.id},{
-                                        it.channel.sendMessage(Emojis.INFORMATION_SOURCE.cmd +
-                                                register.translationManager.translate("sender.announce", it.guild.getLanguage(register) ?: Language.ENGLISH) +
-                                                " " + text.joinToString(" ")).queue()
-                                    },time = 24,timeUnit = TimeUnit.HOURS)
+                                    Sender.waitForMessage({ it.guild.id == guild.id }, {
+                                        try {
+                                            it.channel.sendMessage(Emojis.INFORMATION_SOURCE.cmd +
+                                                    register.translationManager.translate("sender.announce", it.guild.getLanguage(register)
+                                                            ?: Language.ENGLISH) +
+                                                    " " + text.joinToString(" ")).queue()
+                                        } catch (ignored: Exception) {
+                                        }
+                                    }, time = 24, timeUnit = TimeUnit.HOURS)
                                 }
-                                event.channel.send("started sending",register)
+                                event.channel.send("started sending", register)
                             } else {
                                 appendedAnnouncements.add(AppendedAnnouncement(text.joinToString(" ")))
-                                event.channel.send("added",register)
+                                event.channel.send("added", register)
                             }
                         }
                     })
