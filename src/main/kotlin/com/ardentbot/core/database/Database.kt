@@ -104,7 +104,6 @@ class Database(val register: ArdentRegister) {
 
     fun getGuildData(guild: Guild): GuildData {
         var data = asPojo(r.table("guilds").get(guild.id).run(conn), GuildData::class.java)
-        println(data?.toString() + " | $guild")
         return if (data != null) data else {
             data = GuildData(guild.id, mutableListOf(), mutableListOf())
             insert(data)

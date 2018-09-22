@@ -194,10 +194,10 @@ class ArdentRegister(args: Array<String>) {
 
         Sender.scheduledExecutor.scheduleAtFixedRate({
             jda.presence.game = Game.of(Game.GameType.STREAMING, when(random.nextInt(5)) {
-                0 -> "With ${holder.commands.size} commands!"
-                1 -> "Tell your friends!"
-                2 -> "We've released 1.0!"
-                else -> "Serving ${getAllGuilds().size} servers!"
+                0 -> "With ${holder.commands.size} commands! | /help"
+                1 -> "Tell your friends! | /help"
+                3 -> "Serving ${getAllGuilds().size} servers! | /help"
+                else -> "Use /help"
             }, "https://twitch.tv/ ")
         },0,15,TimeUnit.SECONDS)
 

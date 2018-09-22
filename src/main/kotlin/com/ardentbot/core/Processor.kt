@@ -78,8 +78,8 @@ class Processor(val register: ArdentRegister) {
             is GuildMemberJoinEvent -> EventMessageSender.joinMessage(event, register)
             is GuildMemberLeaveEvent -> EventMessageSender.leaveMessage(event, register)
             is UserUpdateOnlineStatusEvent -> StatusUpdateChanger.change(event, register)
-            is PrivateMessageReceivedEvent -> event.channel.sendMessage("Unfortunately, I don't support commands in private channels " +
-                    "right now. Please retry in a server").queue()
+            // is PrivateMessageReceivedEvent -> if (!event.author.isBot) event.channel.sendMessage("Unfortunately, I don't support commands in private channels " +
+             //       "right now. Please retry in a server").queue()
             is GuildJoinEvent -> {
                 try {
                     Thread.sleep(2500)
