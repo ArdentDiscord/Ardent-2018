@@ -56,6 +56,7 @@ abstract class Game(val type: GameType, val channel: TextChannel, val creator: S
                 scheduledExecutor.shutdown()
             }
         }, 1, 1, TimeUnit.SECONDS)
+
         scheduledExecutor.schedule({
             if (gamesInLobby.contains(this)) {
                 register.sender.send(translate("games.lobby_time_exceeded"),
@@ -70,7 +71,10 @@ abstract class Game(val type: GameType, val channel: TextChannel, val creator: S
      */
     private fun displayLobby(): Message? {
         val member = channel.guild.selfMember
-
+        if ((System.currentTimeMillis() - creation) / 1000 > (60 * 10)) {
+            cancel(member)
+            return null
+        }
         val embed = getEmbed(translate("games.lobby_embed").apply(type.readable), creator.toUser(register)!!, channel.guild, Color.ORANGE)
                 .setFooter(translate("games.ardent_game_engine").apply("Adam#9261"), member.user.avatarUrl)
                 .setDescription(translate("games.lobby_active_time").apply(((System.currentTimeMillis() - creation) / 1000).toMinutesAndSeconds()) + "\n" +
@@ -131,8 +135,8 @@ abstract class Game(val type: GameType, val channel: TextChannel, val creator: S
             activeGames.remove(this)
             if (complain) register.sender.send(translate("games.game_canceled").apply(user.display()),
                     null, channel, register.selfUser, null, callback = {
-                scheduledExecutor.shutdownNow()
             })
+            scheduledExecutor.shutdownNow()
         }
     }
 
