@@ -2,7 +2,7 @@ group 'com.ardentbot'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.2.51'
+    ext.kotlin_version = '1.2.71'
 
     repositories {
         mavenCentral()
@@ -57,6 +57,7 @@ dependencies {
     compile group: 'com.rethinkdb', name: 'rethinkdb-driver', version: '2.3.3'
     compile group: 'org.reflections', name: 'reflections', version: '0.9.11'
     compile 'net.dv8tion:JDA:3.6.0_376'
+    compile 'com.github.adamint:ExpressionSolver:-SNAPSHOT'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
