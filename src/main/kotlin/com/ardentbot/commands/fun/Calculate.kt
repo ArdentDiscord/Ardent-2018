@@ -29,7 +29,6 @@ class Calculate : Command("calculate", arrayOf("calc"), null) {
                         event.channel.send(translate("calculate.invalid_variable_declaration", event, register), register)
                         return
                     } else {
-                        println(split[0] + split.subList(2, split.size))
                         expression.set(split[0], split.subList(2, split.size).concat())
                     }
                 }
