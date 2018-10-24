@@ -6,11 +6,14 @@ services:
       - "443:443"
     networks:
       - ardent
-      - lavaplayer1
   lavaplayer1:
     image: adamratzman/lavaplayer-node
+    networks:
+      - ardent
   lavaplayer2:
     image: adamratzman/lavaplayer-node
+    networks:
+      - ardent
 
 networks:
   ardent:
