@@ -15,57 +15,61 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 class DisableCommand : Command("disablecommand", arrayOf("dcommand"), null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         val data = register.database.getGuildData(event.guild)
-        if (arguments.size > 1) {
-            val command = register.holder.getCommand(arguments[1])
-            val exists = command?.name in data.disabledCommands.map { it.name }
-            val arg = arguments.getOrNull(0)
+        when {
+            arguments.size > 1 -> {
+                val command = register.holder.getCommand(arguments[1])
+                val exists = command?.name in data.disabledCommands.map { it.name }
+                val arg = arguments.getOrNull(0)
 
-            when {
-                arg?.isTranslatedArgument("add", event.guild, register) == true -> {
-                    if (command == null) register.sender.cmdSend(Emojis.CROSS_MARK.cmd + translate("general.specify_valid_command", event, register),
-                            this, event)
-                    else if (register.holder.getModuleFor(command).name == "admin" || command.name == "help" || command.name == "suggest"
-                            || command.name == "disablecommand" || command.name == "disablemodule" || command.name == "audit") {
-                        register.sender.cmdSend(Emojis.CROSS_MARK.cmd +
-                                translate("disablecommand.cannot_disable", event, register), this, event)
-                    } else {
-                        if (exists) register.sender.cmdSend(Emojis.CROSS_MARK.cmd +
-                                translate("disablecommand.already_disabled", event, register), this, event)
-                        else {
-                            data.disabledCommands.add(DisabledCommand(command.name, event.author.id, System.currentTimeMillis()))
-                            register.database.update(data)
-                            register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd +
-                                    translate("disablecommand.disabled", event, register).apply(command.name), this, event)
+                when {
+                    arg?.isTranslatedArgument("add", event.guild, register) == true -> {
+                        if (command == null) register.sender.cmdSend(Emojis.CROSS_MARK.cmd + translate("general.specify_valid_command", event, register),
+                                this, event)
+                        else if (register.holder.getModuleFor(command).name == "admin" || command.name == "help" || command.name == "suggest"
+                                || command.name == "disablecommand" || command.name == "disablemodule" || command.name == "audit") {
+                            register.sender.cmdSend(Emojis.CROSS_MARK.cmd +
+                                    translate("disablecommand.cannot_disable", event, register), this, event)
+                        } else {
+                            if (exists) register.sender.cmdSend(Emojis.CROSS_MARK.cmd +
+                                    translate("disablecommand.already_disabled", event, register), this, event)
+                            else {
+                                data.disabledCommands.add(DisabledCommand(command.name, event.author.id, System.currentTimeMillis()))
+                                register.database.update(data)
+                                register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd +
+                                        translate("disablecommand.disabled", event, register).apply(command.name), this, event)
+                            }
                         }
                     }
-                }
-                arg?.isTranslatedArgument("remove", event.guild, register) == true -> {
-                    if (command == null) register.sender.cmdSend(Emojis.CROSS_MARK.cmd + translate("general.specify_valid_command", event, register),
-                            this, event)
-                    else {
-                        if (!exists) register.sender.cmdSend(Emojis.CROSS_MARK.cmd +
-                                translate("disablecommand.no_disabled", event, register), this, event)
+                    arg?.isTranslatedArgument("remove", event.guild, register) == true -> {
+                        if (command == null) register.sender.cmdSend(Emojis.CROSS_MARK.cmd + translate("general.specify_valid_command", event, register),
+                                this, event)
                         else {
-                            data.disabledCommands.removeIf { it.name == command.name }
-                            register.database.update(data)
-                            register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd +
-                                    translate("disablecommand.re-enable", event, register).apply(command.name), this, event)
+                            if (!exists) register.sender.cmdSend(Emojis.CROSS_MARK.cmd +
+                                    translate("disablecommand.no_disabled", event, register), this, event)
+                            else {
+                                data.disabledCommands.removeIf { it.name == command.name }
+                                register.database.update(data)
+                                register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd +
+                                        translate("disablecommand.re-enable", event, register).apply(command.name), this, event)
+                            }
                         }
                     }
+                    else -> displayHelp(event, arguments, flags, register)
                 }
-                else -> displayHelp(event, arguments, flags, register)
             }
-        } else if (arguments.getOrNull(0)?.isTranslatedArgument("list", event.guild, register) == true) {
-            val embed = getEmbed(translate("disablecommand.title", event, register).apply(event.guild.name), event.author, event.guild)
-            if (data.disabledCommands.isEmpty()) embed.appendDescription(translate("disablecommand.no_commands_disabled", event, register))
-            else data.disabledCommands.forEach { disabled ->
-                embed.appendDescription(Emojis.SMALL_ORANGE_DIAMOND.cmd
-                        + translate("disablecommand.row", event, register).apply(disabled.name, disabled.addDate.localeDate(),
-                        disabled.adder.toMember(event.guild)?.user?.display()
-                                ?: translate("unknown", event, register)) + "\n")
+            arguments.getOrNull(0)?.isTranslatedArgument("list", event.guild, register) == true -> {
+                val embed = getEmbed(translate("disablecommand.title", event, register).apply(event.guild.name), event.author, event.guild)
+                if (data.disabledCommands.isEmpty()) embed.appendDescription(translate("disablecommand.no_commands_disabled", event, register))
+                else data.disabledCommands.forEach { disabled ->
+                    embed.appendDescription(Emojis.SMALL_ORANGE_DIAMOND.cmd
+                            + translate("disablecommand.row", event, register).apply(disabled.name, disabled.addDate.localeDate(),
+                            disabled.adder.toMember(event.guild)?.user?.display()
+                                    ?: translate("unknown", event, register)) + "\n")
+                }
+                register.sender.cmdSend(embed, this, event)
             }
-            register.sender.cmdSend(embed, this, event)
-        } else displayHelp(event, arguments, flags, register)
+            else -> displayHelp(event, arguments, flags, register)
+        }
     }
 
     val add = Argument("add")

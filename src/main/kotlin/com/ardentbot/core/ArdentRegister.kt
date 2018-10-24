@@ -101,6 +101,7 @@ class ArdentRegister(args: Array<String>) {
     }
 
     init {
+        playerManager.useRemoteNodes("lavaplayer1:8080", "lavaplayer2:8080")
         playerManager.configuration.resamplingQuality = AudioConfiguration.ResamplingQuality.LOW
         playerManager.registerSourceManager(YoutubeAudioSourceManager())
         playerManager.registerSourceManager(SoundCloudAudioSourceManager())

@@ -24,7 +24,8 @@ open class Module(val name: String, val id: String)
 
 data class EventParams(val event: GuildMessageReceivedEvent, val command: Command, val arguments: List<String>, val flags: List<Flag>, val register: ArdentRegister) {
     fun translate(id: String): String {
-        return register.translationManager.translate(id, register.database.getGuildData(event.guild).language ?: Language.ENGLISH)
+        return register.translationManager.translate(id, register.database.getGuildData(event.guild).language
+                ?: Language.ENGLISH)
     }
 }
 
@@ -36,6 +37,7 @@ abstract class Invokable(val name: String, val aliases: Array<String>?, val cool
 }
 
 abstract class Command(name: String, aliases: Array<String>?, cooldown: Int?) : Invokable(name, aliases, cooldown) {
+    var useFlags: Boolean
     lateinit var description: String
     val users = hashMapOf<String, Long>()
 
@@ -65,6 +67,7 @@ abstract class Command(name: String, aliases: Array<String>?, cooldown: Int?) : 
     }
 
     init {
+        useFlags = flags.isNotEmpty()
         if (cooldown != null) {
             preconditions.add(Precondition({ params ->
                 if (params.event.member.hasPermission(Permission.MANAGE_SERVER)

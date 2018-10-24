@@ -12,5 +12,10 @@ services:
       - "443:443"
     depends_on:
       - rethinkdb
+      - lavaplayer1
+  lavaplayer1:
+    image: adamratzman/lavaplayer-node
+  lavaplayer2:
+    image: adamratzman/lavaplayer-node
 volumes:
   rethinkdb:

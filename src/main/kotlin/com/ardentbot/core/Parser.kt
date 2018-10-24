@@ -15,13 +15,13 @@ class Parser {
         return null
     }
 
-    fun parseMessage(message: Message, prefix: String, base: String): ParsedMessage? = parseMessage(message.contentRaw.removePrefix(prefix).removePrefix(" ").removePrefix(base))
+    fun parseMessage(message: Message, prefix: String, base: String, useFlags: Boolean): ParsedMessage? = parseMessage(message.contentRaw.removePrefix(prefix).removePrefix(" ").removePrefix(base), useFlags)
 
     /**
      * Contains the Ardent parsing scheme, which mimics the Unix command line parser, while being easier for regular
      * 'users' to understand
      */
-    fun parseMessage(stringContent: String): ParsedMessage? {
+    fun parseMessage(stringContent: String, useFlags: Boolean = true): ParsedMessage? {
         val content = stringContent.removePrefix(" ").split(" ").toMutableList()
         if (content.isEmpty()) return null
 
@@ -30,7 +30,7 @@ class Parser {
 
         while (content.isNotEmpty()) {
             when {
-                !content[0].startsWith("-") || content[0].length <= 1 -> {
+                (!content[0].startsWith("-") || !useFlags) || content[0].length <= 1 -> {
                     if (content[0].isNotEmpty() && content[0].isNotBlank()) {
                         arguments.add(content[0])
                     }

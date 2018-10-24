@@ -13,7 +13,6 @@ import net.dv8tion.jda.core.events.guild.GuildJoinEvent
 import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent
 import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
-import net.dv8tion.jda.core.events.message.priv.PrivateMessageReceivedEvent
 import net.dv8tion.jda.core.events.user.update.UserUpdateOnlineStatusEvent
 import net.dv8tion.jda.core.hooks.SubscribeEvent
 import org.apache.commons.lang3.exception.ExceptionUtils
@@ -50,7 +49,7 @@ class Processor(val register: ArdentRegister) {
                                 return
                             }
                             val prefix = register.parser.lookupPrefix(event.message, prefixes)
-                            val parsedMessage = register.parser.parseMessage(event.message, prefix, commandName)
+                            val parsedMessage = register.parser.parseMessage(event.message, prefix, commandName, command.useFlags)
                                     ?: return
                             register.cachedExecutor.execute {
                                 try {
@@ -79,7 +78,7 @@ class Processor(val register: ArdentRegister) {
             is GuildMemberLeaveEvent -> EventMessageSender.leaveMessage(event, register)
             is UserUpdateOnlineStatusEvent -> StatusUpdateChanger.change(event, register)
             // is PrivateMessageReceivedEvent -> if (!event.author.isBot) event.channel.sendMessage("Unfortunately, I don't support commands in private channels " +
-             //       "right now. Please retry in a server").queue()
+            //       "right now. Please retry in a server").queue()
             is GuildJoinEvent -> {
                 try {
                     Thread.sleep(2500)

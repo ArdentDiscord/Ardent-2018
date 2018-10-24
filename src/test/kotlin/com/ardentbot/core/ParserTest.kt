@@ -8,6 +8,7 @@ internal class ParserTest {
 
     @Test
     fun parseMessage() {
+        println(parser.parseMessage("-4 98 test",false))
         Assert.assertEquals(ParsedMessage(listOf("online"), listOf(Flag("r", "\"hi\""), Flag("d", "\"hi\""))),
                 parser.parseMessage("online -r hi -d hi"))
         Assert.assertEquals(ParsedMessage(listOf("test"), listOf(Flag("r", "null"), Flag("d", "\"test\""))),
