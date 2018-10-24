@@ -6,6 +6,8 @@
         <serverdata>
           <mappings>
             <mapping deploy="/ardent/Ardent" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/ardent/Ardent/src" local="$PROJECT_DIR$/src/test" web="/" />
+            <mapping deploy="/ardent/Ardent/src/main" local="$PROJECT_DIR$/src/main" web="/" />
           </mappings>
           <excludedPaths>
             <excludedPath path="/ardent/Ardent/rethinkdb" />

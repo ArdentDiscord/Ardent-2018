@@ -58,8 +58,6 @@ class ArdentRegister(args: Array<String>) {
     val web = Web(this)
     val spotifyApi = SpotifyAPI.Builder(config["spotify_client_id"], config["spotify_client_secret"]).build()
 
-    fun process(event: GuildMessageReceivedEvent) = processor.process(event)
-
     fun getTextChannel(id: String): TextChannel? {
         return try {
             jda.getTextChannelById(id)
@@ -202,6 +200,8 @@ class ArdentRegister(args: Array<String>) {
             }, "https://twitch.tv/ ")
         },0,15,TimeUnit.SECONDS)
 
+        registerLocalCommands()
+        registerLocalTranslations()
 
         println("Ardent has started ${Emojis.SMILING_FACE_WITH_SUN_GLASS.symbol}")
     }
@@ -242,6 +242,9 @@ class ArdentRegister(args: Array<String>) {
                     .apply(name, "<$base/manage/${manager.guild.id}>"), this)
         }
     }
+
+    fun registerLocalCommands(){}
+    fun registerLocalTranslations(){}
 }
 
 fun String.toUser(register: ArdentRegister) = register.getUser(this)
