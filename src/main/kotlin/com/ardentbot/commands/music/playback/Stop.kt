@@ -13,11 +13,12 @@ import com.ardentbot.kotlin.Emojis
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("music")
-class Stop : Command("stop", null, null) {
+class Stop : Command("stop", arrayOf("leave"), null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         if (event.guild.audioManager.isConnected) {
             if (!event.member.checkSameChannel(event.channel, register) || !event.member.hasPermission(event.channel, register, musicCommand = true)) return
             val audioManager = event.guild.getAudioManager(event.channel, register)
+            audioManager.scheduler.autoplay = false
             audioManager.player.destroy()
             managers.remove(audioManager.guild.idLong)
             event.guild.audioManager.closeAudioConnection()

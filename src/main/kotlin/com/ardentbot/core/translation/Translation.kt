@@ -13,6 +13,12 @@ import java.nio.charset.Charset
 import java.util.concurrent.TimeUnit
 
 class TranslationManager(val register: ArdentRegister, val languages: MutableList<ArdentLanguage> = mutableListOf()) {
+    fun addTranslation(id: String, value: String) {
+        languages.first { it.language == Language.ENGLISH }.translations.add(
+                ArdentTranslation(id, "", value, value)
+        )
+    }
+
     fun translateNull(id: String, language: Language): String? {
         return (languages.first { language == it.language }.translations.find { id == it.identifier }?.translation
                 ?: languages.first { it.language == Language.ENGLISH }.translations.find { id == it.identifier }?.translation)
@@ -79,7 +85,7 @@ class TranslationManager(val register: ArdentRegister, val languages: MutableLis
     }
 }
 
-data class ArdentLanguage(val language: Language, var translations: List<ArdentTranslation>)
+data class ArdentLanguage(val language: Language, var translations: MutableList<ArdentTranslation>)
 data class ArdentTranslation(val identifier: String, val context: String, val english: String, val translation: String)
 
 enum class Language(val readable: String, val id: String, val maturity: LanguageMaturity) {

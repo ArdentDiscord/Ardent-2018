@@ -200,9 +200,6 @@ class ArdentRegister(args: Array<String>) {
             }, "https://twitch.tv/ ")
         },0,15,TimeUnit.SECONDS)
 
-        registerLocalCommands()
-        registerLocalTranslations()
-
         println("Ardent has started ${Emojis.SMILING_FACE_WITH_SUN_GLASS.symbol}")
     }
 
@@ -242,9 +239,6 @@ class ArdentRegister(args: Array<String>) {
                     .apply(name, "<$base/manage/${manager.guild.id}>"), this)
         }
     }
-
-    fun registerLocalCommands(){}
-    fun registerLocalTranslations(){}
 }
 
 fun String.toUser(register: ArdentRegister) = register.getUser(this)

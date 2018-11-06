@@ -20,6 +20,17 @@ annotation class ModuleMapping(val name: String)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Excluded
 
+@Retention(AnnotationRetention.RUNTIME)
+annotation class MockCommand(val description: String)
+
+@Retention(AnnotationRetention.RUNTIME)
+annotation class MockTranslations(vararg val translations: MockTr)
+
+/**
+ * [id] is whatever is invoked after the command name. access it like CMDNAME.[id]
+ */
+annotation class MockTr(val id: String, val value: String)
+
 open class Module(val name: String, val id: String)
 
 data class EventParams(val event: GuildMessageReceivedEvent, val command: Command, val arguments: List<String>, val flags: List<Flag>, val register: ArdentRegister) {
@@ -37,7 +48,6 @@ abstract class Invokable(val name: String, val aliases: Array<String>?, val cool
 }
 
 abstract class Command(name: String, aliases: Array<String>?, cooldown: Int?) : Invokable(name, aliases, cooldown) {
-    var useFlags: Boolean
     lateinit var description: String
     val users = hashMapOf<String, Long>()
 
@@ -67,7 +77,6 @@ abstract class Command(name: String, aliases: Array<String>?, cooldown: Int?) : 
     }
 
     init {
-        useFlags = flags.isNotEmpty()
         if (cooldown != null) {
             preconditions.add(Precondition({ params ->
                 if (params.event.member.hasPermission(Permission.MANAGE_SERVER)

@@ -49,7 +49,7 @@ class Processor(val register: ArdentRegister) {
                                 return
                             }
                             val prefix = register.parser.lookupPrefix(event.message, prefixes)
-                            val parsedMessage = register.parser.parseMessage(event.message, prefix, commandName, command.useFlags)
+                            val parsedMessage = register.parser.parseMessage(event.message, prefix, commandName, command.flags.isNotEmpty())
                                     ?: return
                             register.cachedExecutor.execute {
                                 try {
