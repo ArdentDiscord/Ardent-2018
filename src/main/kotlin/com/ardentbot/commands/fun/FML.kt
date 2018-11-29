@@ -6,6 +6,7 @@ import com.ardentbot.core.commands.Command
 import com.ardentbot.core.commands.ModuleMapping
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 import org.jsoup.Jsoup
+import java.lang.Exception
 import java.net.SocketTimeoutException
 
 @ModuleMapping("fun")
@@ -16,7 +17,7 @@ class FML : Command("fml", arrayOf("fuckmylife"), 5) {
                     .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6")
                     .ignoreContentType(true).get()
                     .getElementsByTag("p")[0].getElementsByTag("a")[0].allElements[0].text(), this, event)
-        } catch (e: SocketTimeoutException) {
+        } catch (e: Exception) {
             onInvoke(event, arguments, flags, register)
         }
     }

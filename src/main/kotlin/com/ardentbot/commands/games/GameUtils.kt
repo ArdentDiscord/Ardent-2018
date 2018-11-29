@@ -249,7 +249,7 @@ class GameDataTrivia(gameId: Long, creator: String, startTime: Long, val winner:
                      val rounds: List<TriviaGame.Round>) : GameData("TriviaData", gameId, creator, startTime) {
     fun sanitize(register: ArdentRegister): SanitizedTrivia {
         val scoresTemp = hashMapOf<String, Int>()
-        scores.forEach { t, u -> scoresTemp[t.toUser(register)!!.display()] = u }
+        scores.forEach { t, u -> t.toUser(register)?.let { scoresTemp[it.display()] = u } }
         val roundsTemp = mutableListOf<SanitizedTriviaRound>()
         roundsTemp.addAll(rounds.map { (winners, losers1, question) ->
             SanitizedTriviaRound(winners.isNotEmpty(), winners.getOrNull(0)?.toUser(register), losers1.map { it.toUser(register) }, question)

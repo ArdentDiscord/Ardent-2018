@@ -26,6 +26,11 @@ annotation class MockCommand(val description: String)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class MockTranslations(vararg val translations: MockTr)
 
+
+@Retention(AnnotationRetention.RUNTIME)
+annotation class MockArguments(vararg val arguments: MockArgument)
+
+annotation class MockArgument(val id: String)
 /**
  * [id] is whatever is invoked after the command name. access it like CMDNAME.[id]
  */

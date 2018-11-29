@@ -34,6 +34,8 @@ class CommandHolder(val register: ArdentRegister) {
                 register.translationManager.addTranslation("${command.name}.${translation.id}", translation.value)
             }
 
+            clazz.getDeclaredAnnotation(MockArguments::class.java)
+
             clazz.declaredFields.filter { it.isAccessible = true; it.name.startsWith("example") }
                     .map { it.get(command) as String }.let { command.ex.addAll(it) }
             clazz.declaredFields.filter {
