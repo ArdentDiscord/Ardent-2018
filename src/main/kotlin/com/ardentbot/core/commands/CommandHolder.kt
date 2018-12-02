@@ -3,6 +3,7 @@ package com.ardentbot.core.commands
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.translation.Language
 import com.ardentbot.core.utils.UnknownModuleFoundException
+import com.ardentbot.kotlin.Emojis
 import org.reflections.Reflections
 
 class CommandHolder(val register: ArdentRegister) {
@@ -31,10 +32,28 @@ class CommandHolder(val register: ArdentRegister) {
                     ?: { command.description = command.translate("${command.name}.description", Language.ENGLISH, register) }.invoke()
 
             clazz.getDeclaredAnnotation(MockTranslations::class.java)?.translations?.forEach { translation ->
-                register.translationManager.addTranslation("${command.name}.${translation.id}", translation.value)
+                register.translationManager.addTranslation("${command.name}.${translation.id}", translation.value.let { unparsedTranslation ->
+                    val builder = StringBuilder(unparsedTranslation)
+                    while (builder.indexOf('{') != -1 && builder.indexOf('}') != -1) {
+                        val left = builder.indexOf('{')
+                        val right = builder.indexOf('}')
+                        val emojiText = builder.substring(left + 1, right)
+                        Emojis.values().find { it.name.equals(emojiText,true) }?.let {
+                            builder.replace(left + 1, right, it.symbol)
+                        }
+                        builder.replace(builder.indexOf('{'), builder.indexOf('{') + 1, "")
+                        builder.replace(builder.indexOf('}'), builder.indexOf('}') + 1, "")
+                    }
+                    builder.toString()
+                })
             }
 
-            clazz.getDeclaredAnnotation(MockArguments::class.java)
+            clazz.getDeclaredAnnotation(MockArguments::class.java)?.arguments?.forEach { argument ->
+                register.translationManager.addTranslation("${command.name}.arguments.${argument.id}", argument.id)
+                if (argument.readable.isNotEmpty()) register.translationManager.addTranslation("${command.name}.arguments.${argument.id}.readable", argument.readable)
+                register.translationManager.addTranslation("${command.name}.arguments.${argument.id}.description", argument.description)
+                command.arguments.add(Argument(argument.id))
+            }
 
             clazz.declaredFields.filter { it.isAccessible = true; it.name.startsWith("example") }
                     .map { it.get(command) as String }.let { command.ex.addAll(it) }

@@ -2,7 +2,7 @@ package com.ardentbot.kotlin
 
 fun Int.diamond() = if (this % 2 == 0) Emojis.SMALL_BLUE_DIAMOND.cmd else Emojis.SMALL_ORANGE_DIAMOND.cmd
 
-enum class Emojis(val symbol: String, val cmd: String = symbol + " ") {
+enum class Emojis(val symbol: String, val cmd: String = "$symbol ") {
     //Row#: 1
     GREEN_APPLE("🍏"), //https://www.emojibase.com/emoji/1f34f/greenapple
     RED_APPLE("🍎"), //https://www.emojibase.com/emoji/1f34e/redapple
