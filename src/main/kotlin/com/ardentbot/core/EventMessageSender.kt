@@ -12,12 +12,17 @@ class EventMessageSender {
         fun joinMessage(event: GuildMemberJoinEvent, register: ArdentRegister) {
             val data = register.database.getGuildData(event.guild)
             val channel = data.joinMessage.channelId?.let { event.guild.getTextChannelById(it) }
-            if (channel != null && data.joinMessage.message != null) {
-                channel.sendMessage(data.joinMessage.message!!
-                        .replace("[user]", event.member.asMention)
-                        .replace("[serversize]", event.guild.members.size.toString())
-                        .replace("[server]", event.guild.name)
-                ).queue()
+            if (data.joinMessage.message != null) {
+                event.user.openPrivateChannel().queue {
+                    it.sendMessage("**Message from ${event.guild.name}**: ${data.joinMessage.message}").queue()
+                }
+                if (channel != null) {
+                    channel.sendMessage(data.joinMessage.message!!
+                            .replace("[user]", event.member.asMention)
+                            .replace("[serversize]", event.guild.members.size.toString())
+                            .replace("[server]", event.guild.name)
+                    ).queue()
+                }
             }
             val defaultRole = data.defaultRoleId?.let { event.guild.getRoleById(it) } ?: return
             try {
