@@ -5,6 +5,7 @@ import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Flag
 import com.ardentbot.core.commands.*
 import com.ardentbot.core.database.AntiAdvertisingSettings
+import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.getEmbed
 import com.ardentbot.kotlin.without
 import net.dv8tion.jda.core.Permission
@@ -18,26 +19,23 @@ import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
         MockArgument("remove", "stop blocking advertisements")
 )
 @MockTranslations(
-        MockTr("remove_success", "{WHITE_HEAVY_CHECKMARK} Successfully removed any existing adblock settings"),
+        MockTr("remove_success", "{WHITE_HEAVY_CHECKMARK} Successfully removed existing adblock settings"),
         MockTr("allow_server_links", "Allow server links"),
-        MockTr("ban_after_two_infractions", "Ban after 2 infractions"),
-        MockTr("how_change", "Change these settings with /adblock set [allow/ban] yes/no"),
+        MockTr("how_change", "Change these settings with /adblock set allow yes/no"),
         MockTr("allow", "allow"),
-        MockTr("ban", "ban")
+        MockTr("set_success", "{WHITE_HEAVY_CHECKMARK} Successfully set **[]** to **[]**"),
+        MockTr("blocked", "[], you can't send other server invites here!")
 )
 class AdBlock : Command("adblock", arrayOf("antiadvertise"), null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         val data = register.database.getGuildData(event.guild)
+        if (data.antiAdvertisingSettings == null) data.antiAdvertisingSettings = AntiAdvertisingSettings(true, false)
         val arg = arguments.getOrNull(0)
         when {
             arg != null && arg.isTranslatedArgument("settings", event.guild, register) -> {
-                if (data.antiAdvertisingSettings == null) data.antiAdvertisingSettings = AntiAdvertisingSettings(true, false)
                 val embed = getEmbed(translate("adblock.setting_embed_title", event, register), event.channel)
                         .appendDescription("**" + translate("adblock.allow_server_links", event, register) + "**: " +
                                 translate(if (data.antiAdvertisingSettings!!.allowServerLinks) "yes" else "no", event, register))
-                        .appendDescription("\n\n")
-                        .appendDescription("**" + translate("adblock.ban_after_two_infractions", event, register) + "**: " +
-                                translate(if (data.antiAdvertisingSettings!!.banAfterTwoInfractions) "yes" else "no", event, register))
                         .appendDescription("\n\n")
                         .appendDescription(translate("adblock.how_change", event, register))
 
@@ -47,10 +45,25 @@ class AdBlock : Command("adblock", arrayOf("antiadvertise"), null) {
                 val parameters = arguments.without(0)
                 if (parameters.size != 2) event.channel.send(translate("adblock.how_change", event, register), register)
                 else if (invokePrecondition(ELEVATED_PERMISSIONS(listOf(Permission.MANAGE_SERVER)), event, arguments, flags, register)) {
-                    val num = if (parameters[0].equals(translate("adblock.allow", event, register), true)) 0
-                    else if (parameters[0].equals(translate("adblock.ban", event, register), true)) 1
-                    else 2
-
+                    val num = when {
+                        parameters[0].equals(translate("adblock.allow", event, register), true) -> 0
+                        else -> 2
+                    }
+                    if (num == 2) event.channel.send(translate("adblock.how_change", event, register), register)
+                    else {
+                        val setting = when {
+                            parameters[1].equals(translate("yes", event, register), true) -> true
+                            parameters[1].equals(translate("no", event, register), true) -> true
+                            else -> null
+                        }
+                        if (setting == null) event.channel.send(translate("adblock.how_change", event, register), register)
+                        else {
+                            if (num == 0) data.antiAdvertisingSettings!!.allowServerLinks = setting
+                            else data.antiAdvertisingSettings!!.banAfterTwoInfractions = setting
+                            event.channel.send(translate("adblock.set_success", event, register)
+                                    .apply(translate("adblock.allow_server_links", event, register), parameters[1]), register)
+                        }
+                    }
                 }
             }
             arg != null && arg.isTranslatedArgument("remove", event.guild, register) -> {

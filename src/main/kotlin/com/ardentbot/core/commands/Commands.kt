@@ -161,11 +161,11 @@ abstract class Command(name: String, aliases: Array<String>?, cooldown: Int?) : 
     }
 
     fun invokePrecondition(precondition: Precondition, event: GuildMessageReceivedEvent, arguments: List<String>,
-                           flags: List<Flag>, register: ArdentRegister): Boolean {
+                           flags: List<Flag>, register: ArdentRegister,quiet:Boolean = false): Boolean {
         val params = EventParams(event, this, arguments, flags, register)
         return if (precondition.condition(params)) true
         else {
-            event.channel.send(precondition.onFailure(params).joinToString(""), register)
+            if (!quiet)event.channel.send(precondition.onFailure(params).joinToString(""), register)
             false
         }
     }

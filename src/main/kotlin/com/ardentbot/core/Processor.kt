@@ -1,12 +1,15 @@
 package com.ardentbot.core
 
 import com.ardentbot.commands.games.send
+import com.ardentbot.core.commands.ELEVATED_PERMISSIONS
 import com.ardentbot.core.database.UserCommand
 import com.ardentbot.core.translation.Language
 import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.display
+import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.entities.Guild
+import net.dv8tion.jda.core.entities.Invite
 import net.dv8tion.jda.core.entities.TextChannel
 import net.dv8tion.jda.core.events.Event
 import net.dv8tion.jda.core.events.guild.GuildJoinEvent
@@ -31,6 +34,13 @@ class Processor(val register: ArdentRegister) {
                 val language = data.language ?: Language.ENGLISH
                 val prefixes = data.prefixesModified(register).map { it.prefix }
                 val commandName = register.parser.parseBase(event.message, prefixes) ?: return
+                if (event.message.invites.asSequence().map { try{Invite.resolve(register.jda,it)}catch (e:Exception){null} }
+                                .filterNotNull().toList().isNotEmpty() && !register.holder.commands[0].invokePrecondition(
+                                ELEVATED_PERMISSIONS(listOf(Permission.MANAGE_SERVER)),event, listOf(), listOf(),register,true)) {
+                    event.message.delete().reason("Advertising").queue()
+                    event.channel.send(register.holder.commands[0].translate("adblock.blocked",event, register).apply(event.author.asMention),register)
+                    return
+                }
                 register.holder.commands.firstOrNull {
                     it.getTranslatedName(event.guild, register) == commandName
                             || it.getTranslatedEnglishName(register) == commandName || it.aliases?.contains(commandName) == true

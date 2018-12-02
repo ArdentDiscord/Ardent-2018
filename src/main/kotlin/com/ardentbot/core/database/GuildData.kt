@@ -31,6 +31,6 @@ class GuildDataManager(val guild: Guild, register: ArdentRegister, val data: Gui
 class MusicSettings(id: String, var autoplay: Boolean = false, var stayInChannel: Boolean = false, var whitelistedRoles: MutableList<String>? = null,
                     var canEveryoneUseAdminCommands: Boolean = false, var whitelistedRolesForAdminCommands: MutableList<String>? = null)
     : DbObject(id, table = "music_settings")
-data class AntiAdvertisingSettings(val allowServerLinks: Boolean, val banAfterTwoInfractions: Boolean)
+data class AntiAdvertisingSettings(var allowServerLinks: Boolean, var banAfterTwoInfractions: Boolean)
 
 fun Guild.getLanguage(register: ArdentRegister) = register.database.getGuildData(this).language
