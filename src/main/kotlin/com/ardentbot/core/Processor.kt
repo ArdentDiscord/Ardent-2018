@@ -23,6 +23,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils
 class Processor(val register: ArdentRegister) {
     var receivedMessages = 0
     var receivedCommands = 0
+    val antispamMap = mutableMapOf<String, MutableMap<String, Long>>() // guild id, map of Pair<User id, Message send time>
     @SubscribeEvent
     fun process(event: Event) {
         Sender.check(event)
@@ -30,17 +31,42 @@ class Processor(val register: ArdentRegister) {
             is GuildMessageReceivedEvent -> {
                 receivedMessages++
                 if (event.author.isBot || event.isWebhookMessage) return
+                val elevatedPermissions = register.holder.commands[0].invokePrecondition(
+                        ELEVATED_PERMISSIONS(listOf(Permission.MANAGE_SERVER)), event, listOf(), listOf(), register, true)
                 val data = register.database.getGuildData(event.guild)
                 val language = data.language ?: Language.ENGLISH
+                if (!elevatedPermissions) {
+                    if (event.message.invites.asSequence().map {
+                                try {
+                                    Invite.resolve(register.jda, it)
+                                } catch (e: Exception) {
+                                    null
+                                }
+                            }
+                                    .filterNotNull().toList().isNotEmpty()) {
+                        event.message.delete().reason("Advertising").queue()
+                        event.channel.send(register.holder.commands[0].translate("adblock.blocked", event, register).apply(event.author.asMention), register)
+                        return
+                    }
+
+                    if (data.antispamCooldownSeconds != null) {
+                        antispamMap.putIfAbsent(event.guild.id, mutableMapOf())
+                        val list = antispamMap[event.guild.id]!!
+                        if (list.containsKey(event.author.id)
+                                && (System.currentTimeMillis() < (1000 * data.antispamCooldownSeconds!!) + list[event.author.id]!!)) {
+                            event.message.delete().reason("antispam").queue()
+                            event.author.openPrivateChannel().queue {
+                                it.sendMessage("You need to wait **${((1000 * data.antispamCooldownSeconds!!) + list[event.author.id]!! - System.currentTimeMillis()) / 1000}** more seconds to type in **${event.guild.name}**").queue()
+                            }
+                        }
+                        list.remove(event.author.id)
+                        list.put(event.author.id, System.currentTimeMillis())
+                    }
+                }
+
                 val prefixes = data.prefixesModified(register).map { it.prefix }
                 val commandName = register.parser.parseBase(event.message, prefixes) ?: return
-                if (event.message.invites.asSequence().map { try{Invite.resolve(register.jda,it)}catch (e:Exception){null} }
-                                .filterNotNull().toList().isNotEmpty() && !register.holder.commands[0].invokePrecondition(
-                                ELEVATED_PERMISSIONS(listOf(Permission.MANAGE_SERVER)),event, listOf(), listOf(),register,true)) {
-                    event.message.delete().reason("Advertising").queue()
-                    event.channel.send(register.holder.commands[0].translate("adblock.blocked",event, register).apply(event.author.asMention),register)
-                    return
-                }
+
                 register.holder.commands.firstOrNull {
                     it.getTranslatedName(event.guild, register) == commandName
                             || it.getTranslatedEnglishName(register) == commandName || it.aliases?.contains(commandName) == true

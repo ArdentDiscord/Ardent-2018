@@ -12,7 +12,7 @@ import net.dv8tion.jda.core.Permission
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("admin")
-@MockCommand("stop users from advertising other discord servers!")
+@MockCommand("stop users from advertising other discord servers")
 @MockArguments(
         MockArgument("settings", "view the current adblock settings"),
         MockArgument("set", "set an adblock parameter", "set [links/ban] [yes/no]"),
@@ -60,6 +60,7 @@ class AdBlock : Command("adblock", arrayOf("antiadvertise"), null) {
                         else {
                             if (num == 0) data.antiAdvertisingSettings!!.allowServerLinks = setting
                             else data.antiAdvertisingSettings!!.banAfterTwoInfractions = setting
+                            register.database.update(data)
                             event.channel.send(translate("adblock.set_success", event, register)
                                     .apply(translate("adblock.allow_server_links", event, register), parameters[1]), register)
                         }

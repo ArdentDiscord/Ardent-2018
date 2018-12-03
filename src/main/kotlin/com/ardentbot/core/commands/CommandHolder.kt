@@ -38,7 +38,7 @@ class CommandHolder(val register: ArdentRegister) {
                         val left = builder.indexOf('{')
                         val right = builder.indexOf('}')
                         val emojiText = builder.substring(left + 1, right)
-                        Emojis.values().find { it.name.equals(emojiText,true) }?.let {
+                        Emojis.values().find { it.name.equals(emojiText, true) }?.let {
                             builder.replace(left + 1, right, it.symbol)
                         }
                         builder.replace(builder.indexOf('{'), builder.indexOf('{') + 1, "")

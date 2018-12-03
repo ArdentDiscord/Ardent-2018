@@ -9,7 +9,8 @@ class GuildData(id: String, val prefixes: MutableList<ArdentPrefix>, val disable
                 var logChannel: String? = null, val eventsLogged: MutableList<String> = mutableListOf(),
                 var muteRoleId: String? = null, val joinMessage: EventMessage = EventMessage(null, null),
                 val leaveMessage: EventMessage = EventMessage(null, null), var defaultRoleId: String? = null,
-                var language: Language? = null, var antiAdvertisingSettings: AntiAdvertisingSettings? = null) : DbObject(id, "guilds") {
+                var language: Language? = null, var antiAdvertisingSettings: AntiAdvertisingSettings? = null,
+                var antispamCooldownSeconds: Int? = null) : DbObject(id, "guilds") {
     fun prefixesModified(register: ArdentRegister): List<ArdentPrefix> {
         val withDefaults = if (register.config.test) mutableListOf(ArdentPrefix(".", register.selfUser.id, 0))
         else mutableListOf(ArdentPrefix("/", register.selfUser.id, 0), ArdentPrefix("ardent ", register.selfUser.id, 0),
@@ -31,6 +32,7 @@ class GuildDataManager(val guild: Guild, register: ArdentRegister, val data: Gui
 class MusicSettings(id: String, var autoplay: Boolean = false, var stayInChannel: Boolean = false, var whitelistedRoles: MutableList<String>? = null,
                     var canEveryoneUseAdminCommands: Boolean = false, var whitelistedRolesForAdminCommands: MutableList<String>? = null)
     : DbObject(id, table = "music_settings")
+
 data class AntiAdvertisingSettings(var allowServerLinks: Boolean, var banAfterTwoInfractions: Boolean)
 
 fun Guild.getLanguage(register: ArdentRegister) = register.database.getGuildData(this).language
