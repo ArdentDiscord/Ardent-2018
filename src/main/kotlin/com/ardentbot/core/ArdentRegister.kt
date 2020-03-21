@@ -43,7 +43,7 @@ fun main(args: Array<String>) {
 
 class ArdentRegister(args: Array<String>) {
     val random = Random()
-    val test = args[1].toBoolean()
+    val test = args[2].toBoolean()
     val cachedExecutor = Executors.newCachedThreadPool()
     val config = Config(args[0], args.toList())
     val processor = Processor(this)
