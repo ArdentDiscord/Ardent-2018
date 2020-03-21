@@ -8,10 +8,10 @@ import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.core.toUser
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.getEmbed
-import net.dv8tion.jda.core.entities.Message
-import net.dv8tion.jda.core.entities.TextChannel
-import net.dv8tion.jda.core.entities.User
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -233,7 +233,7 @@ class BlackjackGame(channel: TextChannel, creator: String, playerCount: Int, isP
 @ModuleMapping("games")
 class BlackjackCommand : Command("blackjack", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        val member = event.member
+        val member = event.member!!
         if (member.isInGameOrLobby()) event.channel.send(translate("games.already_in_game", event, register).apply(member.asMention), register)
         /*else if (event.guild.hasGameType(GameType.BLACKJACK) && !member.hasDonationLevel(channel, DonationLevel.INTERMEDIATE, failQuietly = true)) {
             channel.send("There can only be one *{0}* game active at a time in a server!. **Pledge $5 a month or buy the Intermediate rank at {1} to start more than one game per type at a time**".tr(event, "Blackjack", "<https://ardentbot.com/patreon>"))

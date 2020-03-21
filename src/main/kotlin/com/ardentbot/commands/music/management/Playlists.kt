@@ -14,7 +14,7 @@ import com.ardentbot.core.database.genId
 import com.ardentbot.core.selectFromList
 import com.ardentbot.kotlin.*
 import com.ardentbot.web.base
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import java.util.stream.Collectors
 
 @ModuleMapping("music")
@@ -29,7 +29,7 @@ class Playlists : Command("playlist", arrayOf("playlists"), null) {
                 if (playlist == null) event.channel.send(translate("playlists.specify_valid_id", event, register), register)
                 else {
                     event.channel.send(translate("playlists.loading_tracks", event, register).apply("**${playlist.name}**"), register)
-                    playlist.toLocalPlaylist(event.member).loadTracks(event.channel, event.member, register)
+                    playlist.toLocalPlaylist(event.member!!).loadTracks(event.channel, event.member!!, register)
                 }
             }
             arg?.isTranslatedArgument("list", event.guild, register) == true -> {
@@ -67,7 +67,7 @@ class Playlists : Command("playlist", arrayOf("playlists"), null) {
                 else {
                     if (playlist.owner != event.author.id) event.channel.send(translate("playlists.delete_permission", event, register), register)
                     else {
-                        event.channel.selectFromList(event.member, translate("playlists.confirm_delete", event, register)
+                        event.channel.selectFromList(event.member!!, translate("playlists.confirm_delete", event, register)
                                 .apply("**${playlist.name}**"), mutableListOf(translate("yes", event, register),
                                 translate("no", event, register)), { selection, m ->
                             if (selection == 0) {
@@ -84,7 +84,7 @@ class Playlists : Command("playlist", arrayOf("playlists"), null) {
                 if (arguments.size == 1) event.channel.send(translate("playlists.create_need_name", event, register), register)
                 else {
                     val name = arguments.without(0).concat()
-                    event.channel.selectFromList(event.member, translate("playlists.create_what_type", event, register),
+                    event.channel.selectFromList(event.member!!, translate("playlists.create_what_type", event, register),
                             mutableListOf(translate("playlists.default", event, register), translate("playlists.link_spotify", event, register),
                                     translate("playlists.clone_other", event, register), translate("playlists.link_youtube", event, register)), { selection, msg ->
                         msg.delete().queue()

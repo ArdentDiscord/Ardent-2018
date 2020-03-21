@@ -9,12 +9,12 @@ import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.core.database.checkSameChannel
 import com.ardentbot.core.database.hasPermission
 import com.ardentbot.kotlin.*
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("music")
 class RemoveFrom : Command("removefrom", arrayOf("rf"), null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        if (event.member.hasPermission(event.channel, register, true) && event.member.checkSameChannel(event.channel, register)) {
+        if (event.member!!.hasPermission(event.channel, register, true) && event.member!!.checkSameChannel(event.channel, register)) {
             getUser(arguments.concat(), event, this, register) { user ->
                 if (user == null) event.channel.send(translate("general.specify_or_mention_user", event, register), register)
                 else {

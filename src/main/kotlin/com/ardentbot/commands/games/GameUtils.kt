@@ -8,8 +8,12 @@ import com.ardentbot.core.database.getUserData
 import com.ardentbot.core.toUser
 import com.ardentbot.core.translation.Language
 import com.ardentbot.kotlin.*
-import net.dv8tion.jda.core.EmbedBuilder
-import net.dv8tion.jda.core.entities.*
+import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.entities.Message
+import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.User
 import org.apache.commons.lang3.exception.ExceptionUtils
 import java.awt.Color
 import java.util.*

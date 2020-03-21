@@ -11,7 +11,7 @@ import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.display
 import com.ardentbot.kotlin.getEmbed
 import com.ardentbot.kotlin.toUsersDisplay
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("games")
 class Gamelist : Command("gamelist", null, null) {

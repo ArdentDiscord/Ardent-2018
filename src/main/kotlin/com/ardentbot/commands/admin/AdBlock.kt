@@ -8,8 +8,8 @@ import com.ardentbot.core.database.AntiAdvertisingSettings
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.getEmbed
 import com.ardentbot.kotlin.without
-import net.dv8tion.jda.core.Permission
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("admin")
 @MockCommand("stop users from advertising other discord servers")

@@ -6,10 +6,10 @@ import com.ardentbot.core.commands.*
 import com.ardentbot.core.database.GuildData
 import com.ardentbot.core.database.UserMute
 import com.ardentbot.kotlin.*
-import net.dv8tion.jda.core.Permission
-import net.dv8tion.jda.core.entities.Role
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
-import net.dv8tion.jda.core.exceptions.HierarchyException
+import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.Role
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.exceptions.HierarchyException
 import java.awt.Color
 
 @ModuleMapping("admin")
@@ -45,7 +45,7 @@ class Mute : Command("mute", null, null) {
             var role = data.muteRoleId?.let { event.guild.getRoleById(it) }
             if (role == null) {
                 register.sender.cmdSend("This server doesn't have a **mute role** set up.", this, event)
-                event.channel.selectFromList(event.member, "What would you like to do?",
+                event.channel.selectFromList(event.member!!, "What would you like to do?",
                         listOf("Create a new role", "Use an existing role"), consumer = { i, _ ->
                     if (i == 1) {
                         register.sender.cmdSend("Please enter the name of an existing role..", this, event)
@@ -66,12 +66,14 @@ class Mute : Command("mute", null, null) {
                         Sender.waitForMessage({
                             it.author.id == event.author.id && event.guild.id == it.guild.id &&
                                     it.channel.id == event.channel.id
-                        }, {
-                            event.guild.controller.createRole().setName(it.message.contentRaw)
+                        }, { e ->
+                            event.guild.createRole().setName(e.message.contentRaw)
                                     .setPermissions(Permission.MESSAGE_READ).setColor(Color.RED)
                                     .setMentionable(true).queue({
                                         register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd +
                                                 "Successfully created role **[]** ([])".apply(it.name, it.id), this, event)
+                                        data.muteRoleId = it.id
+                                        register.database.update(data)
                                         onInvoke(event, arguments, flags, register)
                                     }, {
                                         register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd +
@@ -116,7 +118,7 @@ class Mute : Command("mute", null, null) {
             }
 
             try {
-                event.guild.controller.addSingleRoleToMember(user, role).queue { _ ->
+                event.guild.addRoleToMember(user, role!!).queue { _ ->
                     register.database.insert(UserMute(user.user.id, event.guild.id, System.currentTimeMillis(), muteTime,
                             flags.get("r")?.value, event.author.id))
                     register.sender.cmdSend(Emojis.BALLOT_BOX_WITH_CHECK.cmd +
@@ -131,7 +133,7 @@ class Mute : Command("mute", null, null) {
                 event.guild.textChannels.forEach { textChannel ->
                     if (role!!.hasPermission(textChannel, Permission.MESSAGE_WRITE)) {
                         try {
-                            textChannel.createPermissionOverride(role).setDeny(Permission.MESSAGE_WRITE)
+                            textChannel.createPermissionOverride(role!!).setDeny(Permission.MESSAGE_WRITE)
                                     .reason("Mute role setup").queue()
                         } catch (e: Exception) {
                         }

@@ -1,6 +1,7 @@
 package com.ardentbot.commands.music
 
-import com.adamratzman.spotify.utils.SimpleTrack
+import com.adamratzman.spotify.models.SimpleTrack
+import com.adamratzman.spotify.models.Track
 import com.ardentbot.commands.games.send
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Sender
@@ -18,12 +19,13 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioFrame
-import net.dv8tion.jda.core.audio.AudioSendHandler
-import net.dv8tion.jda.core.entities.Guild
-import net.dv8tion.jda.core.entities.Member
-import net.dv8tion.jda.core.entities.TextChannel
-import net.dv8tion.jda.core.entities.VoiceChannel
+import net.dv8tion.jda.api.audio.AudioSendHandler
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.VoiceChannel
 import org.apache.commons.lang3.exception.ExceptionUtils
+import java.nio.ByteBuffer
 import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.TimeUnit
 
@@ -35,8 +37,8 @@ class AudioPlayerSendHandler(private val audioPlayer: AudioPlayer) : AudioSendHa
         return lastFrame != null
     }
 
-    override fun provide20MsAudio(): ByteArray {
-        return lastFrame!!.data
+    override fun provide20MsAudio(): ByteBuffer? {
+        return ByteBuffer.wrap(lastFrame!!.data)
     }
 
     override fun isOpus(): Boolean {
@@ -102,7 +104,7 @@ class TrackScheduler(val manager: GuildMusicManager, val guild: Guild) : AudioEv
     override fun onTrackStart(player: AudioPlayer, track: AudioTrack) {
         autoplay = true
         Sender.scheduledExecutor.schedule({
-            if (track.position == 0.toLong() && guild.selfMember.voiceState.inVoiceChannel() && !player.isPaused && player.playingTrack != null && player.playingTrack == track) {
+            if (track.position == 0.toLong() && guild.selfMember.voiceState?.inVoiceChannel() == true && !player.isPaused && player.playingTrack != null && player.playingTrack == track) {
                 val queue = manager.manager.queue.toList()
                 manager.player.isPaused = false
                 manager.manager.resetQueue()
@@ -121,12 +123,12 @@ class TrackScheduler(val manager: GuildMusicManager, val guild: Guild) : AudioEv
                 if (manager.manager.queue.size > 0) {
                     manager.manager.skipToNextTrack()
                 } else if (player.playingTrack == null && manager.manager.queue.size == 0 && autoplay
-                        && manager.register.database.getGuildMusicSettings(guild).autoplay && guild.selfMember.voiceState.channel != null
-                        && guild.selfMember.voiceState.channel.members.size > 1) {
+                        && manager.register.database.getGuildMusicSettings(guild).autoplay && guild.selfMember.voiceState?.channel != null
+                        && guild.selfMember.voiceState!!.channel!!.members.size > 1) {
                     val spotifyApi = manager.register.spotifyApi
                     val current = manager.manager.current ?: return
                     try {
-                        val recommendation: SimpleTrack? = when {
+                        val recommendation: Track? = when {
                             current.spotifyTrackId != null -> {
                                 spotifyApi.tracks.getTrack(current.spotifyTrackId).complete()?.let { spotifyTrack ->
                                     spotifyApi.browse.getRecommendations(seedTracks = listOf(spotifyTrack.id), seedArtists = spotifyTrack.artists.map { it.id })
@@ -141,8 +143,8 @@ class TrackScheduler(val manager: GuildMusicManager, val guild: Guild) : AudioEv
                             }
                             current.spotifyPlaylistId != null -> {
                                 val split = current.spotifyPlaylistId.split(" :: ")
-                                spotifyApi.playlists.getPlaylist(split[0], split[1]).complete()?.let { spotifyPlaylist ->
-                                    spotifyApi.browse.getRecommendations(seedTracks = spotifyPlaylist.tracks.items.take(10).map { it.track.id })
+                                spotifyApi.playlists.getPlaylist(split.last()).complete()?.let { spotifyPlaylist ->
+                                    spotifyApi.browse.getRecommendations(seedTracks = spotifyPlaylist.tracks.items.take(10).map { it.track!!.id })
                                             .complete().tracks
                                 }
                             }
@@ -252,7 +254,7 @@ fun VoiceChannel.connect(textChannel: TextChannel?, register: ArdentRegister, co
 }
 
 fun play(channel: TextChannel?, member: Member, track: LocalTrackObj, register: ArdentRegister) {
-    if (member.voiceState.channel != null) member.voiceState.channel.connect(channel, register)
+    if (member.voiceState?.channel != null) member.voiceState!!.channel!!.connect(channel, register)
     else {
         channel?.send(register.translationManager.translate("music.unable_join_vc", member.guild.getLanguage(register)
                 ?: Language.ENGLISH), register)

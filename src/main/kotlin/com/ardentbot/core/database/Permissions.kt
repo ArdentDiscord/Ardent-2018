@@ -5,9 +5,9 @@ import com.ardentbot.commands.music.connect
 import com.ardentbot.commands.music.getAudioManager
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.kotlin.Emojis
-import net.dv8tion.jda.core.Permission
-import net.dv8tion.jda.core.entities.Member
-import net.dv8tion.jda.core.entities.TextChannel
+import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.entities.TextChannel
 
 class Staff(id: String, val role: StaffRole) : DbObject(id, table = "staff") {
     enum class StaffRole {
@@ -21,8 +21,8 @@ fun Member.hasPermission(channel: TextChannel, register: ArdentRegister, musicCo
         val data = register.database.getGuildData(guild)
         val musicSettings = register.database.getGuildMusicSettings(guild)
         if (!musicCommand) return false else {
-            if (musicSettings.canEveryoneUseAdminCommands || voiceState.inVoiceChannel() && guild.selfMember.voiceState.inVoiceChannel()) {
-                voiceState.channel.members.size == 2
+            if (voiceState != null && guild.selfMember.voiceState != null && musicSettings.canEveryoneUseAdminCommands || voiceState!!.inVoiceChannel() && guild.selfMember.voiceState!!.inVoiceChannel()) {
+                voiceState!!.channel!!.members.size == 2
             } else {
                 if (roles.map { it.id }.contains(data.adminRoleId)) return true
                 val manager = guild.getAudioManager(channel, register)
@@ -36,12 +36,12 @@ fun Member.hasPermission(channel: TextChannel, register: ArdentRegister, musicCo
 
 
 fun Member.checkSameChannel(textChannel: TextChannel?, register: ArdentRegister, complain: Boolean = true): Boolean {
-    if (voiceState.channel == null) {
+    if (voiceState?.channel == null) {
         textChannel?.send("${Emojis.CROSS_MARK} " + "You need to be connected to a voice channel", register)
         return false
     }
-    if (guild.selfMember.voiceState.channel != voiceState.channel) {
-        return voiceState.channel.connect(textChannel, register, complain)
+    if (guild.selfMember.voiceState?.channel != voiceState?.channel) {
+        return voiceState?.channel?.connect(textChannel, register, complain) == true
     }
     return true
 }

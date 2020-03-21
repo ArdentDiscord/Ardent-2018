@@ -1,7 +1,9 @@
 package com.ardentbot.commands.music.management
 
-import com.adamratzman.spotify.main.SpotifyClientAPI
-import com.adamratzman.spotify.utils.SavedTrack
+import com.adamratzman.spotify.SpotifyClientApi
+import com.adamratzman.spotify.SpotifyScope
+import com.adamratzman.spotify.models.PagingObject
+import com.adamratzman.spotify.models.SavedTrack
 import com.ardentbot.commands.games.send
 import com.ardentbot.commands.music.DatabaseTrackObj
 import com.ardentbot.commands.music.loadExternally
@@ -16,7 +18,11 @@ import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.concat
 import com.ardentbot.web.base
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("music")
 class MusicLibrary : Command("musiclibrary", arrayOf("library", "mymusic"), null) {
@@ -60,29 +66,29 @@ class MusicLibrary : Command("musiclibrary", arrayOf("library", "mymusic"), null
                         , register)
                 else {
                     event.channel.send(translate("musiclibrary.loading", event, register).apply(library.tracks.size), register)
-                    library.load(event.member, event.channel, register)
+                    library.load(event.member!!, event.channel, register)
                 }
             }
             arg?.isTranslatedArgument("import", event.guild, register) == true -> {
-                val url = register.spotifyApi.getAuthUrl(SpotifyClientAPI.Scope.USER_LIBRARY_READ, SpotifyClientAPI.Scope.PLAYLIST_READ_COLLABORATIVE,
-                        SpotifyClientAPI.Scope.PLAYLIST_READ_PRIVATE, redirectUri = "$base/api/oauth/spotify") + "&state=${event.author.id}"
+                val url = register.spotifyApi.getAuthorizationUrl(SpotifyScope.USER_LIBRARY_READ, SpotifyScope.PLAYLIST_READ_COLLABORATIVE,
+                        SpotifyScope.PLAYLIST_READ_PRIVATE, redirectUri = "$base/api/oauth/spotify") + "&state=${event.author.id}"
                 event.author.openPrivateChannel().queue { channel ->
                     channel.sendMessage(translate("musiclibrary.import_how", event, register).apply(url)).queue { message ->
-                        ExternalAction.waitSpotify(event.member, event.channel, register) { any ->
+                        ExternalAction.waitSpotify(event.member!!, event.channel, register) { any ->
                             message.delete().queue()
-                            val client = any as SpotifyClientAPI
+                            val client = any as SpotifyClientApi
                             val library = register.database.getMusicLibrary(event.author.id)
-                            client.clientLibrary.getSavedTracks(50).queue { savedTracks ->
+                            client.library.getSavedTracks(50).queue { savedTracks ->
                                 val tracks = savedTracks.items.toMutableList()
                                 var curr = savedTracks
                                 while (curr.next != null) {
-                                    curr = curr.getNext<SavedTrack>().complete()
+                                    curr = runBlocking { curr.getNext() as PagingObject<SavedTrack> }
                                     tracks.addAll(curr.items)
                                 }
 
                                 tracks.forEach { track ->
                                     library.tracks.add(DatabaseTrackObj(event.author.id, System.currentTimeMillis(), null,
-                                            track.track.name, track.track.artists.joinToString { it.name }, track.track.external_urls["spotify"]!!))
+                                            track.track.name, track.track.artists.joinToString { it.name }, track.track.externalUrls.first { it.name == "spotify"}.url))
                                 }
 
                                 register.database.update(library)

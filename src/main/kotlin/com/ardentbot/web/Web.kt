@@ -1,12 +1,32 @@
 package com.ardentbot.web
 
-import com.adamratzman.spotify.utils.SimpleArtist
+import com.adamratzman.spotify.SpotifyApi
+import com.adamratzman.spotify.models.SimpleArtist
 import com.ardentbot.commands.ardent.Internals
-import com.ardentbot.commands.games.*
-import com.ardentbot.commands.music.*
+import com.ardentbot.commands.games.GameData
+import com.ardentbot.commands.games.GameDataBetting
+import com.ardentbot.commands.games.GameDataBlackjack
+import com.ardentbot.commands.games.GameDataConnect4
+import com.ardentbot.commands.games.GameDataSlots
+import com.ardentbot.commands.games.GameDataTicTacToe
+import com.ardentbot.commands.games.GameDataTrivia
+import com.ardentbot.commands.games.GameType
+import com.ardentbot.commands.games.SanitizedGame
+import com.ardentbot.commands.games.getData
+import com.ardentbot.commands.music.DatabaseMusicPlaylist
+import com.ardentbot.commands.music.DatabaseTrackObj
+import com.ardentbot.commands.music.TrackDisplay
+import com.ardentbot.commands.music.getAudioManager
+import com.ardentbot.commands.music.getPlaylistById
+import com.ardentbot.commands.music.loadExternally
+import com.ardentbot.commands.music.toTrackDisplay
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.ExternalAction
-import com.ardentbot.core.database.*
+import com.ardentbot.core.database.ArdentPrefix
+import com.ardentbot.core.database.Staff
+import com.ardentbot.core.database.asPojo
+import com.ardentbot.core.database.genId
+import com.ardentbot.core.database.getUserData
 import com.ardentbot.core.toUser
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.display
@@ -14,13 +34,20 @@ import com.ardentbot.kotlin.localeDate
 import com.ardentbot.kotlin.toMinutesAndSeconds
 import com.github.jknack.handlebars.Handlebars
 import com.github.jknack.handlebars.Options
-import net.dv8tion.jda.core.Permission
-import net.dv8tion.jda.core.entities.User
+import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.User
 import org.apache.commons.lang3.exception.ExceptionUtils
 import spark.ModelAndView
 import spark.Request
 import spark.Response
-import spark.Spark.*
+import spark.Spark.exception
+import spark.Spark.get
+import spark.Spark.notFound
+import spark.Spark.path
+import spark.Spark.port
+import spark.Spark.post
+import spark.Spark.secure
+import spark.Spark.staticFiles
 import spark.template.handlebars.HandlebarsTemplateEngine
 
 val handlebars = HandlebarsTemplateEngine()
@@ -29,7 +56,7 @@ class Web(val register: ArdentRegister) {
     val redirects = hashMapOf<String, String>()
 
     init {
-        base = if (register.config.test) "http://192.168.99.100:443" else "https://ardentbot.com"
+        base = if (register.config.test) "http://localhost" else "https://ardentbot.com"
         loginRedirect = "$base/api/oauth/login"
 
         registerHandlebarHelpers()
@@ -296,10 +323,19 @@ class Web(val register: ArdentRegister) {
                         response.redirect("/welcome")
                         null
                     } else {
-                        val code = request.queryParams("code")
+                        val authCode = request.queryParams("code")
                         val state = request.queryParams("state")
                         try {
-                            val client = register.spotifyApi.authorizeUser(code, "$base/api/oauth/spotify", false)
+                            val client = SpotifyApi.spotifyClientApi(register.config["spotify_client_id"], register.config["spotify_client_secret"], "$base/api/oauth/spotify") {
+                                credentials {
+                                    clientId = register.config["spotify_client_id"]
+                                    clientSecret = register.config["spotify_client_secret"]
+                                    redirectUri = "$base/api/oauth/spotify"
+                                }
+                                authorization {
+                                    authorizationCode = authCode
+                                }
+                            }.build()
                             val waitingCallback = ExternalAction.waitingCallbacks.firstOrNull { it.first == state }
                             if (waitingCallback == null) {
                                 response.redirect("/fail")
@@ -309,6 +345,7 @@ class Web(val register: ArdentRegister) {
                                 response.redirect("/dynamic/success")
                             }
                         } catch (e: Exception) {
+                            e.printStackTrace()
                             response.redirect("/welcome")
                         }
                     }
@@ -619,7 +656,7 @@ class Web(val register: ArdentRegister) {
             } else {
                 val map = request.getDefaultMap(response, "Management | []".apply(guild.name))
                 map["showSnackbar"] = false
-                val member = guild.getMember(user)
+                val member = guild.getMember(user)!!
 
                 if (member.hasPermission(Permission.MANAGE_SERVER) ||
                         register.database.getGuildData(member.guild).let { data ->
@@ -778,19 +815,19 @@ class Web(val register: ArdentRegister) {
                                         map["albumTracks"] = album.tracks.items
                                         map["albumArtists"] = album.artists.joinToString { it.name }
                                         map["albumLink"] = "https://open.spotify.com/album/${album.id}"
-                                        map["albumInfo"] = "<b>${album.tracks.items.map { it.duration_ms }.sum().toLong().toMinutesAndSeconds()}</b> | <b>${album.tracks.total}</b> tracks"
+                                        map["albumInfo"] = "<b>${album.tracks.items.map { it.durationMs }.sum().toLong().toMinutesAndSeconds()}</b> | <b>${album.tracks.total}</b> tracks"
                                     }
                                 }
                                 playlist.spotifyPlaylistId != null -> {
                                     val split = playlist.spotifyPlaylistId.split("||")
-                                    val foundPlaylist = register.spotifyApi.playlists.getPlaylist(split[0], split[1]).complete()
+                                    val foundPlaylist = register.spotifyApi.playlists.getPlaylist(split.last()).complete()
                                     if (foundPlaylist != null) {
                                         map["playlistLink"] = "https://open.spotify.com/user/${foundPlaylist.owner.id}/playlist/${foundPlaylist.id}"
                                         map["playlistTitle"] = foundPlaylist.name
                                         map["playlistOwner"] = foundPlaylist.owner
                                         map["playlistDescription"] = foundPlaylist.description
                                         map["playlistTracks"] = foundPlaylist.tracks.items.map { it.track }
-                                        map["playlistInfo"] = "<b>${foundPlaylist.tracks.items.map { it.track.duration_ms }.sum().toLong().toMinutesAndSeconds()}</b> | <b>${foundPlaylist.tracks.total}</b> tracks"
+                                        map["playlistInfo"] = "<b>${foundPlaylist.tracks.items.map { it.track!!.durationMs }.sum().toLong().toMinutesAndSeconds()}</b> | <b>${foundPlaylist.tracks.total}</b> tracks"
                                     }
                                 }
                             }
@@ -839,8 +876,9 @@ class Web(val register: ArdentRegister) {
     private fun startup() {
         if (!register.config.test) {
             secure(register.config.args[1], "ardent", null, null)
-        }
-        port(443)
+            port(443)
+        } else port(80)
+
         staticFiles.location("/public")
         exception(Exception::class.java) { exception, request, _ ->
             exception.printStackTrace()

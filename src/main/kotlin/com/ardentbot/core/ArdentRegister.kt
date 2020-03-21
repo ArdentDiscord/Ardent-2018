@@ -1,6 +1,6 @@
 package com.ardentbot.core
 
-import com.adamratzman.spotify.main.SpotifyAPI
+import com.adamratzman.spotify.SpotifyApi
 import com.ardentbot.commands.games.send
 import com.ardentbot.commands.info.StatusData
 import com.ardentbot.commands.music.*
@@ -20,11 +20,15 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers
 import com.sedmelluq.discord.lavaplayer.source.http.HttpAudioSourceManager
 import com.sedmelluq.discord.lavaplayer.source.soundcloud.SoundCloudAudioSourceManager
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager
-import net.dv8tion.jda.core.AccountType
-import net.dv8tion.jda.core.JDABuilder
-import net.dv8tion.jda.core.entities.*
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
-import net.dv8tion.jda.core.hooks.AnnotatedEventManager
+import net.dv8tion.jda.api.JDABuilder
+import net.dv8tion.jda.api.audio.factory.DefaultSendFactory
+import net.dv8tion.jda.api.entities.Activity
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.entities.VoiceChannel
+import net.dv8tion.jda.api.hooks.AnnotatedEventManager
+import net.dv8tion.jda.api.requests.GatewayIntent
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
@@ -39,15 +43,15 @@ fun main(args: Array<String>) {
 
 class ArdentRegister(args: Array<String>) {
     val random = Random()
+    val test = args[1].toBoolean()
     val cachedExecutor = Executors.newCachedThreadPool()
     val config = Config(args[0], args.toList())
     val processor = Processor(this)
-    val jda = JDABuilder(AccountType.BOT)
-            .setToken(config["token"])
+    val jda = JDABuilder.create(config["token"], GatewayIntent.values().toList())
             .setEventManager(AnnotatedEventManager())
-            .addEventListener(processor)
-            .setAudioSendFactory(NativeAudioSendFactory())
-            .buildBlocking()
+            .addEventListeners(processor)
+            .setAudioSendFactory(if (test) DefaultSendFactory() else NativeAudioSendFactory())
+            .build()
     val selfUser = jda.selfUser
     val translationManager = TranslationManager(this)
     val database = Database(this)
@@ -56,7 +60,7 @@ class ArdentRegister(args: Array<String>) {
     val sender = Sender(this)
     val holder = CommandHolder(this)
     val web = Web(this)
-    val spotifyApi = SpotifyAPI.Builder(config["spotify_client_id"], config["spotify_client_secret"]).build()
+    val spotifyApi = SpotifyApi.spotifyAppApi(config["spotify_client_id"], config["spotify_client_secret"]).build()
 
     fun getTextChannel(id: String): TextChannel? {
         return try {
@@ -99,10 +103,10 @@ class ArdentRegister(args: Array<String>) {
     }
 
     init {
-        playerManager.useRemoteNodes("lavaplayer1:8080", "lavaplayer2:8080")
+     //   playerManager.useRemoteNodes("lavaplayer1:8080", "lavaplayer2:8080")
         playerManager.configuration.resamplingQuality = AudioConfiguration.ResamplingQuality.LOW
         playerManager.registerSourceManager(YoutubeAudioSourceManager())
-        playerManager.registerSourceManager(SoundCloudAudioSourceManager())
+        playerManager.registerSourceManager(SoundCloudAudioSourceManager.createDefault())
         playerManager.registerSourceManager(HttpAudioSourceManager())
         AudioSourceManagers.registerRemoteSources(playerManager)
         AudioSourceManagers.registerLocalSource(playerManager)
@@ -161,11 +165,11 @@ class ArdentRegister(args: Array<String>) {
                 val guild = getGuild(mute.guildId)
                 if (guild?.getMemberById(mute.muted) != null) {
                     val data = database.getGuildData(guild)
-                    val member = guild.getMemberById(mute.muted)
+                    val member = guild.getMemberById(mute.muted)!!
                     if (member.roles.map { it.id }.contains(data.muteRoleId)) {
                         if (System.currentTimeMillis() >= mute.expiresAt) {
                             try {
-                                guild.controller.removeRolesFromMember(member, member.roles.first { it.id == data.muteRoleId })
+                                guild.removeRoleFromMember(member, member.roles.first { it.id == data.muteRoleId })
                                         .reason("Unmuted").queue {
                                             member.user.openPrivateChannel().queue { channel ->
                                                 sender.send("You've been unmuted in **[]** []"
@@ -192,7 +196,7 @@ class ArdentRegister(args: Array<String>) {
         }, 0, 15, TimeUnit.MINUTES)
 
         Sender.scheduledExecutor.scheduleAtFixedRate({
-            jda.presence.game = Game.of(Game.GameType.STREAMING, when(random.nextInt(5)) {
+            jda.presence.activity = Activity.streaming(when(random.nextInt(5)) {
                 0 -> "With ${holder.commands.size} commands! | /help"
                 1 -> "Tell your friends! | /help"
                 3 -> "Serving ${getAllGuilds().size} servers! | /help"
@@ -212,7 +216,7 @@ class ArdentRegister(args: Array<String>) {
             if (channel.members.size > 1 || (channel.members.size == 1 && channel.members[0] == channel.guild.selfMember)) {
                 val manager = channel.guild.getAudioManager(textChannel, this)
                 if (manager.channel != null) {
-                    if (channel.guild.selfMember.voiceState.channel != channel) channel.connect(textChannel, this)
+                    if (channel.guild.selfMember.voiceState?.channel != channel) channel.connect(textChannel, this)
                     textChannel.send(("**Restarting playback...**... Check out [] for other cool features we offer in Ardent **Premium**").apply("<https://ardentbot.com/premium>"), this)
                     queue.tracks.forEach { trackUrl ->
                         trackUrl.load(channel.guild.selfMember, textChannel, this) { audioTrack, id ->
@@ -228,11 +232,11 @@ class ArdentRegister(args: Array<String>) {
     private fun checkVoiceChannels() {
         managers.filter {
             it.value.guild.audioManager.connectedChannel != null && !database.getGuildMusicSettings(it.value.guild).stayInChannel
-                    && it.value.guild.audioManager.connectedChannel.members.filterNot { member -> member.user.isBot }.count() == 0
+                    && it.value.guild.audioManager.connectedChannel!!.members.filterNot { member -> member.user.isBot }.count() == 0
         }.forEach { (idLong, manager) ->
             manager.player.destroy()
             managers.remove(idLong)
-            val name = manager.guild.audioManager.connectedChannel.name
+            val name = manager.guild.audioManager.connectedChannel!!.name
             manager.guild.audioManager.closeAudioConnection()
             manager.scheduler.autoplay = false
             manager.channel?.send("Left **[]** because I was the only one in the channel! You can change this setting at []"

@@ -1,7 +1,7 @@
 package com.ardentbot.commands.`fun`
 
-import com.adamratzman.math.MathParser
-import com.adamratzman.math.expressions.Expression
+import com.ardentbot.math.MathParser
+import com.ardentbot.math.expressions.Expression
 import com.ardentbot.commands.games.send
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Flag
@@ -9,7 +9,7 @@ import com.ardentbot.core.commands.Command
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.concat
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
@@ -17,6 +17,7 @@ import java.util.concurrent.TimeoutException
 class Calculate : Command("calculate", arrayOf("calc"), null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         val mathParser = MathParser(75)
+        
         if (arguments.isEmpty()) event.channel.send(translate("calculate.help", event, register), register)
         else {
             arguments.concat().split(";").let {

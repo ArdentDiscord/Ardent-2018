@@ -8,8 +8,8 @@ import com.ardentbot.core.commands.Command
 import com.ardentbot.core.commands.ELEVATED_PERMISSIONS
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.kotlin.*
-import net.dv8tion.jda.core.Permission
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("admin")
 class JoinMessageCommand : Command("joinmessage", arrayOf("jm"), null) {

@@ -9,7 +9,7 @@ import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.toUsersDisplay
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("games")
 class Cancel : Command("cancel", null, null) {
@@ -24,7 +24,7 @@ class Cancel : Command("cancel", null, null) {
                 Sender.waitForMessage({ it.author.id == event.author.id && it.channel.id == event.channel.id && it.guild.id == event.guild.id },
                         {
                             if (it.message.contentRaw.startsWith("y", true) || it.message.contentRaw.isTranslatedPhrase("yes", event.guild, register)) {
-                                game.cancel(event.member)
+                                game.cancel(event.member!!)
                             } else register.sender.cmdSend("${Emojis.BALLOT_BOX_WITH_CHECK} " + translate("cancel.keep_in_lobby", event, register), this, event)
                         })
             }

@@ -9,16 +9,16 @@ import com.ardentbot.core.selectFromList
 import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.getEmbed
-import net.dv8tion.jda.core.entities.Member
-import net.dv8tion.jda.core.entities.TextChannel
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import java.util.*
 
 class SlotsGame(channel: TextChannel, creator: String, playerCount: Int, isPublic: Boolean, register: ArdentRegister)
     : Game(GameType.SLOTS, channel, creator, playerCount, isPublic, register) {
     private val rounds = mutableListOf<Round>()
     override fun onStart() {
-        doRound(channel.guild.getMemberById(creator))
+        doRound(channel.guild.getMemberById(creator)!!)
     }
 
     private fun doRound(member: Member) {
@@ -110,7 +110,7 @@ class SlotsGame(channel: TextChannel, creator: String, playerCount: Int, isPubli
 @ModuleMapping("games")
 class SlotsCommand : Command("slots", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        val member = event.member
+        val member = event.member!!
         if (member.isInGameOrLobby()) event.channel.send(translate("games.already_in_game", event, register).apply(member.asMention), register)
         /*else if (event.guild.hasGameType(GameType.SLOTS) && !member.hasDonationLevel(channel, DonationLevel.INTERMEDIATE, failQuietly = true)) {
             channel.send("There can only be one *{0}* game active at a time in a server!. **Pledge $5 a month or buy the Intermediate rank at {1} to start more than one game per type at a time**".tr(event, "Slots", "<https://ardentbot.com/patreon>"))

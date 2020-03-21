@@ -9,9 +9,9 @@ import com.ardentbot.core.toUser
 import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.getEmbed
-import net.dv8tion.jda.core.entities.Member
-import net.dv8tion.jda.core.entities.TextChannel
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import java.awt.Color
 import java.util.*
 import java.util.concurrent.TimeUnit
@@ -21,7 +21,7 @@ class Connect4Game(channel: TextChannel, creator: String, register: ArdentRegist
     override fun onStart() {
         val first = if(register.random.nextBoolean()) players[0] else players[1]
         val game = GameBoard(first, if (first == players[0]) players[1] else players[0])
-        doRound(game, channel.guild.getMemberById(first))
+        doRound(game, channel.guild.getMemberById(first)!!)
     }
 
     private fun doRound(game: GameBoard, player: Member, cancelIfExpired: Boolean = false) {
@@ -79,9 +79,9 @@ class Connect4Game(channel: TextChannel, creator: String, register: ArdentRegist
             doRound(game, player, false)
         } else {
             val winnerId = game.checkWin(tile)
-            if (winnerId == null) doRound(game, if (player.user.id == players[0]) channel.guild.getMemberById(players[1]) else channel.guild.getMemberById(players[0]))
+            if (winnerId == null) doRound(game, if (player.user.id == players[0]) channel.guild.getMemberById(players[1])!! else channel.guild.getMemberById(players[0])!!)
             else {
-                val winner = channel.guild.getMemberById(winnerId)
+                val winner = channel.guild.getMemberById(winnerId)!!
                 val embed = getEmbed(translate("connect4.result_title"), channel, Color.BLUE)
                 embed.appendDescription(translate("connect4.winner_congrats").apply(winner.asMention, 500) + "\n")
                 embed.appendDescription(game.toString())
@@ -245,7 +245,7 @@ class Connect4Game(channel: TextChannel, creator: String, register: ArdentRegist
 @ModuleMapping("games")
 class Connect4Command : Command("connect4", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        val member = event.member
+        val member = event.member!!
         if (member.isInGameOrLobby()) event.channel.send(translate("games.already_in_game", event, register).apply(member.asMention), register)
         /*else if (event.guild.hasGameType(GameType.CONNECT_4) && !member.hasDonationLevel(channel, DonationLevel.INTERMEDIATE, failQuietly = true)) {
             channel.send("There can only be one *{0}* game active at a time in a server!. **Pledge $5 a month or buy the Intermediate rank at {1} to start more than one game per type at a time**".tr(event, "Connect 4", "<https://ardentbot.com/patreon>"))

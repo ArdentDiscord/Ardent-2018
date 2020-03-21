@@ -1,12 +1,7 @@
 package com.ardentbot.kotlin
 
 import com.ardentbot.core.Sender
-import net.dv8tion.jda.core.entities.User
 import java.lang.management.ManagementFactory
-import java.text.DecimalFormat
-import java.time.Instant
-import java.time.ZoneId
-import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.management.Attribute
 import javax.management.ObjectName

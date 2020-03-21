@@ -9,8 +9,8 @@ import com.ardentbot.core.translation.Language
 import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.apply
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import net.dv8tion.jda.core.entities.Member
-import net.dv8tion.jda.core.entities.TextChannel
+import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.entities.TextChannel
 
 class DatabaseMusicLibrary(id: String, var tracks: MutableList<DatabaseTrackObj>, var lastModified: Long = System.currentTimeMillis())
     : DbObject(id, "music_libraries") {

@@ -7,7 +7,7 @@ import com.ardentbot.core.Flag
 import com.ardentbot.core.commands.Command
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.kotlin.Emojis
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("games")
 class Forcestart : Command("start", arrayOf("forcestart"), null) {

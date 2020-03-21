@@ -10,7 +10,7 @@ import com.ardentbot.core.toUser
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.display
 import com.ardentbot.kotlin.toUsersDisplay
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("games")
 class Joingame : Command("join", arrayOf("joingame"), null) {
@@ -23,7 +23,7 @@ class Joingame : Command("join", arrayOf("joingame"), null) {
             }
             gamesInLobby.forEach { game ->
                 if (game.channel.guild == event.guild) {
-                    if (event.member.isInGameOrLobby()) {
+                    if (event.member!!.isInGameOrLobby()) {
                         register.sender.cmdSend(translate("accept.ingame", event, register), this, event)
                     } else {
                         if (game.isPublic || checkInvite(event, game, register)) {

@@ -10,13 +10,13 @@ import com.ardentbot.core.database.checkSameChannel
 import com.ardentbot.core.database.hasPermission
 import com.ardentbot.core.managers
 import com.ardentbot.kotlin.Emojis
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("music")
 class Stop : Command("stop", arrayOf("leave"), null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         if (event.guild.audioManager.isConnected) {
-            if (!event.member.checkSameChannel(event.channel, register) || !event.member.hasPermission(event.channel, register, musicCommand = true)) return
+            if (!event.member!!.checkSameChannel(event.channel, register) || !event.member!!.hasPermission(event.channel, register, musicCommand = true)) return
             val audioManager = event.guild.getAudioManager(event.channel, register)
             audioManager.scheduler.autoplay = false
             audioManager.player.destroy()

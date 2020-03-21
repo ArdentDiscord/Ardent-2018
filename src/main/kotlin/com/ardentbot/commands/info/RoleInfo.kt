@@ -5,7 +5,7 @@ import com.ardentbot.core.Flag
 import com.ardentbot.core.commands.Command
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.kotlin.*
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("info")
 class RoleInfo : Command("roleinfo", arrayOf("ri"), null) {
@@ -25,7 +25,7 @@ class RoleInfo : Command("roleinfo", arrayOf("ri"), null) {
                     .addField(translate("roleinfo.num_with_role", event, register), "[] ".apply(event.guild.members.filter { it.roles.contains(role) }
                             .count().toString() + translate("general.members", event, register)), true)
                     .addField(translate("roleinfo.id", event, register), role.id, true)
-                    .addField(translate("roleinfo.creation", event, register), (role.creationTime.toEpochSecond() / 1000).localeDate(), true)
+                    .addField(translate("roleinfo.creation", event, register), (role.timeCreated.toEpochSecond() / 1000).localeDate(), true)
                     .addField(translate("roleinfo.permissions", event, register), role.permissions.joinToString { it.getName() }, true)
             register.sender.cmdSend(embed, this, event)
         }

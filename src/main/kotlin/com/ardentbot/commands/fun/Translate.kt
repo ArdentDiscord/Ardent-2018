@@ -7,7 +7,7 @@ import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.kotlin.*
 import com.github.vbauer.yta.model.Language
 import com.github.vbauer.yta.service.YTranslateApiImpl
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import java.lang.reflect.Modifier
 
 @ModuleMapping("fun")

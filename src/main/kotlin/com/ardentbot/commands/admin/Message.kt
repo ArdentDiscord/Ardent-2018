@@ -9,7 +9,7 @@ import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.concat
 import com.ardentbot.kotlin.removeIndices
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("ardent")
 class Message : Command("message", null, null) {

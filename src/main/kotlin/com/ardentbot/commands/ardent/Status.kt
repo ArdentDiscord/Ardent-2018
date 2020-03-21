@@ -9,7 +9,7 @@ import com.ardentbot.kotlin.format
 import com.ardentbot.kotlin.getEmbed
 import com.ardentbot.kotlin.getProcessCpuLoad
 import com.ardentbot.kotlin.timeDisplay
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import java.lang.management.ManagementFactory
 
 @ModuleMapping("ardent")

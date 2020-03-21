@@ -12,7 +12,7 @@ import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.core.toUser
 import com.ardentbot.core.translation.Language
 import com.ardentbot.kotlin.*
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import java.util.concurrent.TimeUnit
 import kotlin.collections.set
 
@@ -35,7 +35,7 @@ class GameInvite : Command("gameinvite", arrayOf("ginvite", "gi"), null) {
                             else -> {
                                 invites[toInvite.id] = game
                                 register.sender.cmdSend(translate("gameinvite.response", event, register)
-                                        .apply(toInvite.name, event.member.asMention, game.type.readable), this, event)
+                                        .apply(toInvite.name, event.member!!.asMention, game.type.readable), this, event)
                                 val delay = 45
                                 Sender.scheduledExecutor.schedule({
                                     if (invites.containsKey(toInvite.id)) {

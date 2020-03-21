@@ -1,6 +1,6 @@
 package com.ardentbot.core.utils
 
-import net.dv8tion.jda.core.entities.Guild
+import net.dv8tion.jda.api.entities.Guild
 
 class IllegalArgumentApplicationException(override val message: String) : Exception(message)
 class UnknownModuleFoundException(override val message: String) : Exception(message)

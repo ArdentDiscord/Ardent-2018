@@ -11,12 +11,12 @@ import com.ardentbot.core.database.checkSameChannel
 import com.ardentbot.core.database.hasPermission
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.display
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("music")
 class Skip : Command("skip", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        if (!event.member.checkSameChannel(event.channel, register) || !event.member.hasPermission(event.channel, register, true)) return
+        if (!event.member!!.checkSameChannel(event.channel, register) || !event.member!!.hasPermission(event.channel, register, true)) return
         val manager = event.guild.getAudioManager(event.channel, register)
         if (manager.player.playingTrack == null) return
         val track = manager.manager.current!!

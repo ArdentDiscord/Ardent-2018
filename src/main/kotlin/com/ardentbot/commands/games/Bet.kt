@@ -6,9 +6,9 @@ import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.format
 import com.ardentbot.kotlin.remove
-import net.dv8tion.jda.core.entities.TextChannel
-import net.dv8tion.jda.core.entities.User
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 class BetGame(channel: TextChannel, creator: String, register: ArdentRegister) : Game(GameType.BETTING, channel, creator, 1, false, register) {
     private val rounds = mutableListOf<Round>()
@@ -32,7 +32,7 @@ class BetGame(channel: TextChannel, creator: String, register: ArdentRegister) :
                         doRound(user)
                         return@waitForMessage
                     } else {
-                        channel.selectFromList(channel.guild.getMember(user), translate("bet.embed_title"),
+                        channel.selectFromList(channel.guild.getMember(user)!!, translate("bet.embed_title"),
                                 mutableListOf(translate("color.black"), translate("color.red")), { selection, _ ->
                             val suit = BlackjackGame.Hand(false, end = false).generate().suit
                             val won = when (suit) {
@@ -95,7 +95,7 @@ class BetGame(channel: TextChannel, creator: String, register: ArdentRegister) :
 @ModuleMapping("games")
 class BetCommand : Command("bet", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        val member = event.member
+        val member = event.member!!
         if (member.isInGameOrLobby()) event.channel.send(translate("games.already_in_game", event, register).apply(member.asMention), register)
         else BetGame(event.channel, member.user.id, register).startEvent()
     }

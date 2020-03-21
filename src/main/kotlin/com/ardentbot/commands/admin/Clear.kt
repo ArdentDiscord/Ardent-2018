@@ -9,9 +9,9 @@ import com.ardentbot.core.commands.FlagModel
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.core.get
 import com.ardentbot.kotlin.*
-import net.dv8tion.jda.core.Permission
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
-import net.dv8tion.jda.core.exceptions.InsufficientPermissionException
+import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException
 
 @ModuleMapping("admin")
 class Clear : Command("clear", arrayOf("cl"), 4) {
@@ -29,7 +29,7 @@ class Clear : Command("clear", arrayOf("cl"), 4) {
             var toDelete = 0
             val history = channel.iterableHistory
             val messages = history.takeWhile { message ->
-                if ((message.editedTime ?: message.creationTime).plusWeeks(2).toInstant()
+                if ((message.timeEdited ?: message.timeCreated).plusWeeks(2).toInstant()
                                 .toEpochMilli() < System.currentTimeMillis()) false
                 else {
                     if (amount + 1 > toDelete && (if (user != null) message.author.id == user.user.id else true)) {

@@ -7,8 +7,8 @@ import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.concat
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
-import net.dv8tion.jda.core.exceptions.HierarchyException
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.exceptions.HierarchyException
 
 @ModuleMapping("fun")
 class Nickme : Command("nickme", arrayOf("nameme"), null) {
@@ -21,7 +21,7 @@ class Nickme : Command("nickme", arrayOf("nameme"), null) {
         else arguments.concat()
 
         try {
-            event.guild.controller.setNickname(event.member, word).reason("/nickme").queue {
+            event.guild.modifyNickname(event.member!!, word).reason("/nickme").queue {
                 register.sender.cmdSend(translate("nickme.changed", event, register).apply(event.author.name, word), this, event)
             }
         } catch (e: Exception) {

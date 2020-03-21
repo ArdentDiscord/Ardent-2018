@@ -7,7 +7,7 @@ import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.concat
 import com.ardentbot.kotlin.encode
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("fun")
 class EightBall : Command("8ball", arrayOf("8b"), null) {

@@ -8,8 +8,8 @@ import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.display
 import com.ardentbot.kotlin.format
 import com.ardentbot.kotlin.getEmbed
-import net.dv8tion.jda.core.OnlineStatus
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.OnlineStatus
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("info")
 class ServerInfo : Command("serverinfo", null, null) {
@@ -23,8 +23,8 @@ class ServerInfo : Command("serverinfo", null, null) {
                 .addField(translate("general.prefixes",event, register), data.prefixes.joinToString { it.prefix }, true)
                 .addField(translate("serverinfo.admin_role",event, register), data.adminRoleId?.let { guild.getRoleById(it) }
                         ?.let { it.name + "(${it.id})" } ?: translate("general.none",event, register), true)
-                .addField(translate("serverinfo.owner",event, register), guild.owner.user.display(), true)
-                .addField(translate("serverinfo.creation",event, register), guild.creationTime.toLocalDate().toString(), true)
+                .addField(translate("serverinfo.owner",event, register), guild.owner?.user?.display(), true)
+                .addField(translate("serverinfo.creation",event, register), guild.timeCreated.toLocalDate().toString(), true)
                 .addField(translate("serverinfo.num_voice",event, register), guild.voiceChannels.size.toString(), true)
                 .addField(translate("serverinfo.num_text",event, register), guild.textChannels.size.toString(), true)
                 .addField(translate("serverinfo.num_roles",event, register), guild.roles.size.toString(), true)

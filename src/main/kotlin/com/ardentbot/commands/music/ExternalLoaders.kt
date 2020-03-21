@@ -14,8 +14,8 @@ import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
-import net.dv8tion.jda.core.entities.Member
-import net.dv8tion.jda.core.entities.TextChannel
+import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.entities.TextChannel
 import org.apache.commons.lang3.exception.ExceptionUtils
 
 // Load music when not run from a command
@@ -52,7 +52,7 @@ fun String.load(member: Member, channel: TextChannel, register: ArdentRegister, 
     when {
         this.startsWith("https://open.spotify.com/album/") -> this.split("?")[0].loadSpotifyAlbum(member, channel, consumerFoundTrack = consumerFoundTrack, register = register)
         this.startsWith("https://open.spotify.com/track/") -> this.split("?")[0].loadSpotifyTrack(member, channel, consumerFoundTrack = consumerFoundTrack, register = register)
-        this.startsWith("https://open.spotify.com/user/") -> this.split("?")[0].loadSpotifyPlaylist(member, channel, consumerFoundTrack = consumerFoundTrack, register = register)
+        this.startsWith("https://open.spotify.com/") -> this.split("?")[0].loadSpotifyPlaylist(member, channel, consumerFoundTrack = consumerFoundTrack, register = register)
         else -> {
             if (consumerFoundTrack == null) loadYoutube(member, channel, register, lucky = lucky)
             else loadYoutube(member, channel, consumer = { consumerFoundTrack.invoke(it, null) }, register = register, lucky = lucky)
@@ -167,20 +167,19 @@ fun String.loadSpotifyAlbum(member: Member, channel: TextChannel, register: Arde
 
 fun String.loadSpotifyPlaylist(member: Member, channel: TextChannel, register: ArdentRegister, musicPlaylist: DatabaseMusicPlaylist? = null, consumerFoundTrack: ((AudioTrack, String) -> (Unit))? = null) {
     val language = member.guild.getLanguage(register) ?: Language.ENGLISH
-    val split = removePrefix("https://open.spotify.com/user/").split("/playlist/")
-    val user = split.getOrNull(0)
+    val split = removePrefix("https://open.spotify.com").split("/playlist/")
     val playlistId = split.getOrNull(1)
-    if (user == null || playlistId == null) channel.send(register.translationManager.translate("music.invalid_spotify_playlist", language), register)
+    if (playlistId == null) channel.send(register.translationManager.translate("music.invalid_spotify_playlist", language), register)
     else {
-        register.spotifyApi.playlists.getPlaylist(user, playlistId).queue { playlist ->
+        register.spotifyApi.playlists.getPlaylist(playlistId).queue { playlist ->
             if (playlist != null) {
                 channel.send(register.translationManager.translate("music.beginning_spotify_playlist", language).apply(playlist.name), register)
                 playlist.tracks.items.forEach { track ->
-                    "${track.track.name} ${track.track.artists[0].name}"
+                    "${track.track!!.name} ${track.track!!.artists[0].name}"
                             .getSingleTrack(member, channel, { _, _, loaded ->
-                                consumerFoundTrack?.invoke(loaded, track.track.id)
+                                consumerFoundTrack?.invoke(loaded, track.track!!.id)
                                         ?: DEFAULT_TRACK_LOAD_HANDLER(member, channel, loaded, true,
-                                                musicPlaylist, playlist.id, null, track.track.id, register)
+                                                musicPlaylist, playlist.id, null, track.track!!.id, register)
                             }, register, true)
                 }
             } else channel.send(register.translationManager.translate("music.invalid_spotify_playlist", language), register)

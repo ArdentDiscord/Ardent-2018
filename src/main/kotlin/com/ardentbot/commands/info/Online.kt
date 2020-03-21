@@ -10,21 +10,20 @@ import com.ardentbot.core.database.DbObject
 import com.ardentbot.core.database.GuildData
 import com.ardentbot.core.get
 import com.ardentbot.kotlin.*
-import net.dv8tion.jda.core.OnlineStatus
-import net.dv8tion.jda.core.OnlineStatus.*
-import net.dv8tion.jda.core.Permission
-import net.dv8tion.jda.core.entities.Guild
-import net.dv8tion.jda.core.entities.Member
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.OnlineStatus
+import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("info")
 class Online : Command("online", null, null) {
     fun OnlineStatus.toEmoji(): String {
         return (when (this) {
-            ONLINE -> Emojis.GREEN_APPLE
-            OFFLINE -> Emojis.MEDIUM_WHITE_CIRCLE
-            DO_NOT_DISTURB -> Emojis.LARGE_RED_CIRCLE
-            IDLE -> Emojis.LARGE_ORANGE_DIAMOND
+            OnlineStatus.ONLINE -> Emojis.GREEN_APPLE
+            OnlineStatus.OFFLINE -> Emojis.MEDIUM_WHITE_CIRCLE
+            OnlineStatus.DO_NOT_DISTURB -> Emojis.LARGE_RED_CIRCLE
+            OnlineStatus.IDLE -> Emojis.LARGE_ORANGE_DIAMOND
             else -> Emojis.BLACK_QUESTION_MARK_ORNAMENT
         }).cmd
     }
@@ -52,17 +51,17 @@ class Online : Command("online", null, null) {
                 val statusData = register.database.getStatusInfo(user.id)
                         ?: {
                             val data = StatusData(user.id, 0, 0, 0, 0,
-                                    event.guild.getMember(user).onlineStatus, System.currentTimeMillis())
+                                    event.guild.getMember(user)!!.onlineStatus, System.currentTimeMillis())
                             register.database.insert(data)
                             data
                         }.invoke()
                 val currTime = System.currentTimeMillis() - statusData.currentSwitchTime
 
-                when {
-                    event.guild.getMember(user).onlineStatus == ONLINE -> statusData.onlineTime += currTime
-                    event.guild.getMember(user).onlineStatus == IDLE -> statusData.idleTime += currTime
-                    event.guild.getMember(user).onlineStatus == DO_NOT_DISTURB -> statusData.dndTime += currTime
-                    event.guild.getMember(user).onlineStatus == OFFLINE -> statusData.offlineTime += currTime
+                when (event.guild.getMember(user)?.onlineStatus) {
+                    OnlineStatus.ONLINE -> statusData.onlineTime += currTime
+                    OnlineStatus.IDLE -> statusData.idleTime += currTime
+                    OnlineStatus.DO_NOT_DISTURB -> statusData.dndTime += currTime
+                    OnlineStatus.OFFLINE -> statusData.offlineTime += currTime
                 }
 
                 val total = (statusData.dndTime + statusData.idleTime + statusData.offlineTime + statusData.onlineTime).toFloat()
@@ -90,7 +89,7 @@ class Online : Command("online", null, null) {
                         val statuses = getAdminsOf(event.guild, register.database.getGuildData(event.guild)).groupBy { it.onlineStatus }
                                 .sort().map { (status, members) ->
                                     "**" + status.key + "** (${status.toEmoji()}): " +
-                                            (if (members.size > 20 || status == INVISIBLE)
+                                            (if (members.size > 20 || status == OnlineStatus.INVISIBLE)
                                                 members.size.toString() + " " + translate("general.members", event, register)
                                             else "[" + members.joinToString { it.asMention } + "]" + "(${members.size})") + "\n"
                                 }
@@ -105,10 +104,10 @@ class Online : Command("online", null, null) {
                         val rolesToFilter = flags.get("r")?.values?.mapNotNull { event.guild.getRolesByName(it, true).getOrNull(0) }
                         val statusesToFilter = flags.get("status")?.values?.mapNotNull {
                             when (it) {
-                                "online" -> ONLINE
-                                "offline" -> OFFLINE
-                                "idle" -> IDLE
-                                "dnd", "donotdisturb", "nodisturb" -> DO_NOT_DISTURB
+                                "online" -> OnlineStatus.ONLINE
+                                "offline" -> OnlineStatus.OFFLINE
+                                "idle" -> OnlineStatus.IDLE
+                                "dnd", "donotdisturb", "nodisturb" -> OnlineStatus.DO_NOT_DISTURB
                                 else -> null
                             }
                         }
@@ -126,7 +125,7 @@ class Online : Command("online", null, null) {
                         val statuses =
                                 grouped.sort().map { (status, members) ->
                                     "**" + status.key + "** (${status.toEmoji()}): " +
-                                            (if (members.size > 20 || status == INVISIBLE)
+                                            (if (members.size > 20 || status == OnlineStatus.INVISIBLE)
                                                 members.size.toString() + " " + translate("general.members", event, register)
                                             else "[" + members.joinToString { it.asMention } + "]" + "(${members.size})") +
                                             (if (rolesToFilter != null && admins[status]?.isNotEmpty() == true) "\n" + " - ${admins[status]!!.size} " + " " + translate("online.admins_count", event, register)
@@ -158,11 +157,11 @@ class Online : Command("online", null, null) {
 
 private fun Map<OnlineStatus, List<Member>>.sort(): List<Pair<OnlineStatus, List<Member>>> {
     val list = mutableListOf<Pair<OnlineStatus, List<Member>>>()
-    if (containsKey(ONLINE)) list.add(ONLINE to get(ONLINE)!!)
-    if (containsKey(DO_NOT_DISTURB)) list.add(DO_NOT_DISTURB to get(DO_NOT_DISTURB)!!)
-    if (containsKey(IDLE)) list.add(IDLE to get(IDLE)!!)
-    if (containsKey(OFFLINE)) list.add(OFFLINE to get(OFFLINE)!!)
-    if (containsKey(INVISIBLE)) list.add(INVISIBLE to get(INVISIBLE)!!)
+    if (containsKey(OnlineStatus.ONLINE)) list.add(OnlineStatus.ONLINE to get(OnlineStatus.ONLINE)!!)
+    if (containsKey(OnlineStatus.DO_NOT_DISTURB)) list.add(OnlineStatus.DO_NOT_DISTURB to get(OnlineStatus.DO_NOT_DISTURB)!!)
+    if (containsKey(OnlineStatus.IDLE)) list.add(OnlineStatus.IDLE to get(OnlineStatus.IDLE)!!)
+    if (containsKey(OnlineStatus.OFFLINE)) list.add(OnlineStatus.OFFLINE to get(OnlineStatus.OFFLINE)!!)
+    if (containsKey(OnlineStatus.INVISIBLE)) list.add(OnlineStatus.INVISIBLE to get(OnlineStatus.INVISIBLE)!!)
     return list
 }
 

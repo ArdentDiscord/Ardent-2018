@@ -9,8 +9,8 @@ import com.ardentbot.core.commands.ELEVATED_PERMISSIONS
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.core.selectFromList
 import com.ardentbot.kotlin.*
-import net.dv8tion.jda.core.Permission
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import java.util.concurrent.TimeUnit
 
 @ModuleMapping("admin")
@@ -63,7 +63,7 @@ class DefaultRole : Command("defaultrole", arrayOf("dr"), null) {
                     if (event.guild.members.any { it.roles.isEmpty() }) {
                         register.sender.cmdSend(translate("defaultrole.prompt", event, register), this, event)
                         Sender.scheduledExecutor.schedule({
-                            event.channel.selectFromList(event.member, translate("defaultrole.title", event, register),
+                            event.channel.selectFromList(event.member!!, translate("defaultrole.title", event, register),
                                     listOf(translate("yes", event, register), translate("no", event, register)),
                                     consumer = { i, _ ->
                                         if (i == 0) {
@@ -72,7 +72,7 @@ class DefaultRole : Command("defaultrole", arrayOf("dr"), null) {
                                                             .apply(role.name), this, event)
                                             var assigned = 0
                                             event.guild.members.filter { it.roles.isEmpty() }.forEach {
-                                                event.guild.controller.addSingleRoleToMember(it, role)
+                                                event.guild.addRoleToMember(it, role)
                                                         .reason("Auto-assigning default role").complete()
                                                 assigned++
                                             }

@@ -1,7 +1,7 @@
 package com.ardentbot.core
 
-import net.dv8tion.jda.core.OnlineStatus
-import net.dv8tion.jda.core.events.user.update.UserUpdateOnlineStatusEvent
+import net.dv8tion.jda.api.OnlineStatus
+import net.dv8tion.jda.api.events.user.update.UserUpdateOnlineStatusEvent
 
 class StatusUpdateChanger {
     companion object {

@@ -1,6 +1,7 @@
 package com.ardentbot.commands.rpg
 
-import com.adamratzman.spotify.main.SpotifyClientAPI
+import com.adamratzman.spotify.SpotifyClientApi
+import com.adamratzman.spotify.SpotifyScope
 import com.ardentbot.core.*
 import com.ardentbot.core.commands.Argument
 import com.ardentbot.core.commands.Command
@@ -8,7 +9,7 @@ import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.core.database.getUserData
 import com.ardentbot.kotlin.*
 import com.ardentbot.web.base
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("rpg")
 class Profile : Command("profile", null, null) {
@@ -50,19 +51,19 @@ class Profile : Command("profile", null, null) {
                 }
             }
             "spotify" -> {
-                val url = register.spotifyApi.getAuthUrl(SpotifyClientAPI.Scope.USER_LIBRARY_READ, SpotifyClientAPI.Scope.PLAYLIST_READ_COLLABORATIVE,
-                        SpotifyClientAPI.Scope.PLAYLIST_READ_PRIVATE, redirectUri = "$base/api/oauth/spotify") + "&state=${event.author.id}"
+                val url = register.spotifyApi.getAuthorizationUrl(SpotifyScope.USER_LIBRARY_READ, SpotifyScope.PLAYLIST_READ_COLLABORATIVE,
+                        SpotifyScope.PLAYLIST_READ_PRIVATE, redirectUri = "$base/api/oauth/spotify") + "&state=${event.author.id}"
                 event.author.openPrivateChannel().queue {
                     it.sendMessage("Connect your Spotify account using the following link: []".apply(url)).queue { message ->
-                        ExternalAction.waitSpotify(event.member, event.channel, register) {
+                        ExternalAction.waitSpotify(event.member!!, event.channel, register) { client ->
                             message.delete().queue()
-                            val client = it as SpotifyClientAPI
+                            client as SpotifyClientApi
                             val data = register.database.getUserData(event.author)
-                            client.clientProfile.getUserProfile().queue {
+                            client.users.getClientProfile().queue {
                                 data.spotifyId = it.id
                                 register.database.update(data)
                                 register.sender.cmdSend(Emojis.HEAVY_CHECK_MARK.cmd + "Registered Spotify account: **[]**"
-                                        .apply(it.display_name ?: it.id), this, event)
+                                        .apply(it.displayName ?: it.id), this, event)
                             }
                         }
                     }

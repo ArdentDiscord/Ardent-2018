@@ -10,7 +10,7 @@ import com.ardentbot.core.database.checkSameChannel
 import com.ardentbot.core.database.hasPermission
 import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.apply
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("music")
 class Goto : Command("goto", null, null) {
@@ -24,7 +24,7 @@ class Goto : Command("goto", null, null) {
             else {
                 val audioManager = event.guild.getAudioManager(event.channel, register)
                 if (audioManager.manager.current == null) event.channel.send(translate("music.no_playing",event, register), register)
-                else if (event.member.hasPermission(event.channel, register, true) && event.member.checkSameChannel(event.channel, register)) {
+                else if (event.member!!.hasPermission(event.channel, register, true) && event.member!!.checkSameChannel(event.channel, register)) {
                     if (minutes * 60 + seconds < 0 || minutes * 60 + seconds > audioManager.player.playingTrack.duration / 1000) {
                         event.channel.send(translate("goto.invalid_position",event, register), register)
                     } else {

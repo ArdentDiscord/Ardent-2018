@@ -5,8 +5,8 @@ import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Flag
 import com.ardentbot.core.commands.*
 import com.ardentbot.kotlin.apply
-import net.dv8tion.jda.core.Permission
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("admin")
 @MockCommand("set a chat cooldown for your server - the amount of time between messages")

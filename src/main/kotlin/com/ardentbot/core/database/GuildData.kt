@@ -2,7 +2,7 @@ package com.ardentbot.core.database
 
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.translation.Language
-import net.dv8tion.jda.core.entities.Guild
+import net.dv8tion.jda.api.entities.Guild
 
 class GuildData(id: String, val prefixes: MutableList<ArdentPrefix>, val disabledModules: MutableList<DisabledModule>,
                 val disabledCommands: MutableList<DisabledCommand> = mutableListOf(), var adminRoleId: String? = null,

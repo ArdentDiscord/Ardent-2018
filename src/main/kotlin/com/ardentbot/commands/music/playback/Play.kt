@@ -9,7 +9,7 @@ import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.concat
 import com.ardentbot.kotlin.without
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("music")
 class Play : Command("play", arrayOf("p"), null) {
@@ -20,8 +20,8 @@ class Play : Command("play", arrayOf("p"), null) {
                     "\n" + translate("music.how_lucky", event, register) + "\n\n" +
                     translate("music.how_mymusic", event, register), register)
         } else {
-            if (arguments[0].equals("lucky", true)) arguments.without(0).concat().load(event.member, event.channel, register, lucky = true)
-            else arguments.concat().load(event.member, event.channel, register)
+            if (arguments[0].equals("lucky", true)) arguments.without(0).concat().load(event.member!!, event.channel, register, lucky = true)
+            else arguments.concat().load(event.member!!, event.channel, register)
         }
     }
 }

@@ -8,12 +8,12 @@ import com.ardentbot.core.commands.Command
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.core.database.checkSameChannel
 import com.ardentbot.kotlin.apply
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("music")
 class SongUrl : Command("songurl", arrayOf("songlink", "su", "sl"), null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        if (!event.member.checkSameChannel(event.channel, register)) return
+        if (!event.member!!.checkSameChannel(event.channel, register)) return
         val player = event.guild.getAudioManager(event.channel, register).player
         if (player.playingTrack == null) event.channel.send(translate("music.no_playing", event, register), register)
         else event.channel.send(translate("songurl.response", event, register)

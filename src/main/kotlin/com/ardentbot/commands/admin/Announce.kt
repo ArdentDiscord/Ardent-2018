@@ -10,9 +10,9 @@ import com.ardentbot.core.database.DbObject
 import com.ardentbot.core.database.getLanguage
 import com.ardentbot.core.translation.Language
 import com.ardentbot.kotlin.*
-import net.dv8tion.jda.core.Permission
-import net.dv8tion.jda.core.entities.TextChannel
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import java.util.concurrent.TimeUnit
 
 val appendedAnnouncements = mutableListOf<AppendedAnnouncement>()
@@ -140,7 +140,7 @@ class Announce : Command("announce", arrayOf("announcement", "announcements"), n
                 if (invokePrecondition(ELEVATED_PERMISSIONS(listOf(Permission.MANAGE_SERVER)), event, arguments, flags, register)) {
                     event.channel.send("Current announcement data: []".apply("\n" + selected.display(event, register)), register)
                     after(2, {
-                        event.channel.selectFromList(event.member, "Which field would you like to change for this announcement?",
+                        event.channel.selectFromList(event.member!!, "Which field would you like to change for this announcement?",
                                 listOf("Message", "Channel", "Start time", "Repetitions", "Time between repetitions"), { i, _ ->
                             when (i) {
                                 0 -> {
@@ -201,7 +201,7 @@ class Announce : Command("announce", arrayOf("announcement", "announcements"), n
                                     }, 30)
                                 }
                                 2 -> {
-                                    val path = ExternalAction.waitDateTime(event.member, event.channel, register) {
+                                    val path = ExternalAction.waitDateTime(event.member!!, event.channel, register) {
                                         val time = it as Long
                                         if (System.currentTimeMillis() > time) {
                                             event.channel.send(Emojis.HEAVY_MULTIPLICATION_X.cmd + "You specified a time that's already happened! Canceling..", register)
@@ -358,7 +358,7 @@ class Announce : Command("announce", arrayOf("announcement", "announcements"), n
     ) {
         event.channel.send("**Congrats!** You're almost done. Only one more thing: let's specify when you want the announcement to begin!" + "\n" +
                 "Go to the provided link, and enter the date and time you'd like! The link will be valid for the next **5** minutes.", register)
-        val path = ExternalAction.waitDateTime(event.member, event.channel, register) {
+        val path = ExternalAction.waitDateTime(event.member!!, event.channel, register) {
             val time = it as Long
             if (System.currentTimeMillis() > time) {
                 event.channel.send(Emojis.HEAVY_MULTIPLICATION_X.cmd + "You specified a time that's already happened! Restarting..", register)

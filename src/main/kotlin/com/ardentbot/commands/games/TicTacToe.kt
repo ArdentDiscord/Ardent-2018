@@ -6,15 +6,15 @@ import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.getEmbed
-import net.dv8tion.jda.core.entities.TextChannel
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import java.awt.Color
 import java.util.*
 
 @ModuleMapping("games")
 class TicTacToeCommand : Command("tictactoe", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        val member = event.member
+        val member = event.member!!
         val channel = event.channel
         if (member.isInGameOrLobby()) event.channel.send(translate("games.already_in_game", event, register).apply(member.asMention), register)
         // restrict 1 game per server based on patreon support - disable for now
@@ -35,7 +35,7 @@ class TicTacToeGame(channel: TextChannel, creator: String, register: ArdentRegis
     }
 
     private fun doRound(board: Board, player: String, cancelIfExpire: Boolean = false) {
-        val member = channel.guild.getMemberById(player)
+        val member = channel.guild.getMemberById(player)!!
         channel.sendMessage(getEmbed(translate("tictactoe.embed_title"), channel, Color.WHITE)
                 .appendDescription(translate("tictactoe.prompt").apply(member.asMention) + "\n\n")
                 .appendDescription(board.toString()).build()).queue { message ->
@@ -109,7 +109,7 @@ class TicTacToeGame(channel: TextChannel, creator: String, register: ArdentRegis
     private fun doCleanup(board: Board, winner: String?) {
         Thread.sleep(2000)
         cleanup(GameDataTicTacToe(gameId, creator, startTime!!, players[0], players[1], winner, board.toString()))
-        val creatorMember = channel.guild.getMemberById(creator)
+        val creatorMember = channel.guild.getMemberById(creator)!!
         channel.selectFromList(creatorMember, translate("tictactoe.start_again"), mutableListOf(translate("yes"), translate("no")), { selection, selectionMessage ->
             if (selection == 0) {
                 channel.send(translate("tictactoe.creating"), register)

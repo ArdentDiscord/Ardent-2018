@@ -9,12 +9,12 @@ import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.core.database.checkSameChannel
 import com.ardentbot.core.database.hasPermission
 import com.ardentbot.kotlin.Emojis
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("music")
 class ClearQueue : Command("clearqueue", arrayOf("clearq", "cq"), null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        if (event.member.hasPermission(event.channel, register, true) && event.member.checkSameChannel(event.channel, register)) {
+        if (event.member!!.hasPermission(event.channel, register, true) && event.member!!.checkSameChannel(event.channel, register)) {
             val audioManager = event.guild.getAudioManager(event.channel, register)
             audioManager.scheduler.autoplay = false
             audioManager.manager.resetQueue()

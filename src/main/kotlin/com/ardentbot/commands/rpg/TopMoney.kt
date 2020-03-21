@@ -7,8 +7,8 @@ import com.ardentbot.core.commands.Command
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.core.database.getUsersData
 import com.ardentbot.kotlin.*
-import net.dv8tion.jda.core.entities.User
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("rpg")
 class TopMoney : Command("top", arrayOf("topmoney"), 5) {

@@ -8,8 +8,8 @@ import com.ardentbot.core.commands.ELEVATED_PERMISSIONS
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.core.database.DisabledCommand
 import com.ardentbot.kotlin.*
-import net.dv8tion.jda.core.Permission
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("admin")
 class DisableCommand : Command("disablecommand", arrayOf("dcommand"), null) {
@@ -58,11 +58,11 @@ class DisableCommand : Command("disablecommand", arrayOf("dcommand"), null) {
                 }
             }
             arguments.getOrNull(0)?.isTranslatedArgument("list", event.guild, register) == true -> {
-                val embed = getEmbed(translate("disablecommand.title", event, register).apply(event.guild.name), event.author, event.guild)
-                if (data.disabledCommands.isEmpty()) embed.appendDescription(translate("disablecommand.no_commands_disabled", event, register))
+                val embed = getEmbed(translate("disablemodule.title", event, register).apply(event.guild.name), event.author, event.guild)
+                if (data.disabledCommands.isEmpty()) embed.appendDescription("No disabled commands")
                 else data.disabledCommands.forEach { disabled ->
                     embed.appendDescription(Emojis.SMALL_ORANGE_DIAMOND.cmd
-                            + translate("disablecommand.row", event, register).apply(disabled.name, disabled.addDate.localeDate(),
+                            + "[], disabled on [] by []".apply(disabled.name, disabled.addDate.localeDate(),
                             disabled.adder.toMember(event.guild)?.user?.display()
                                     ?: translate("unknown", event, register)) + "\n")
                 }

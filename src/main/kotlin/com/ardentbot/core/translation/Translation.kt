@@ -3,6 +3,7 @@ package com.ardentbot.core.translation
 import com.ardentbot.commands.games.send
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Sender
+import com.ardentbot.core.translation.Language.ENGLISH
 import com.ardentbot.kotlin.extractFolder
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser
@@ -35,22 +36,25 @@ class TranslationManager(val register: ArdentRegister, val languages: MutableLis
 
     init {
         getTranslations()
+        println(languages.first { it.language == ENGLISH}.translations.find { it.identifier == "disablecommand.title" })
         Sender.scheduledExecutor.scheduleAtFixedRate({ getTranslations() }, 5, 5, TimeUnit.MINUTES)
     }
 
     fun getTranslations() {
-        val translationPath = "/translations/all"
+        val translationPath = "/tmp/translations/all"
 
-        val file = File("/translations/all.zip")
+        val file = File("/tmp/translations/all.zip")
         if (file.exists() && register.config.values["project_crowdin_key"] == null) {
-            extractFolder("/translations/all.zip")
+            extractFolder("/tmp/translations/all.zip")
         } else {
+            File("/tmp/translations").mkdirs()
+
             file.createNewFile()
             val output = FileOutputStream(file)
             output.write(Jsoup.connect("https://api.crowdin.com/api/project/ardent/download/all.zip?key=${register.config["project_crowdin_key"]}")
                     .ignoreContentType(true).execute().bodyAsBytes())
             output.close()
-            extractFolder("/translations/all.zip")
+            extractFolder("/tmp/translations/all.zip")
             file.delete()
         }
 

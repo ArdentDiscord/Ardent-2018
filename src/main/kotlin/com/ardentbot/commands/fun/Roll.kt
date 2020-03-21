@@ -10,7 +10,7 @@ import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.diamond
 import com.ardentbot.kotlin.getEmbed
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("fun")
 class Roll : Command("roll", null, null) {

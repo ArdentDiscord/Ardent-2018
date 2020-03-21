@@ -9,9 +9,9 @@ import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.diamond
 import com.ardentbot.kotlin.getEmbed
 import com.ardentbot.kotlin.removeIndices
-import net.dv8tion.jda.core.Permission
-import net.dv8tion.jda.core.entities.Guild
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import kotlin.collections.set
 
 @Retention(AnnotationRetention.RUNTIME)
@@ -87,8 +87,8 @@ abstract class Command(name: String, aliases: Array<String>?, cooldown: Int?) : 
     init {
         if (cooldown != null) {
             preconditions.add(Precondition({ params ->
-                if (params.event.member.hasPermission(Permission.MANAGE_SERVER)
-                        || params.event.member.roles.map { it.id }
+                if (params.event.member!!.hasPermission(Permission.MANAGE_SERVER)
+                        || params.event.member!!.roles.map { it.id }
                                 .contains(params.register.database.getGuildData(params.event.guild).adminRoleId)) true
                 else {
                     val lastUsed = params.command.users[params.event.author.id]

@@ -7,17 +7,17 @@ import com.ardentbot.core.translation.Language
 import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.display
-import net.dv8tion.jda.core.Permission
-import net.dv8tion.jda.core.entities.Guild
-import net.dv8tion.jda.core.entities.Invite
-import net.dv8tion.jda.core.entities.TextChannel
-import net.dv8tion.jda.core.events.Event
-import net.dv8tion.jda.core.events.guild.GuildJoinEvent
-import net.dv8tion.jda.core.events.guild.member.GuildMemberJoinEvent
-import net.dv8tion.jda.core.events.guild.member.GuildMemberLeaveEvent
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
-import net.dv8tion.jda.core.events.user.update.UserUpdateOnlineStatusEvent
-import net.dv8tion.jda.core.hooks.SubscribeEvent
+import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.Invite
+import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.events.Event
+import net.dv8tion.jda.api.events.guild.GuildJoinEvent
+import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
+import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.user.update.UserUpdateOnlineStatusEvent
+import net.dv8tion.jda.api.hooks.SubscribeEvent
 import org.apache.commons.lang3.exception.ExceptionUtils
 
 class Processor(val register: ArdentRegister) {
@@ -111,7 +111,7 @@ class Processor(val register: ArdentRegister) {
                         }
             }
             is GuildMemberJoinEvent -> EventMessageSender.joinMessage(event, register)
-            is GuildMemberLeaveEvent -> EventMessageSender.leaveMessage(event, register)
+            is GuildMemberRemoveEvent -> EventMessageSender.leaveMessage(event, register)
             is UserUpdateOnlineStatusEvent -> StatusUpdateChanger.change(event, register)
             // is PrivateMessageReceivedEvent -> if (!event.author.isBot) event.channel.sendMessage("Unfortunately, I don't support commands in private channels " +
             //       "right now. Please retry in a server").queue()
@@ -135,9 +135,9 @@ If you run into any issues, join our support server at <https://ardentbot.com/su
 }
 
 fun getSendChannel(guild: Guild): TextChannel {
-    return guild.textChannels.asSequence().map {
+    return guild.textChannels.asSequence().map { channel ->
         try {
-            it to it.getMessageById(it.latestMessageId).complete().creationTime.toEpochSecond()
+            channel to channel.retrieveMessageById(channel.latestMessageId).complete().timeCreated.toEpochSecond()
         } catch (e: Exception) {
             null
         }

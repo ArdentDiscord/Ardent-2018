@@ -3,8 +3,8 @@ package com.ardentbot.commands.admin
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Flag
 import com.ardentbot.core.commands.*
-import net.dv8tion.jda.core.Permission
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("settings")
 @Excluded

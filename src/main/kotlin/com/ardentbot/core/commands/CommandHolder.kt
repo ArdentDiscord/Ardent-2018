@@ -28,6 +28,7 @@ class CommandHolder(val register: ArdentRegister) {
                 val cmd = command.name
                 tm.addTranslation(cmd, cmd)
                 tm.addTranslation("$cmd.description", mockCommand.description)
+                command.description = mockCommand.description
             }
                     ?: { command.description = command.translate("${command.name}.description", Language.ENGLISH, register) }.invoke()
 

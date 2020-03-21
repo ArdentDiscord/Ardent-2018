@@ -11,8 +11,8 @@ import com.google.gson.GsonBuilder
 import com.rethinkdb.RethinkDB.r
 import com.rethinkdb.net.Connection
 import com.rethinkdb.net.Cursor
-import net.dv8tion.jda.core.entities.Guild
-import net.dv8tion.jda.core.entities.User
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.User
 import org.apache.commons.lang3.RandomStringUtils
 import org.json.simple.JSONObject
 import org.jsoup.Jsoup
@@ -25,7 +25,7 @@ class Database(val register: ArdentRegister) {
     init {
         while (true) {
             try {
-                conn = r.connection().hostname("rethinkdb").port(28015).db("ardent").connect()
+                conn = r.connection().hostname("localhost").port(28015).db("ardent").connect()
                 r.dbList().run<List<String>>(conn).contains("ardent")
                 break
             } catch (e: Throwable) {

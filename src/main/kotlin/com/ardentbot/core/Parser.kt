@@ -2,7 +2,7 @@ package com.ardentbot.core
 
 import com.ardentbot.core.utils.PrefixNotFoundException
 import com.ardentbot.kotlin.removeIndices
-import net.dv8tion.jda.core.entities.Message
+import net.dv8tion.jda.api.entities.Message
 
 class Parser {
     fun parseBase(message: Message, prefixes: List<String>): String? {

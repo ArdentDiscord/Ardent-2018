@@ -5,7 +5,7 @@ import com.ardentbot.core.Flag
 import com.ardentbot.core.commands.Command
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.kotlin.getEmbed
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("ardent")
 class About : Command("2018", arrayOf("about"), null) {
@@ -16,7 +16,7 @@ class About : Command("2018", arrayOf("about"), null) {
                         """Ardent is more stable and innovative than ever. Our custom UNIX-style parser, command system, and
                             |website allow us to make Ardent even faster, even with increased integration with 3rd party systems.
                             |
-                            |Though Ardent is only in beta, we think you'll like what you see. Have fun with Ardent!
+                            |Though Ardent is in beta, we think you'll like what you see. Have fun with Ardent!
                         """.trimMargin())
         register.sender.cmdSend(embed, this, event)
     }
