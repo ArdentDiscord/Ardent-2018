@@ -51,7 +51,7 @@ class ArdentRegister(args: Array<String>) {
             .setEventManager(AnnotatedEventManager())
             .addEventListeners(processor)
             .setAudioSendFactory(if (test) DefaultSendFactory() else NativeAudioSendFactory())
-            .build()
+            .build().awaitReady()
     val selfUser = jda.selfUser
     val translationManager = TranslationManager(this)
     val database = Database(this)
@@ -61,7 +61,7 @@ class ArdentRegister(args: Array<String>) {
     val holder = CommandHolder(this)
     val web = Web(this)
     val spotifyApi = SpotifyApi.spotifyAppApi(config["spotify_client_id"], config["spotify_client_secret"]).build()
-
+    val cmdChannel = jda.getTextChannelById("363785648911679488")
     fun getTextChannel(id: String): TextChannel? {
         return try {
             jda.getTextChannelById(id)
