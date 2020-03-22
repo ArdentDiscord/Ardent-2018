@@ -854,7 +854,7 @@ class Web(val register: ArdentRegister) {
         }
 
         get("/invite") { _, response ->
-            response.redirect("https://discordapp.com/api/oauth2/authorize?client_id=339101087569281045&permissions=8&scope=bot")
+            response.redirect("https://discordapp.com/api/oauth2/authorize?client_id=${register.selfUser.id}&permissions=8&scope=bot")
         }
         get("/support") { _, response ->
             response.redirect("https://discord.gg/VebBB5z")

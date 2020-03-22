@@ -24,7 +24,8 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
         MockTr("how_change", "Change these settings with /adblock set allow yes/no"),
         MockTr("allow", "allow"),
         MockTr("set_success", "{WHITE_HEAVY_CHECKMARK} Successfully set **[]** to **[]**"),
-        MockTr("blocked", "[], you can't send other server invites here!")
+        MockTr("blocked", "[], you can't send other server invites here!"),
+        MockTr("setting_embed_title", "Adblock Server Settings")
 )
 class AdBlock : Command("adblock", arrayOf("antiadvertise"), null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
@@ -53,7 +54,7 @@ class AdBlock : Command("adblock", arrayOf("antiadvertise"), null) {
                     else {
                         val setting = when {
                             parameters[1].equals(translate("yes", event, register), true) -> true
-                            parameters[1].equals(translate("no", event, register), true) -> true
+                            parameters[1].equals(translate("no", event, register), true) -> false
                             else -> null
                         }
                         if (setting == null) event.channel.send(translate("adblock.how_change", event, register), register)

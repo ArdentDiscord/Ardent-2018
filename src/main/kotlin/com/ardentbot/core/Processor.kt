@@ -35,7 +35,7 @@ class Processor(val register: ArdentRegister) {
                         ELEVATED_PERMISSIONS(listOf(Permission.MANAGE_SERVER)), event, listOf(), listOf(), register, true)
                 val data = register.database.getGuildData(event.guild)
                 val language = data.language ?: Language.ENGLISH
-                if (!elevatedPermissions && data.antiAdvertisingSettings?.allowServerLinks == false) {
+                if (!elevatedPermissions && data.antiAdvertisingSettings != null && !data.antiAdvertisingSettings!!.allowServerLinks) {
                     if (event.message.invites.asSequence().map {
                                 try {
                                     Invite.resolve(register.jda, it)
