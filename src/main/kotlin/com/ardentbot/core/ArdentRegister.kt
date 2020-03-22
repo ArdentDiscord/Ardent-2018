@@ -196,12 +196,15 @@ class ArdentRegister(args: Array<String>) {
         }, 0, 15, TimeUnit.MINUTES)
 
         Sender.scheduledExecutor.scheduleAtFixedRate({
-            jda.presence.activity = Activity.streaming(when(random.nextInt(5)) {
-                0 -> "With ${holder.commands.size} commands! | /help"
-                1 -> "Tell your friends! | /help"
-                3 -> "Serving ${getAllGuilds().size} servers! | /help"
+            jda.presence.activity = Activity.playing(when(random.nextInt(7)) {
+                0 -> "/help | With ${holder.commands.size} commands!"
+                1 -> "Share Ardent with friends! | /help"
+                2 -> "/music | Music streaming"
+                3 -> "In ${getAllGuilds().size} servers! | /help"
+                4 -> "ardentbot.com/invite"
+                5 -> "ardentbot.com/invite"
                 else -> "Use /help"
-            }, "https://twitch.tv/ ")
+            })
         },0,15,TimeUnit.SECONDS)
 
         println("Ardent has started ${Emojis.SMILING_FACE_WITH_SUN_GLASS.symbol}")

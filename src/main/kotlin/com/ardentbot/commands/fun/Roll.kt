@@ -24,15 +24,15 @@ class Roll : Command("roll", null, null) {
             var number = 1
             var sides = 6
             if (default == null) {
-                if (sidesFlag <= 1) register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd + "Please input a valid side amount!", this, event)
+                if (sidesFlag < 1) register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd + "Please input a valid side amount!", this, event)
                 else sides = sidesFlag
-                if (numberFlag <= 1 || numberFlag > 10) register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd + "Please input a valid number of rolls (1 to 10)!", this, event)
+                if (numberFlag < 1 || numberFlag > 10) register.sender.cmdSend(Emojis.HEAVY_MULTIPLICATION_X.cmd + "Please input a valid number of rolls (1 to 10)!", this, event)
                 else number = numberFlag
             }
 
             if (number == 1) {
-                register.sender.cmdSend(":game_die " + translate("roll.rolling", event, register) + " . . .", this, event, callback = {
-                    it.editMessage(translate("roll.result",event, register).apply(sides, register.random.nextInt(6) + 1)).queue()
+                register.sender.cmdSend(":game_die: " + translate("roll.rolling", event, register) + " . . .", this, event, callback = {
+                    it.editMessage(translate("roll.result",event, register).apply(sides, register.random.nextInt(sides) + 1)).queue()
                 })
             } else {
                 val embed = getEmbed(translate("roll.embed_title",event, register).apply(sides), event.author, event.guild)

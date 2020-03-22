@@ -20,6 +20,7 @@ class Help : Command("help", null, null) {
             when {
                 flags.get("m") != null -> {
                     val flag = flags.get("m")!!
+
                     try {
                         val module = register.holder.modules.keys.first { it.name.equals(flag.value, true) || it.id.equals(flag.value, true) }
                         val data = register.database.getGuildData(event.guild)

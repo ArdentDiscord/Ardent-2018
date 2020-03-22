@@ -16,8 +16,8 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 @ModuleMapping("music")
 class Skip : Command("skip", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
-        if (!event.member!!.checkSameChannel(event.channel, register) || !event.member!!.hasPermission(event.channel, register, true)) return
         val manager = event.guild.getAudioManager(event.channel, register)
+        if (!event.member!!.checkSameChannel(event.channel, register) || (manager.manager.current?.owner != event.author.id && !event.member!!.hasPermission(event.channel, register, true))) return
         if (manager.player.playingTrack == null) return
         val track = manager.manager.current!!
         event.channel.send(translate("skip.response", event, register) + translate("music.play_info", event, register)

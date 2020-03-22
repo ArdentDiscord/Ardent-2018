@@ -9,16 +9,7 @@ import java.util.TimeZone
 private val formatter = DecimalFormat("#,###")
 
 fun Long.toMinutesAndSeconds(): String {
-    val seconds = this % 60
-    val minutes = (this % 3600) / 60
-    val sb = StringBuilder()
-    if (minutes > 0L) {
-        sb.append(minutes)
-        sb.append(if (minutes == 1L) " minute" else " minutes")
-    }
-    sb.append(" $seconds")
-    sb.append(if (seconds == 0L || seconds > 1L) " seconds" else " second")
-    return sb.toString()
+    return timeDisplay().toString()
 }
 
 infix fun Number.withDecimalPlaceCount(places: Int): String = "%.${places}f".format(this)

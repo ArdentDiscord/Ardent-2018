@@ -36,7 +36,6 @@ class TranslationManager(val register: ArdentRegister, val languages: MutableLis
 
     init {
         getTranslations()
-        println(languages.first { it.language == ENGLISH}.translations.find { it.identifier == "disablecommand.title" })
         Sender.scheduledExecutor.scheduleAtFixedRate({ getTranslations() }, 5, 5, TimeUnit.MINUTES)
     }
 

@@ -16,8 +16,8 @@ class Play : Command("play", arrayOf("p"), null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         if (arguments.isEmpty()) {
             event.channel.send(Emojis.INFORMATION_SOURCE.cmd + translate("music.status_playing", event, register) + "\n" +
-                    translate("music.how_search", event, register) + "\n" +
-                    "\n" + translate("music.how_lucky", event, register) + "\n\n" +
+                    translate("music.how_search", event, register) + "" +
+                    "\n" + translate("music.how_lucky", event, register) + "\n" +
                     translate("music.how_mymusic", event, register), register)
         } else {
             if (arguments[0].equals("lucky", true)) arguments.without(0).concat().load(event.member!!, event.channel, register, lucky = true)
