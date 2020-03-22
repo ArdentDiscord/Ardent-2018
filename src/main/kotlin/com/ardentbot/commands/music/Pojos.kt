@@ -15,14 +15,19 @@ import net.dv8tion.jda.api.entities.TextChannel
 class DatabaseMusicLibrary(id: String, var tracks: MutableList<DatabaseTrackObj>, var lastModified: Long = System.currentTimeMillis())
     : DbObject(id, "music_libraries") {
     fun load(member: Member, channel: TextChannel, register: ArdentRegister) {
-        tracks.forEach { track ->
-            track.url.load(member, channel, register) { loaded, _ ->
-                play(channel, member, LocalTrackObj(id as String, id as String, null, null, null, null, loaded), register)
+        val vc = member.voiceState?.channel
+        if (vc == null) channel.send(register.translationManager.translate("music.not_in_voice",member.guild.getLanguage(register) ?: Language.ENGLISH ), register)
+        else if (vc.connect(channel, register)) {
+            tracks.forEach { track ->
+                track.url.load(member, channel, register) { loaded, _ ->
+                    play(channel, member, LocalTrackObj(id as String, id as String, null, null, null, null, loaded), register)
+                }
             }
+            channel.send(Emojis.WHITE_HEAVY_CHECKMARK.cmd + register.translationManager.translate("music.loaded_ardent_tracks",
+                    member.guild.getLanguage(register) ?: Language.ENGLISH).apply(tracks.size), register)
         }
-        channel.send(Emojis.WHITE_HEAVY_CHECKMARK.cmd + register.translationManager.translate("music.loaded_ardent_tracks",
-                member.guild.getLanguage(register) ?: Language.ENGLISH).apply(tracks.size), register)
     }
+
 }
 
 class DatabaseMusicPlaylist(id: String, val owner: String, var name: String, var lastModified: Long, var spotifyAlbumId: String?,

@@ -186,7 +186,7 @@ class TrackScheduler(val manager: GuildMusicManager, val guild: Guild) : AudioEv
                             "**Message:** ${e.localizedMessage}"
             ).queue()
             manager.register.getTextChannel(manager.register.config["error_channel"])!!.sendMessage("^\n" +
-                    ExceptionUtils.getStackTrace(e)).queue()
+                    ExceptionUtils.getStackTrace(e).take(1000)).queue()
         }
     }
 
