@@ -36,7 +36,7 @@ class TranslationManager(val register: ArdentRegister, val languages: MutableLis
 
     init {
         getTranslations()
-        Sender.scheduledExecutor.scheduleAtFixedRate({ getTranslations() }, 5, 5, TimeUnit.MINUTES)
+      //  Sender.scheduledExecutor.scheduleAtFixedRate({ getTranslations() }, 5, 5, TimeUnit.MINUTES)
     }
 
     fun getTranslations() {
