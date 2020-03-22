@@ -20,7 +20,7 @@ class DatabaseMusicLibrary(id: String, var tracks: MutableList<DatabaseTrackObj>
         else if (vc.connect(channel, register)) {
             tracks.forEach { track ->
                 track.url.load(member, channel, register) { loaded, _ ->
-                    play(channel, member, LocalTrackObj(id as String, id as String, null, null, null, null, loaded), register)
+                    DEFAULT_TRACK_LOAD_HANDLER(member,channel,loaded,true,null,null,null,null,register)
                 }
             }
             channel.send(Emojis.WHITE_HEAVY_CHECKMARK.cmd + register.translationManager.translate("music.loaded_ardent_tracks",

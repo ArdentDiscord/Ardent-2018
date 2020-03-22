@@ -126,6 +126,8 @@ If you run into any issues, join our support server at <https://ardentbot.com/su
 
 *p.s: we suggest __/play__!*
                 """.trimIndent()).queue()
+
+                  //  register.cmdChannel?.send("Joined ${}")
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
