@@ -13,9 +13,11 @@ import net.dv8tion.jda.api.entities.Invite
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.events.Event
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent
+import net.dv8tion.jda.api.events.guild.GuildLeaveEvent
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import net.dv8tion.jda.api.events.message.priv.PrivateMessageReceivedEvent
 import net.dv8tion.jda.api.events.user.update.UserUpdateOnlineStatusEvent
 import net.dv8tion.jda.api.hooks.SubscribeEvent
 import org.apache.commons.lang3.exception.ExceptionUtils
@@ -24,6 +26,7 @@ class Processor(val register: ArdentRegister) {
     var receivedMessages = 0
     var receivedCommands = 0
     val antispamMap = mutableMapOf<String, MutableMap<String, Long>>() // guild id, map of Pair<User id, Message send time>
+
     @SubscribeEvent
     fun process(event: Event) {
         Sender.check(event)
@@ -37,12 +40,12 @@ class Processor(val register: ArdentRegister) {
                 val language = data.language ?: Language.ENGLISH
                 if (!elevatedPermissions && data.antiAdvertisingSettings != null && !data.antiAdvertisingSettings!!.allowServerLinks) {
                     if (event.message.invites.asSequence().map {
-                                try {
-                                    Invite.resolve(register.jda, it)
-                                } catch (e: Exception) {
-                                    null
-                                }
-                            }
+                                        try {
+                                            Invite.resolve(register.jda, it)
+                                        } catch (e: Exception) {
+                                            null
+                                        }
+                                    }
                                     .filterNotNull().toList().isNotEmpty()) {
                         event.message.delete().reason("Advertising").queue()
                         event.channel.send(register.holder.commands[0].translate("adblock.blocked", event, register).apply(event.author.asMention), register)
@@ -68,9 +71,9 @@ class Processor(val register: ArdentRegister) {
                 val commandName = register.parser.parseBase(event.message, prefixes) ?: return
 
                 register.holder.commands.firstOrNull {
-                    it.getTranslatedName(event.guild, register) == commandName
-                            || it.getTranslatedEnglishName(register) == commandName || it.aliases?.contains(commandName) == true
-                }
+                            it.getTranslatedName(event.guild, register) == commandName
+                                    || it.getTranslatedEnglishName(register) == commandName || it.aliases?.contains(commandName) == true
+                        }
                         ?.let { command ->
                             register.database.insert(UserCommand(event.author.id, event.channel.id, event.guild.id, command.name), blocking = false)
                             if (data.disabledModules.map { it.name }.contains(register.holder.getModuleFor(command).id)) {
@@ -113,8 +116,12 @@ class Processor(val register: ArdentRegister) {
             is GuildMemberJoinEvent -> EventMessageSender.joinMessage(event, register)
             is GuildMemberRemoveEvent -> EventMessageSender.leaveMessage(event, register)
             is UserUpdateOnlineStatusEvent -> StatusUpdateChanger.change(event, register)
-            // is PrivateMessageReceivedEvent -> if (!event.author.isBot) event.channel.sendMessage("Unfortunately, I don't support commands in private channels " +
-            //       "right now. Please retry in a server").queue()
+            is PrivateMessageReceivedEvent -> if (!event.author.isBot) event.channel.sendMessage("Unfortunately, I don't support commands in private channels " +
+                   "right now. Please retry in a server").queue()
+            is GuildLeaveEvent -> {
+                val guild = event.guild
+                register.cmdChannel?.send("Left ${guild.name} - ${guild.memberCount} (${guild.members.count { it.user.isBot }})", register)
+            }
             is GuildJoinEvent -> {
                 try {
                     Thread.sleep(2500)
@@ -126,8 +133,8 @@ If you run into any issues, join our support server at <https://ardentbot.com/su
 
 *p.s: we suggest __/play__!*
                 """.trimIndent()).queue()
-
-                  //  register.cmdChannel?.send("Joined ${}")
+                    val guild = event.guild
+                    register.cmdChannel?.send("Joined ${guild.name} - ${guild.memberCount} (${guild.members.count { it.user.isBot }})", register)
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }

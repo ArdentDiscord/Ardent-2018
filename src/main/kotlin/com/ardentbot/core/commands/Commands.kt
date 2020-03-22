@@ -7,6 +7,7 @@ import com.ardentbot.core.database.getUserData
 import com.ardentbot.core.translation.Language
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.diamond
+import com.ardentbot.kotlin.display
 import com.ardentbot.kotlin.format
 import com.ardentbot.kotlin.getEmbed
 import com.ardentbot.kotlin.removeIndices
@@ -83,7 +84,8 @@ abstract class Command(name: String, aliases: Array<String>?, cooldown: Int?) : 
         val before = System.currentTimeMillis()
         onInvoke(event, arguments, flags, register)
         println("Execution time: ${System.currentTimeMillis() - before}")
-        register.cmdChannel?.send("$name command received in **${event.guild.name}** - ${event.guild.memberCount} (${event.guild.members.count { it.user.isBot }} bots) | ${System.currentTimeMillis().format()}", register)
+
+        register.cmdChannel?.send("$name command received by ${event.author.display()}in **${event.guild.name}** - ${event.guild.memberCount} (${event.guild.members.count { it.user.isBot }} bots) | ${System.currentTimeMillis().format()}", register)
     }
 
     init {
