@@ -21,7 +21,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils
 // Load music when not run from a command
 fun String.loadExternally(register: ArdentRegister, consumerFoundTrack: (AudioTrack, String?) -> Unit) {
     val guild = register.getGuild("351220166018727936")!!
-    load(guild.selfMember, guild.textChannels[0], register, consumerFoundTrack = consumerFoundTrack)
+    load(guild.selfMember, guild.textChannels[0], register, consumerFoundTrack = consumerFoundTrack, speak = false)
 }
 
 // Loading music directly (for use in playing)
@@ -48,19 +48,19 @@ val DEFAULT_YOUTUBE_PLAYLIST_LOAD_HANDLER: (Member, TextChannel, AudioPlaylist, 
             }
         }
 
-fun String.load(member: Member, channel: TextChannel, register: ArdentRegister, lucky: Boolean = false, consumerFoundTrack: ((AudioTrack, String?) -> Unit)? = null) {
+fun String.load(member: Member, channel: TextChannel, register: ArdentRegister, lucky: Boolean = false, speak: Boolean = true, consumerFoundTrack: ((AudioTrack, String?) -> Unit)? = null) {
     when {
-        this.startsWith("https://open.spotify.com/album/") -> this.split("?")[0].loadSpotifyAlbum(member, channel, consumerFoundTrack = consumerFoundTrack, register = register)
-        this.startsWith("https://open.spotify.com/track/") -> this.split("?")[0].loadSpotifyTrack(member, channel, consumerFoundTrack = consumerFoundTrack, register = register)
-        this.startsWith("https://open.spotify.com/") -> this.split("?")[0].loadSpotifyPlaylist(member, channel, consumerFoundTrack = consumerFoundTrack, register = register)
+        this.startsWith("https://open.spotify.com/album/") -> this.split("?")[0].loadSpotifyAlbum(member, channel, register = register, consumerFoundTrack = consumerFoundTrack)
+        this.startsWith("https://open.spotify.com/track/") -> this.split("?")[0].loadSpotifyTrack(member, channel, consumerFoundTrack = consumerFoundTrack, register = register, speak = speak)
+        this.startsWith("https://open.spotify.com/") -> this.split("?")[0].loadSpotifyPlaylist(member, channel, register = register, consumerFoundTrack = consumerFoundTrack)
         else -> {
-            if (consumerFoundTrack == null) loadYoutube(member, channel, register, lucky = lucky)
-            else loadYoutube(member, channel, consumer = { consumerFoundTrack.invoke(it, null) }, register = register, lucky = lucky)
+            if (consumerFoundTrack == null) loadYoutube(member, channel, register, lucky = lucky, speak = speak)
+            else loadYoutube(member, channel, consumer = { consumerFoundTrack.invoke(it, null) }, register = register, lucky = lucky, speak = speak)
         }
     }
 }
 
-fun String.loadYoutube(member: Member, channel: TextChannel, register: ArdentRegister, musicPlaylist: DatabaseMusicPlaylist? = null, search: Boolean = false, lucky: Boolean, consumer: ((AudioTrack) -> Unit)? = null) {
+fun String.loadYoutube(member: Member, channel: TextChannel, register: ArdentRegister, musicPlaylist: DatabaseMusicPlaylist? = null, search: Boolean = false, lucky: Boolean, speak: Boolean=true,consumer: ((AudioTrack) -> Unit)? = null) {
     val autoplay = member == member.guild.selfMember
     val language = member.guild.getLanguage(register) ?: Language.ENGLISH
     playerManager.loadItemOrdered(member.guild.getAudioManager(channel, register), this, object : AudioLoadResultHandler {
@@ -118,9 +118,9 @@ fun String.loadYoutube(member: Member, channel: TextChannel, register: ArdentReg
                     if (!autoplay) channel.selectFromList(member, register.translationManager.translate("music.select_song", language), results.map { it.first }.toMutableList(),
                             { response, _ ->
                                 "https://www.youtube.com/watch?v=${results[response].second}"
-                                        .loadYoutube(member, channel, register, musicPlaylist, false, lucky = lucky)
+                                        .loadYoutube(member, channel, register, musicPlaylist, false, lucky = lucky, speak = speak)
                             }, register = register)
-                    else "https://www.youtube.com/watch?v=${results[0].second}".loadYoutube(member, channel, register, musicPlaylist, false, lucky = lucky)
+                    else "https://www.youtube.com/watch?v=${results[0].second}".loadYoutube(member, channel, register, musicPlaylist, false, lucky = lucky, speak = speak)
                 }
             } else channel.send(register.translationManager.translate("error.something_went_wrong", language).apply(exception.localizedMessage), register)
         }
@@ -128,19 +128,19 @@ fun String.loadYoutube(member: Member, channel: TextChannel, register: ArdentReg
         override fun noMatches() {
             if (search) {
                 if (!autoplay) channel.send(register.translationManager.translate("music.track_not_found", language), register)
-            } else "ytsearch:${this@loadYoutube}".loadYoutube(member, channel, register, musicPlaylist, true, consumer = consumer, lucky = lucky)
+            } else "ytsearch:${this@loadYoutube}".loadYoutube(member, channel, register, musicPlaylist, true, consumer = consumer, lucky = lucky, speak = speak)
         }
     })
 }
 
 
-fun String.loadSpotifyTrack(member: Member, channel: TextChannel, register: ArdentRegister, musicPlaylist: DatabaseMusicPlaylist? = null, consumerFoundTrack: ((AudioTrack, String) -> Unit)? = null) {
+fun String.loadSpotifyTrack(member: Member, channel: TextChannel, register: ArdentRegister, musicPlaylist: DatabaseMusicPlaylist? = null, speak:Boolean=true,consumerFoundTrack: ((AudioTrack, String) -> Unit)? = null) {
     register.spotifyApi.tracks.getTrack(this.removePrefix("https://open.spotify.com/track/")).queue { track ->
         track?.let {
             "${it.name} ${it.artists.joinToString(", ") { artist -> artist.name }}".getSingleTrack(member, channel, { _, _, loaded ->
                 consumerFoundTrack?.invoke(loaded, track.id)
-                        ?: DEFAULT_TRACK_LOAD_HANDLER(member, channel, loaded, false, musicPlaylist, null, null, track.id, register)
-            }, register, false, false)
+                        ?: DEFAULT_TRACK_LOAD_HANDLER(member, channel, loaded, !speak, musicPlaylist, null, null, track.id, register)
+            }, register, search = false, soundcloud = false)
         }
                 ?: channel.send(register.translationManager.translate("music.specify_valid_spotify_track", member.guild.getLanguage(register)
                         ?: Language.ENGLISH), register)
@@ -152,7 +152,7 @@ fun String.loadSpotifyAlbum(member: Member, channel: TextChannel, register: Arde
     val language = member.guild.getLanguage(register) ?: Language.ENGLISH
     register.spotifyApi.albums.getAlbum(albumId).queue { album ->
         if (album != null) {
-            channel.send(register.translationManager.translate("music.beginning_spotify_album", language).apply(album.name), register)
+             channel.send(register.translationManager.translate("music.beginning_spotify_album", language).apply(album.name), register)
             album.tracks.items.forEach { track ->
                 "${track.name} ${track.artists[0].name}"
                         .getSingleTrack(member, channel, { _, _, loaded ->
@@ -165,7 +165,7 @@ fun String.loadSpotifyAlbum(member: Member, channel: TextChannel, register: Arde
     }
 }
 
-fun String.loadSpotifyPlaylist(member: Member, channel: TextChannel, register: ArdentRegister, musicPlaylist: DatabaseMusicPlaylist? = null, consumerFoundTrack: ((AudioTrack, String) -> (Unit))? = null) {
+fun String.loadSpotifyPlaylist(member: Member, channel: TextChannel, register: ArdentRegister, musicPlaylist: DatabaseMusicPlaylist? = null, consumerFoundTrack: ((AudioTrack, String) -> Unit)? = null) {
     val language = member.guild.getLanguage(register) ?: Language.ENGLISH
     val split = removePrefix("https://open.spotify.com").split("/playlist/")
     val playlistId = split.getOrNull(1)

@@ -19,7 +19,7 @@ class DatabaseMusicLibrary(id: String, var tracks: MutableList<DatabaseTrackObj>
         if (vc == null) channel.send(register.translationManager.translate("music.not_in_voice",member.guild.getLanguage(register) ?: Language.ENGLISH ), register)
         else if (vc.connect(channel, register)) {
             tracks.forEach { track ->
-                track.url.load(member, channel, register) { loaded, _ ->
+                track.url.load(member, channel, register, speak = false) { loaded, _ ->
                     DEFAULT_TRACK_LOAD_HANDLER(member,channel,loaded,true,null,null,null,null,register)
                 }
             }
@@ -63,13 +63,9 @@ data class LocalTrackObj(val user: String, val owner: String, val playlist: Loca
 data class LocalPlaylist(val member: Member, val playlist: DatabaseMusicPlaylist) {
     fun isSpotify(): Boolean = playlist.spotifyAlbumId != null || playlist.spotifyPlaylistId != null
     fun loadTracks(channel: TextChannel, member: Member, register: ArdentRegister) {
-        if (playlist.spotifyAlbumId != null) playlist.spotifyAlbumId!!.toSpotifyAlbumUrl().loadSpotifyAlbum(this.member, channel, register, playlist) { audioTrack, id ->
-            play(channel, member, LocalTrackObj(member.user.id, member.user.id, this, null, playlist.spotifyAlbumId, id, audioTrack), register)
-        }
+        if (playlist.spotifyAlbumId != null) playlist.spotifyAlbumId!!.toSpotifyAlbumUrl().loadSpotifyAlbum(this.member, channel, register, playlist)
         if (playlist.spotifyPlaylistId != null) {
-            playlist.spotifyPlaylistId.toSpotifyPlaylistUrl().loadSpotifyPlaylist(this.member, channel, register, playlist) { audioTrack, id ->
-                play(channel, member, LocalTrackObj(member.user.id, member.user.id, this, playlist.spotifyPlaylistId, null, id, audioTrack), register)
-            }
+            playlist.spotifyPlaylistId.toSpotifyPlaylistUrl().loadSpotifyPlaylist(this.member, channel, register, playlist)
         }
         if (playlist.youtubePlaylistUrl != null) {
             playlist.youtubePlaylistUrl.loadYoutube(member, channel, register, playlist, lucky = false)
@@ -80,7 +76,7 @@ data class LocalPlaylist(val member: Member, val playlist: DatabaseMusicPlaylist
                     track.url.startsWith("https://open.spotify.com/track/") -> track.url.loadSpotifyTrack(member, channel, register, playlist) { audioTrack, id ->
                         play(channel, member, LocalTrackObj(member.user.id, member.user.id, this, null, null, id, audioTrack), register)
                     }
-                    else -> track.url.loadYoutube(member, channel, register, playlist, false, false) { found ->
+                    else -> track.url.loadYoutube(member, channel, register, playlist, search = false, lucky = false) { found ->
                         DEFAULT_TRACK_LOAD_HANDLER(member, channel, found, true, playlist, null, null, null, register)
                     }
                 }
