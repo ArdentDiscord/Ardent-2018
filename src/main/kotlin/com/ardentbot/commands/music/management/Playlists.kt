@@ -24,7 +24,7 @@ class Playlists : Command("playlist", arrayOf("playlists"), null) {
         when {
             arg?.isTranslatedArgument("play", event.guild, register) == true -> {
                 val playlist: DatabaseMusicPlaylist? = arguments.getOrNull(1)?.let {
-                    asPojo(register.database.get("music_playlists", it) as HashMap<*, *>?, DatabaseMusicPlaylist::class.java)
+                    asPojo(register.database.get("music_playlists", it.toLowerCase()) as HashMap<*, *>?, DatabaseMusicPlaylist::class.java)
                 }
                 if (playlist == null) event.channel.send(translate("playlists.specify_valid_id", event, register), register)
                 else {
@@ -50,25 +50,25 @@ class Playlists : Command("playlist", arrayOf("playlists"), null) {
             }
             arg?.isTranslatedArgument("view", event.guild, register) == true -> {
                 val playlist: DatabaseMusicPlaylist? = arguments.getOrNull(1)?.let {
-                    asPojo(register.database.get("music_playlists", it) as HashMap<*, *>?, DatabaseMusicPlaylist::class.java)
+                    asPojo(register.database.get("music_playlists", it.toLowerCase()) as HashMap<*, *>?, DatabaseMusicPlaylist::class.java)
                 }
                 if (playlist == null) event.channel.send(translate("playlists.specify_valid_id", event, register), register)
                 else {
                     event.channel.send(translate("playlists.view_response", event, register)
                             .apply(playlist.name, register.getUser(playlist.owner)?.display()
-                                    ?: translate("unknown", event, register), "https://ardentbot.com/music/playlist/${playlist.id}", playlist.id), register)
+                                    ?: translate("unknown", event, register), "$base/music/playlist/${playlist.id}", playlist.id), register)
                 }
             }
             arg?.isTranslatedArgument("delete", event.guild, register) == true -> {
                 val playlist: DatabaseMusicPlaylist? = arguments.getOrNull(1)?.let {
-                    asPojo(register.database.get("music_playlists", it) as HashMap<*, *>?, DatabaseMusicPlaylist::class.java)
+                    asPojo(register.database.get("music_playlists", it.toLowerCase()) as HashMap<*, *>?, DatabaseMusicPlaylist::class.java)
                 }
                 if (playlist == null) event.channel.send(translate("playlists.specify_valid_id", event, register), register)
                 else {
                     if (playlist.owner != event.author.id) event.channel.send(translate("playlists.delete_permission", event, register), register)
                     else {
                         event.channel.selectFromList(event.member!!, translate("playlists.confirm_delete", event, register)
-                                .apply("**${playlist.name}**"), mutableListOf(translate("yes", event, register),
+                                .apply(playlist.name), mutableListOf(translate("yes", event, register),
                                 translate("no", event, register)), { selection, m ->
                             if (selection == 0) {
                                 register.database.delete(playlist)
@@ -95,6 +95,7 @@ class Playlists : Command("playlist", arrayOf("playlists"), null) {
                                         null, null, null, tracks = mutableListOf())
                                 register.database.insert(playlist)
                                 event.channel.send(translate("playlists.view_this_online", event, register).apply("$base/music/playlist/${playlist.id}"), register)
+                                event.channel.send("Play this playlist using **/playlist play []**".apply(playlist.id), register)
                             }
                             1 -> {
                                 event.channel.send(translate("playlists.specify_spotify_now", event, register), register)
@@ -106,11 +107,10 @@ class Playlists : Command("playlist", arrayOf("playlists"), null) {
                                             DatabaseMusicPlaylist(genId(6, "music_playlists"), event.author.id, name, System.currentTimeMillis(),
                                                     url.removePrefix("https://open.spotify.com/album/"), null, null)
                                         }
-                                        url.startsWith("https://open.spotify.com/user/") -> {
+                                        url.startsWith("https://open.spotify.com/playlist/") -> {
                                             event.channel.send(translate("playlists.create_success", event, register).apply("**$name**"), register)
                                             DatabaseMusicPlaylist(genId(6, "music_playlists"), event.author.id, name, System.currentTimeMillis(),
-                                                    null, url.removePrefix("https://open.spotify.com/user/")
-                                                    .split("/playlist/").stream().collect(Collectors.joining("||")), null)
+                                                    null, url.removePrefix("https://open.spotify.com/playlist/"), null)
                                         }
                                         else -> {
                                             event.channel.send(translate("playlists.invalid_url_try_again", event, register), register)
@@ -120,13 +120,14 @@ class Playlists : Command("playlist", arrayOf("playlists"), null) {
                                     if (playlist != null) {
                                         register.database.insert(playlist)
                                         event.channel.send(translate("playlists.view_this_online", event, register).apply("$base/music/playlist/${playlist.id}"), register)
+                                        event.channel.send("Play this playlist using **/playlist play []**".apply(playlist.id), register)
                                     }
                                 })
                             }
                             2 -> {
                                 event.channel.send(translate("playlists.specify_ardent_playlist", event, register), register)
                                 Sender.waitForMessage({ it.author.id == event.author.id && it.channel.id == event.channel.id && it.guild.id == event.guild.id }, { reply ->
-                                    val url = reply.message.contentRaw.replace("https://ardentbot.com/music/playlist/", "")
+                                    val url = reply.message.contentRaw.replace("$base/music/playlist/", "")
                                     val playlist = getPlaylistById(url, register)
                                     if (playlist == null) event.channel.send(translate("playlists.invalid_playlist_try_again", event, register), register)
                                     else {
@@ -135,6 +136,7 @@ class Playlists : Command("playlist", arrayOf("playlists"), null) {
                                         register.database.insert(newPlaylist)
                                         event.channel.send(translate("playlists.clone_success", event, register).apply("**${playlist.name}**"), register)
                                         event.channel.send(translate("playlists.view_this_online", event, register).apply("$base/music/playlist/${newPlaylist.id}"), register)
+                                        event.channel.send("Play this playlist using **/playlist play []**".apply(playlist.id), register)
                                     }
                                 })
                             }
@@ -148,6 +150,7 @@ class Playlists : Command("playlist", arrayOf("playlists"), null) {
                                                 null, null, url, tracks = mutableListOf())
                                         register.database.insert(playlist)
                                         event.channel.send(translate("playlists.view_this_online", event, register).apply("$base/music/playlist/${playlist.id}"), register)
+                                        event.channel.send("Play this playlist using **/playlist play []**".apply(playlist.id), register)
                                     } else {
                                         event.channel.send(translate("playlists.create_invalid_url", event, register), register)
                                     }
@@ -168,4 +171,7 @@ class Playlists : Command("playlist", arrayOf("playlists"), null) {
     val view = Argument("view")
     val delete = Argument("delete")
     val create = Argument("create")
+
+    val example1 = "list"
+    val example2 = "view t7t8r1"
 }

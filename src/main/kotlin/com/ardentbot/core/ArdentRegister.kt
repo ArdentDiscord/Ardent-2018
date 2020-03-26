@@ -220,7 +220,7 @@ class ArdentRegister(args: Array<String>) {
                 val manager = channel.guild.getAudioManager(textChannel, this)
                 if (manager.channel != null) {
                     if (channel.guild.selfMember.voiceState?.channel != channel) channel.connect(textChannel, this)
-                    textChannel.send(("**Restarting playback...**... Check out [] for other cool features we offer in Ardent **Premium**").apply("<https://ardentbot.com/premium>"), this)
+                    textChannel.send(("**Restarting playback...**... Check out [] for other cool features we offer in Ardent **Premium**").apply("<$base/premium>"), this)
                     queue.tracks.forEach { trackUrl ->
                         trackUrl.load(channel.guild.selfMember, textChannel, this) { audioTrack, id ->
                             play(manager.channel, channel.guild.selfMember, LocalTrackObj(channel.guild.selfMember.user.id, channel.guild.selfMember.user.id, null, null, null, id, audioTrack), this)

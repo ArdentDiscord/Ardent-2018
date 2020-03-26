@@ -10,6 +10,7 @@ import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.getEmbed
+import com.ardentbot.web.base
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("music")
@@ -19,7 +20,7 @@ class Queue : Command("queue", arrayOf("q"), null) {
         val audioManager = event.guild.getAudioManager(event.channel, register)
         if (audioManager.manager.current == null) {
             embed.appendDescription(Emojis.INFORMATION_SOURCE.cmd + translate("music.no_playing", event, register))
-            embed.appendDescription("\n\n" + translate("queue.view_online", event, register).apply("https://ardentbot.com/music/queue/${event.guild.id}"))
+            embed.appendDescription("\n\n" + translate("queue.view_online", event, register).apply("$base/music/queue/${event.guild.id}"))
         } else {
             if (audioManager.manager.queue.size == 0) {
                 embed.appendDescription(translate("queue.no_songs_in_queue", event, register))
@@ -30,7 +31,7 @@ class Queue : Command("queue", arrayOf("q"), null) {
                     current++
                 }
             }
-            embed.appendDescription("\n\n" + translate("queue.view_online", event, register).apply("https://ardentbot.com/music/queue/${event.guild.id}"))
+            embed.appendDescription("\n\n" + translate("queue.view_online", event, register).apply("$base/music/queue/${event.guild.id}"))
         }
         event.channel.send(embed, register)
     }

@@ -10,6 +10,7 @@ import com.ardentbot.core.database.DbObject
 import com.ardentbot.core.database.getLanguage
 import com.ardentbot.core.translation.Language
 import com.ardentbot.kotlin.*
+import com.ardentbot.web.base
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
@@ -218,7 +219,7 @@ class Announce : Command("announce", arrayOf("announcement", "announcements"), n
                                                             .apply(time.localeDate(), old.localeDate()), this, event)
                                         }
                                     }
-                                    event.channel.send("The link is: []".apply("https://ardentbot.com$path"), register)
+                                    event.channel.send("The link is: []".apply("$base$path"), register)
                                 }
                                 3 -> {
                                     event.channel.send("How many repetitions should there be?", register)
@@ -371,7 +372,7 @@ class Announce : Command("announce", arrayOf("announcement", "announcements"), n
                         .apply("\n" + announcement.display(event, register)), register)
             }
         }
-        event.channel.send("The link is: []".apply("https://ardentbot.com$path"), register)
+        event.channel.send("The link is: []".apply("$base$path"), register)
     }
 
     val example = "create"

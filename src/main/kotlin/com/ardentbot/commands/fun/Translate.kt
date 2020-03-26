@@ -5,6 +5,7 @@ import com.ardentbot.core.Flag
 import com.ardentbot.core.commands.Command
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.kotlin.*
+import com.ardentbot.web.base
 import com.github.vbauer.yta.model.Language
 import com.github.vbauer.yta.service.YTranslateApiImpl
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
@@ -24,7 +25,7 @@ class Translate : Command("translate", null, 5) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
         if (arguments.getOrNull(0)?.equals("list") == true) {
             val embed = getEmbed(translate("translate.embed_title", event, register), event.author, event.guild)
-                    .appendDescription(translate("translate.language_list", event, register).apply("https://ardentbot.com/commands/translate")
+                    .appendDescription(translate("translate.language_list", event, register).apply("$base/commands/translate")
                             + "\n\n" + translate("translate.common", event, register))
             register.sender.cmdSend(embed, this, event)
             return

@@ -9,6 +9,7 @@ import com.ardentbot.kotlin.format
 import com.ardentbot.kotlin.getEmbed
 import com.ardentbot.kotlin.getProcessCpuLoad
 import com.ardentbot.kotlin.timeDisplay
+import com.ardentbot.web.base
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import java.lang.management.ManagementFactory
 
@@ -28,7 +29,7 @@ class Status : Command("status", null, null) {
                 .addField(translate("status.uptime", event, register), internals.uptimeFancy, true)
                 .addField(translate("status.servers_only_bot", event, register), internals.onlyBot.format() +
                         " (${(internals.onlyBot * 100 / register.getAllGuilds().size.toFloat()).format()}%)", true)
-                .addField(translate("status.website", event, register), "https://ardentbot.com", true)
+                .addField(translate("status.website", event, register), base, true)
         register.sender.cmdSend(embed, this, event)
     }
 }

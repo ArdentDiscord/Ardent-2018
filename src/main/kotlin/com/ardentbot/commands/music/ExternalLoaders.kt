@@ -34,7 +34,7 @@ val DEFAULT_TRACK_LOAD_HANDLER: (Member, TextChannel, AudioTrack, Boolean, Datab
             play(channel, member, LocalTrackObj(member.user.id, musicPlaylist?.owner
                     ?: member.user.id, musicPlaylist?.toLocalPlaylist(member),
                     spotifyPlaylist ?: musicPlaylist?.spotifyPlaylistId, spotifyAlbum
-                    ?: musicPlaylist?.spotifyAlbumId, spotifyTrack, track), register)
+                    ?: musicPlaylist?.spotifyAlbumId, spotifyTrack, track), register,!isQuiet)
         }
 
 val DEFAULT_YOUTUBE_PLAYLIST_LOAD_HANDLER: (Member, TextChannel, AudioPlaylist, Boolean, DatabaseMusicPlaylist?, ArdentRegister) -> Unit =
@@ -174,11 +174,11 @@ fun String.loadSpotifyPlaylist(member: Member, channel: TextChannel, register: A
         register.spotifyApi.playlists.getPlaylist(playlistId).queue { playlist ->
             if (playlist != null) {
                 channel.send(register.translationManager.translate("music.beginning_spotify_playlist", language).apply(playlist.name), register)
-                playlist.tracks.items.forEach { track ->
+                playlist.tracks.items.forEachIndexed { i, track ->
                     "${track.track!!.name} ${track.track!!.artists[0].name}"
                             .getSingleTrack(member, channel, { _, _, loaded ->
                                 consumerFoundTrack?.invoke(loaded, track.track!!.id)
-                                        ?: DEFAULT_TRACK_LOAD_HANDLER(member, channel, loaded, true,
+                                        ?: DEFAULT_TRACK_LOAD_HANDLER(member, channel, loaded, i != 0,
                                                 musicPlaylist, playlist.id, null, track.track!!.id, register)
                             }, register, true)
                 }

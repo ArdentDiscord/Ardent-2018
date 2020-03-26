@@ -7,6 +7,7 @@ import com.ardentbot.core.translation.Language
 import com.ardentbot.kotlin.Emojis
 import com.ardentbot.kotlin.apply
 import com.ardentbot.kotlin.display
+import com.ardentbot.web.base
 import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Invite
@@ -127,7 +128,7 @@ class Processor(val register: ArdentRegister) {
                     Thread.sleep(2500)
                     getSendChannel(event.guild).sendMessage("""Welcome to **Ardent**!
 If this is your first time using Ardent, you may want to type **/help** to see what commands are available.
-If you run into any issues, join our support server at <https://ardentbot.com/support> and we'd love to help you!
+If you run into any issues, join our support server at <$base/support> and we'd love to help you!
 
 ~Adam
 

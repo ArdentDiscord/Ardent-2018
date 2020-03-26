@@ -3,6 +3,7 @@ package com.ardentbot.kotlin
 import com.ardentbot.core.ArdentRegister
 import com.ardentbot.core.Sender
 import com.ardentbot.core.translation.Language
+import com.ardentbot.web.base
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Message
@@ -18,7 +19,7 @@ fun getEmbed(title: String, channel: TextChannel, color: Color? = null) = getEmb
 
 fun getEmbed(title: String, user: User, guild: Guild?, color: Color? = null): EmbedBuilder {
     return EmbedBuilder()
-            .setAuthor(title, "https://ardentbot.com", guild?.iconUrl ?: user.jda.selfUser.effectiveAvatarUrl)
+            .setAuthor(title, base, guild?.iconUrl ?: user.jda.selfUser.effectiveAvatarUrl)
             .setColor(color ?: Color(random.nextFloat(), random.nextFloat(), random.nextFloat()))
             .setFooter(user.display(), user.effectiveAvatarUrl)
 }

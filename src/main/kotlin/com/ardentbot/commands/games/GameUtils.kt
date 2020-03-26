@@ -8,6 +8,7 @@ import com.ardentbot.core.database.getUserData
 import com.ardentbot.core.toUser
 import com.ardentbot.core.translation.Language
 import com.ardentbot.kotlin.*
+import com.ardentbot.web.base
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.Member
@@ -161,7 +162,7 @@ abstract class Game(val type: GameType, val channel: TextChannel, val creator: S
                 register.sender.send(translate("games.generated_new_id").apply(newGameId), null, channel, register.selfUser, null)
                 register.database.insert(gameData)
             }
-            register.sender.send(translate("games.data_inserted").apply("https://ardentbot.com/games/${type.name.toLowerCase()}/$gameId") + "\n\n" +
+            register.sender.send(translate("games.data_inserted").apply("$base/games/${type.name.toLowerCase()}/$gameId") + "\n\n" +
                     "*" + translate("games.pledge_request").apply("<https://patreon.com/ardent>") + "\n   - Adam*", null, channel, register.selfUser, null)
         }
     }
@@ -269,8 +270,8 @@ abstract class GameData(table: String, id: Long, val creator: String, val startT
 
 data class SanitizedGame(val user: String, val endTime: String, val type: String, val url: String)
 
-fun TextChannel.send(message: String, register: ArdentRegister, post: ((Message) -> Unit)? = null) {
-    register.sender.send(message, null, this, this.guild.selfMember.user, null, callback = post)
+fun TextChannel.send(message: String, register: ArdentRegister, blocking: Boolean = false, post: ((Message) -> Unit)? = null) {
+    register.sender.send(message, null, this, this.guild.selfMember.user, null, callback = post, blocking = blocking)
 }
 
 fun TextChannel.send(embed: EmbedBuilder, register: ArdentRegister) {

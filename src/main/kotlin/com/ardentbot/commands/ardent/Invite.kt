@@ -5,6 +5,7 @@ import com.ardentbot.core.Flag
 import com.ardentbot.core.commands.Command
 import com.ardentbot.core.commands.ModuleMapping
 import com.ardentbot.kotlin.apply
+import com.ardentbot.web.base
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 
 @ModuleMapping("ardent")
@@ -14,6 +15,6 @@ class Invite : Command("invite", null, null) {
             register.holder.getCommand("gameinvite")!!.onInvoke(event, arguments, flags, register)
         }
         else register.sender.cmdSend(translate("invite.response", event, register)
-                .apply("<https://ardentbot.com/invite>"), this, event)
+                .apply("<$base/invite>"), this, event)
     }
 }

@@ -17,7 +17,7 @@ class DatabaseMusicLibrary(id: String, var tracks: MutableList<DatabaseTrackObj>
     fun load(member: Member, channel: TextChannel, register: ArdentRegister) {
         val vc = member.voiceState?.channel
         if (vc == null) channel.send(register.translationManager.translate("music.not_in_voice",member.guild.getLanguage(register) ?: Language.ENGLISH ), register)
-        else if (vc.connect(channel, register)) {
+        else if (vc.connect(channel, register,complain = false)) {
             tracks.forEach { track ->
                 track.url.load(member, channel, register, speak = false) { loaded, _ ->
                     DEFAULT_TRACK_LOAD_HANDLER(member,channel,loaded,true,null,null,null,null,register)
@@ -49,7 +49,7 @@ data class DatabaseTrackObj(val owner: String, val addedAt: Long, val playlistId
 data class LocalTrackObj(val user: String, val owner: String, val playlist: LocalPlaylist?, val spotifyPlaylistId: String?, val spotifyAlbumId: String?, val spotifyTrackId: String?, var track: AudioTrack?, var url: String? = track?.info?.uri) {
     fun getUri(): String? {
         return when {
-            spotifyPlaylistId != null -> "https://open.spotify.com/user/${spotifyPlaylistId.split(" ")[0]}/playlist/${spotifyPlaylistId.split(" ")[1]}"
+            spotifyPlaylistId != null -> "https://open.spotify.com/playlist/$spotifyPlaylistId"
             spotifyAlbumId != null -> "https://open.spotify.com/album/$spotifyAlbumId"
             spotifyTrackId != null -> "https://open.spotify.com/track/$spotifyTrackId"
             url != null -> url
@@ -68,13 +68,13 @@ data class LocalPlaylist(val member: Member, val playlist: DatabaseMusicPlaylist
             playlist.spotifyPlaylistId.toSpotifyPlaylistUrl().loadSpotifyPlaylist(this.member, channel, register, playlist)
         }
         if (playlist.youtubePlaylistUrl != null) {
-            playlist.youtubePlaylistUrl.loadYoutube(member, channel, register, playlist, lucky = false)
+            playlist.youtubePlaylistUrl.loadYoutube(member, channel, register, playlist, lucky = false,speak = false)
         }
         if (playlist.tracks.size > 0) {
             playlist.tracks.forEach { track ->
                 when {
                     track.url.startsWith("https://open.spotify.com/track/") -> track.url.loadSpotifyTrack(member, channel, register, playlist) { audioTrack, id ->
-                        play(channel, member, LocalTrackObj(member.user.id, member.user.id, this, null, null, id, audioTrack), register)
+                        play(channel, member, LocalTrackObj(member.user.id, member.user.id, this, null, null, id, audioTrack), register, false)
                     }
                     else -> track.url.loadYoutube(member, channel, register, playlist, search = false, lucky = false) { found ->
                         DEFAULT_TRACK_LOAD_HANDLER(member, channel, found, true, playlist, null, null, null, register)
@@ -105,8 +105,7 @@ fun getPlaylistById(id: String, register: ArdentRegister): DatabaseMusicPlaylist
 }
 
 fun String.toSpotifyPlaylistUrl(): String {
-    val split = split("||")
-    return "https://open.spotify.com/user/${split[0]}/playlist/${split[1]}"
+    return "https://open.spotify.com/playlist/$this"
 }
 
 fun String.toSpotifyAlbumUrl(): String {

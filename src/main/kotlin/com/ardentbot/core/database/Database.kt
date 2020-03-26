@@ -203,7 +203,7 @@ fun Database.getUserData(user: User): UserData = getUserData(user.id)
 fun Guild.getUsersData(register: ArdentRegister) = members.map { register.database.getUserData(it.user) }
 
 fun genId(length: Int, table: String?): String {
-    val gen = RandomStringUtils.randomAlphanumeric(length)
+    val gen = RandomStringUtils.randomAlphanumeric(length).toLowerCase()
     return if (table == null) gen
     else {
         if (r.table(table).get(gen).run<Any?>(conn) != null) genId(length, table)

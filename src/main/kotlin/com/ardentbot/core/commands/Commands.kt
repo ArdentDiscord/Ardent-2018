@@ -85,7 +85,7 @@ abstract class Command(name: String, aliases: Array<String>?, cooldown: Int?) : 
         onInvoke(event, arguments, flags, register)
         println("Execution time: ${System.currentTimeMillis() - before}")
 
-        register.cmdChannel?.send("$name command received by ${event.author.display()}in **${event.guild.name}** - ${event.guild.memberCount} (${event.guild.members.count { it.user.isBot }} bots) | ${System.currentTimeMillis().format()}", register)
+        register.cmdChannel?.sendMessage("$name command (arguments $arguments, flags $flags) received by ${event.author.display()}in **${event.guild.name}** - ${event.guild.memberCount} (${event.guild.members.count { it.user.isBot }} bots) | ${System.currentTimeMillis().format()}")?.queue()
     }
 
     init {
@@ -150,7 +150,7 @@ abstract class Command(name: String, aliases: Array<String>?, cooldown: Int?) : 
         if (ex.isNotEmpty()) {
             embed.appendDescription("\n")
                     .appendDescription("__" + (if (ex.size > 1) translate("cmd.examples", event, register)
-                    else translate("cmd.example", event, register)) + "__:")
+                    else translate("cmd.example", event, register)) + "__: ")
             if (ex.size > 1) embed.appendDescription("\n")
             ex.forEach { embed.appendDescription("/$name *$it*\n") }
             embed.descriptionBuilder.removeSuffix("\n")

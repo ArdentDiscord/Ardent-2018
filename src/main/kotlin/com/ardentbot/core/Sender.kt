@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit
 class Sender(val register: ArdentRegister) {
     fun send(message: Any, command: Command?, channel: MessageChannel, user: User,
              event: GuildMessageReceivedEvent?, guild: Guild? = event?.guild,
-             parameters: List<String>? = null, callback: ((Message) -> Unit)? = null) {
+             parameters: List<String>? = null, callback: ((Message) -> Unit)? = null, blocking: Boolean = false) {
         val language = (guild ?: (channel as? TextChannel)?.guild)
                 ?.let { g -> register.database.getGuildData(g).language }
                 ?: Language.ENGLISH
@@ -39,28 +39,35 @@ class Sender(val register: ArdentRegister) {
             else channel.sendMessage(message.toString().replace("@here", "@ here")
                     .replace("@everyone", "@ everyone").apply(parameters ?: listOf()))
 
-            action.queue({
-                callback?.invoke(it)
-            }, {
-                user.openPrivateChannel()
-                        .queue { channel ->
-                            channel.sendMessage(
-                                    register.translationManager.translate("error.message_send", language)
-                                            .apply(if (message is EmbedBuilder) register.translationManager.translate("error.an_embed", language)
-                                            else register.translationManager.translate("error.a_message", language),
-                                                    event?.message?.contentRaw ?: command?.name ?: channel.name
-                                                    ?: register.translationManager.translate("error.guild", language),
-                                                    guild?.let { _ -> (channel as TextChannel).name }
-                                                            ?: register.translationManager.translate("error.channel", language))
-                            ).queue()
-                        }
-            })
+            if (!blocking) action.queue({ callback?.invoke(it) }, { failure(user, language, message, event, command, guild) })
+            else {
+                try {
+                    val res = action.complete()
+                    callback?.invoke(res)
+                } catch (e: Throwable) {
+                    failure(user, language, message, event, command, guild)
+                }
+            }
         } catch (e: Exception) {
             if (e is InsufficientPermissionException) {
                 user.openPrivateChannel().complete().sendMessage(register.translationManager.translate("error.cant_send_generic", language)
                         .apply("**${channel.name}**")).queue()
             } else e.printStackTrace()
         }
+    }
+
+    private fun failure(user: User, language: Language, message: Any, event: GuildMessageReceivedEvent?, command: Command?, guild: Guild?) {
+        user.openPrivateChannel()
+                .queue { channel ->
+                    channel.sendMessage(
+                            register.translationManager.translate("error.message_send", language)
+                                    .apply(if (message is EmbedBuilder) register.translationManager.translate("error.an_embed", language)
+                                    else register.translationManager.translate("error.a_message", language),
+                                            event?.message?.contentRaw ?: command?.name ?: channel.name,
+                                            guild?.let { _ -> (channel as TextChannel).name }
+                                                    ?: register.translationManager.translate("error.channel", language))
+                    ).queue()
+                }
     }
 
     fun cmdSend(message: Any, command: Command, event: GuildMessageReceivedEvent, parameters: List<String>? = null,

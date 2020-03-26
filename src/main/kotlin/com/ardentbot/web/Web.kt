@@ -120,7 +120,7 @@ class Web(val register: ArdentRegister) {
                 games.removeIf { it.second.creator.toUser(register) == null }
                 map["recentGames"] = games.map {
                     SanitizedGame(it.second.creator.toUser(register)?.display()
-                            ?: "Unknown", it.second.endTime.localeDate(), it.first.readable, "https://ardentbot.com/games/${it.first.readable.toLowerCase()}/${it.second.id}")
+                            ?: "Unknown", it.second.endTime.localeDate(), it.first.readable, "$base/games/${it.first.readable.toLowerCase()}/${it.second.id}")
                 }.take(30)
                 handlebars.render(ModelAndView(map, "recentgames.hbs"))
             }
@@ -819,10 +819,9 @@ class Web(val register: ArdentRegister) {
                                     }
                                 }
                                 playlist.spotifyPlaylistId != null -> {
-                                    val split = playlist.spotifyPlaylistId.split("||")
-                                    val foundPlaylist = register.spotifyApi.playlists.getPlaylist(split.last()).complete()
+                                    val foundPlaylist = register.spotifyApi.playlists.getPlaylist(playlist.spotifyPlaylistId).complete()
                                     if (foundPlaylist != null) {
-                                        map["playlistLink"] = "https://open.spotify.com/user/${foundPlaylist.owner.id}/playlist/${foundPlaylist.id}"
+                                        map["playlistLink"] = "https://open.spotify.com//playlist/${foundPlaylist.id}"
                                         map["playlistTitle"] = foundPlaylist.name
                                         map["playlistOwner"] = foundPlaylist.owner
                                         map["playlistDescription"] = foundPlaylist.description

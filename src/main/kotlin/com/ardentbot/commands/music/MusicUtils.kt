@@ -1,6 +1,5 @@
 package com.ardentbot.commands.music
 
-import com.adamratzman.spotify.models.SimpleTrack
 import com.adamratzman.spotify.models.Track
 import com.ardentbot.commands.games.send
 import com.ardentbot.core.ArdentRegister
@@ -253,17 +252,23 @@ fun VoiceChannel.connect(textChannel: TextChannel?, register: ArdentRegister, co
         audioManager.openAudioConnection(this)
         true
     } catch (e: Throwable) {
-        if (complain) textChannel?.send(Emojis.CROSS_MARK.cmd + register.translationManager.translate("music.cannot_join_vc",
-                guild.getLanguage(register) ?: Language.ENGLISH).apply(name, e.localizedMessage), register)
+        if (textChannel != null && complain) {
+            val msg = Emojis.CROSS_MARK.cmd + register.translationManager.translate("music.cannot_join_vc",
+                    guild.getLanguage(register) ?: Language.ENGLISH).apply(name, e.localizedMessage)
+            if (complain && textChannel.retrieveMessageById(textChannel.latestMessageId).complete().contentRaw != msg) textChannel.send(msg, register, blocking = true)
+        }
         false
     }
 }
 
-fun play(channel: TextChannel?, member: Member, track: LocalTrackObj, register: ArdentRegister) {
-    if (member.voiceState?.channel != null) member.voiceState!!.channel!!.connect(channel, register)
+fun play(channel: TextChannel?, member: Member, track: LocalTrackObj, register: ArdentRegister, complain: Boolean = true) {
+    if (member.voiceState?.channel != null) member.voiceState!!.channel!!.connect(channel, register, complain)
     else {
-        channel?.send(register.translationManager.translate("music.unable_join_vc", member.guild.getLanguage(register)
-                ?: Language.ENGLISH), register)
+        if (channel != null && complain) {
+            val msg = register.translationManager.translate("music.unable_join_vc", member.guild.getLanguage(register)
+                    ?: Language.ENGLISH)
+            if (complain && channel.retrieveMessageById(channel.latestMessageId).complete().contentRaw != msg) channel.send(msg, register, blocking = true)
+        }
         return
     }
     member.guild.getAudioManager(channel, register).manager.queue(track)

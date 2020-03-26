@@ -161,7 +161,7 @@ class Profile : Command("profile", null, null) {
                         .appendDescription("\n\n**Music**" + "\n" + "------------\n")
                         .appendDescription("__Spotify username__: []".apply((data.spotifyId ?: "Not set up!")))
                         .appendDescription("\n\n")
-                        .appendDescription("\nDid you know? You can see your profile at []".apply("https://ardentbot.com/profile/${user.id}") + "\n")
+                        .appendDescription("\nDid you know? You can see your profile at []".apply("$base/profile/${user.id}") + "\n")
                         .appendDescription("**Want to edit your profile? Type _/profile help_ to learn how**")
                 register.sender.cmdSend(embed, this, event, callback = { message ->
                     message.addReaction(Emojis.HEAVY_MULTIPLICATION_X.symbol).queue()
