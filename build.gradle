@@ -3,7 +3,9 @@ plugins {
 }
 
 group 'com.ardentbot'
-version '1.0-SNAPSHOT'
+version '1.0.01'
+
+def impVersion = version
 
 sourceCompatibility = 1.8
 
@@ -13,7 +15,10 @@ build.mustRunAfter clean
 jar {
     manifest {
         baseName = "Ardent"
-        attributes "Main-Class": "com.ardentbot.core.ArdentRegisterKt"
+        version = "prd"
+        attributes "Main-Class": "com.ardentbot.core.ArdentRegisterKt",
+                'Implementation-Version': impVersion
+
     }
 
     from {

@@ -95,6 +95,12 @@ class Processor(val register: ArdentRegister) {
                                 try {
                                     receivedCommands++
                                     command.check(event, parsedMessage.arguments, parsedMessage.flags, register)
+                                    if (register.newVersionInfo != null && !register.versionInfoTold.contains(event.guild.id)) {
+                                        event.channel.sendMessage(Emojis.WAVING_HANDS.cmd +
+                                                "Ardent was updated to version ${register.version}.\nRelease highlights: ${register.newVersionInfo}").queue()
+
+                                        register.versionInfoTold.add(event.guild.id)
+                                    }
                                 } catch (e: Exception) {
                                     event.channel.send(register.translationManager.translate("general.error_message", language)
                                             .apply("**${e.localizedMessage}**") + "\n\n" +

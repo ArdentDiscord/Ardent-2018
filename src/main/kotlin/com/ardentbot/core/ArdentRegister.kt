@@ -62,6 +62,13 @@ class ArdentRegister(args: Array<String>) {
     val web = Web(this)
     val spotifyApi = SpotifyApi.spotifyAppApi(config["spotify_client_id"], config["spotify_client_secret"]).build()
     val cmdChannel = jda.getTextChannelById("363785648911679488")
+
+    val version = this::class.java.`package`.implementationVersion
+    var newVersionInfo: String? = null
+
+    val versionInfoTold = mutableListOf<String>()
+
+
     fun getTextChannel(id: String): TextChannel? {
         return try {
             jda.getTextChannelById(id)
