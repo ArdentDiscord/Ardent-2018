@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 @MockCommand("dev use only")
 class Admr : Command("admr", null, null) {
     override fun onInvoke(event: GuildMessageReceivedEvent, arguments: List<String>, flags: List<Flag>, register: ArdentRegister) {
+        println(arguments)
         if (arguments[0] == "v") {
             register.newVersionInfo = arguments.without(0).concat()
         }
