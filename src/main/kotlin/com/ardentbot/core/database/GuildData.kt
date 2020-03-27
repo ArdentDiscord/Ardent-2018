@@ -10,7 +10,7 @@ class GuildData(id: String, val prefixes: MutableList<ArdentPrefix>, val disable
                 var muteRoleId: String? = null, val joinMessage: EventMessage = EventMessage(null, null),
                 val leaveMessage: EventMessage = EventMessage(null, null), var defaultRoleId: String? = null,
                 var language: Language? = null, var antiAdvertisingSettings: AntiAdvertisingSettings? = null,
-                var antispamCooldownSeconds: Int? = null) : DbObject(id, "guilds") {
+                var antispamCooldownSeconds: Int? = null, var autoroles: MutableList<Autorole>? = null) : DbObject(id, "guilds") {
     fun prefixesModified(register: ArdentRegister): List<ArdentPrefix> {
         val withDefaults = if (register.config.test) mutableListOf(ArdentPrefix(".", register.selfUser.id, 0))
         else mutableListOf(ArdentPrefix("/", register.selfUser.id, 0), ArdentPrefix("ardent ", register.selfUser.id, 0),
@@ -34,5 +34,10 @@ class MusicSettings(id: String, var autoplay: Boolean = false, var stayInChannel
     : DbObject(id, table = "music_settings")
 
 data class AntiAdvertisingSettings(var allowServerLinks: Boolean, var banAfterTwoInfractions: Boolean)
+
+/**
+ * When [whitelistedRoles] is empty, all will be able to use this autorole
+ */
+data class Autorole(var name: String, var role: String, val creator: String, val whitelistedRoles: MutableList<String> = mutableListOf())
 
 fun Guild.getLanguage(register: ArdentRegister) = register.database.getGuildData(this).language

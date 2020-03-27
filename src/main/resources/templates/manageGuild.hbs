@@ -302,13 +302,11 @@
                 </div>
             </form>
 
-            <!-- <h3>Autoroles (/iam)</h3>
+            <h3>Autoroles (/iam)</h3>
             <p>Users can use <b>/iam</b> or <b>/iamnot</b> to give themselves or take away an autorole you set,
                 respectively</p>
             <h4>Add an autorole</h4>
-            <form action="/accept">
-                <input name="name" value="addautorole" hidden/>
-                <input name="webRedirect" value="/manage/{{id}}" hidden/>
+            <form action="/api/manage/autoroles/add">
                 <input name="guild" value="{{id}}" hidden/>
                 <div class="row uniform 50%">
                     <p class="5u" style="width: 50%;">Name of autorole
@@ -344,12 +342,12 @@
                             </tr>
                             </thead>
                             <tbody>
-                            {{#each roleSettings.autoroles}}
+                            {{#each autoroles}}
                                 <tr>
                                     <td>{{name}}</td>
                                     <td>{{role}}</td>
                                     <td>{{creator}}</td>
-                                    <td><a href="/accept?name=removeautorole&webRedirect=%2Fmanage%2F{{id}}&guild={{id}}&autorolename={{name}}"><img
+                                    <td><a href="/api/manage/autoroles/remove?guild={{id}}&autorolename={{name}}"><img
                                             height="16" width="16"
                                             src="/images/x_button.png"></a>
                                     </td>
@@ -360,7 +358,6 @@
                     </div>
                 </div>
             {{/if}}
-            -->
 
         </div>
     {{/with}}

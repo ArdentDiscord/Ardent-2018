@@ -450,116 +450,7 @@ class Web(val register: ArdentRegister) {
                 }
             }
 
-            // MANAGEMENT
-            path("/manage") {
-                get("/:type/:action") { request, response ->
-                    val session = request.session()
-                    val user: User? = session.attribute<User>("user")
-                    val guild = register.getGuild(request.queryParams("guild"))
-                    when {
-                        user == null -> {
-                            redirects[request.session().id()] = "/manage/${guild?.id}"
-                            response.redirect("/login")
-                            null
-                        }
-                        guild == null -> {
-                            response.redirect("/manage")
-                            null
-                        }
-                        else -> {
-                            val map = request.getDefaultMap(response, "Data Response")
-                            val data = register.database.getGuildData(guild)
-                            when (request.params(":type")) {
-                                "prefix" -> {
-                                    when (request.params(":action")) {
-                                        "add" -> {
-                                            request.queryParams("prefix")?.let { prefix ->
-                                                if (prefix.isNotBlank() && data.prefixes.find { it.prefix == prefix } == null) {
-                                                    data.prefixes.add(ArdentPrefix(prefix, user.id, System.currentTimeMillis()))
-                                                    register.database.update(data)
-                                                }
-                                            }
-                                        }
-                                        "remove" -> {
-                                            request.queryParams("prefix")?.let { prefix ->
-                                                if (prefix != "/" && prefix != "ardent") {
-                                                    data.prefixes.removeIf { it.prefix == prefix }
-                                                    register.database.update(data)
-                                                }
-                                            }
-                                        }
-                                        else -> {
-                                            map["title"] = "404 Not Found"
-                                            handlebars.render(ModelAndView(map, "404.hbs"))
-                                        }
-                                    }
-                                }
-                                "roles" -> {
-                                    when (request.params(":action")) {
-                                        "default" -> {
-                                            request.queryParams("defaultRole")?.let { defaultRoleId ->
-                                                if (defaultRoleId.isNotBlank()) {
-                                                    if (defaultRoleId == "none") data.defaultRoleId = null
-                                                    else data.defaultRoleId = defaultRoleId
-                                                    register.database.update(data)
-                                                }
-                                            }
-                                        }
-                                        else -> {
-                                            map["title"] = "404 Not Found"
-                                            handlebars.render(ModelAndView(map, "404.hbs"))
-                                        }
-                                    }
-                                }
-                                "music" -> {
-                                    val musicSettings = register.database.getGuildMusicSettings(guild)
-                                    when (request.params(":action")) {
-                                        "changeautoplay" -> {
-                                            request.queryParams("state")?.let { state ->
-                                                if (state == "on") {
-                                                    musicSettings.autoplay = true
-                                                } else if (state == "off") {
-                                                    musicSettings.autoplay = false
-                                                }
-                                                register.database.update(musicSettings)
-                                            }
-                                        }
-                                        "stayinvoice" -> {
-                                            request.queryParams("state")?.let { state ->
-                                                if (state == "on") {
-                                                    musicSettings.stayInChannel = true
-                                                } else if (state == "off") {
-                                                    musicSettings.stayInChannel = false
-                                                }
-                                                register.database.update(musicSettings)
-                                            }
-                                        }
-                                        "changemusicadmin" -> {
-                                            request.queryParams("state")?.let { state ->
-                                                if (state == "on") {
-                                                    musicSettings.canEveryoneUseAdminCommands = true
-                                                } else if (state == "off") {
-                                                    musicSettings.canEveryoneUseAdminCommands = false
-                                                }
-                                                register.database.update(musicSettings)
-                                            }
-                                        }
-                                        else -> {
-                                            map["title"] = "404 Not Found"
-                                            handlebars.render(ModelAndView(map, "404.hbs"))
-                                        }
-                                    }
-                                }
-                                else -> {
-                                    map["title"] = "404 Not Found"
-                                    handlebars.render(ModelAndView(map, "404.hbs"))
-                                }
-                            }
-                            response.redirect("/manage/${guild.id}")
-                        }
-                    }
-                }
-            }
+            manage()
 
             // ADMINISTRATION
             path("/administrators") {
@@ -668,6 +559,7 @@ class Web(val register: ArdentRegister) {
                     map["musicSettings"] = register.database.getGuildMusicSettings(guild)
                     map["defaultRole"] = data.defaultRoleId?.let { guild.getRoleById(it) }
                     map["guildData"] = data
+                    map["hasIams"] = data.autoroles?.isNotEmpty() == true
                     ModelAndView(map, "manageGuild.hbs")
                 } else {
                     map["showSnackbar"] = true

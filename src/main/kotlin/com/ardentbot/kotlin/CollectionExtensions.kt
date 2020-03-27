@@ -31,3 +31,8 @@ fun <T> List<T>.without(obj: T): MutableList<T> {
 }
 
 fun <T> List<T>.concat() = joinToString(" ") { it.toString() }
+
+fun <K> MutableList<K>.forEach(consumer: (MutableIterator<K>, current: K) -> Unit) {
+    val iterator = iterator()
+    while (iterator.hasNext()) consumer.invoke(iterator, iterator.next())
+}

@@ -109,7 +109,7 @@ class Processor(val register: ArdentRegister) {
                                                     "**Message:** ${e.localizedMessage}"
                                     ).queue()
                                     register.getTextChannel(register.config["error_channel"])!!.sendMessage("^\n" +
-                                            ExceptionUtils.getStackTrace(e)).queue()
+                                            ExceptionUtils.getStackTrace(e).take(1500)).queue()
                                 }
                             }
                         }
